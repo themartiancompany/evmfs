@@ -7,46 +7,57 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 /**
- * @title Tree
- * @dev Twitter dialogue representation.
+ * @title FilemSystem
+ * @dev File system representation.
  */
 contract FileSystem {
 
     address public immutable deployer = 0xea02F564664A477286B93712829180be4764fAe2;
     address public immutable twitter = 0x7525Fe558b4EafA9e6346846E4027ffAB32F80A2;
     string public hijess = "ikirshu";
-    mapping( address => mapping( string => mapping( uint256 => uint256 ) ) ) public chunks;
-    mapping( address => mapping( string => uint256 ) ) public chunkNo;
-    // mapping(address => mapping (uint256 => mapping (address => mapping ( uint256 => uint256)))) public branches;
-    // mapping(address => mapping (uint256 => mapping (address => mapping ( uint256 => uint256)))) public branches;
-    // mapping(address => mapping (uint256 => mapping (address => uint256))) public branchNo;
+    mapping( address => mapping( string => bool ) ) public lock;
+    mapping( address => mapping( string => mapping( uint256 => string ) ) ) public chunks;
+    mapping( address => mapping( string => uint256 ) ) public length;
     constructor() {}
     
     /**
      * @dev Publish chunk.
-     * @param _hash Hash of the file the chutk belongs.
+     * @param _hash Hash of the file the chunk belongs.
      * @param _chunk Which chunk are you setting.
      * @param _post In which post the chunk is contained.
      */
-    function publishChunk(string _hash, uint256 _chunk, uint256 _post) public {
-        chunks[msg.sender][_hash][_chunk] = _post;
-	if ( _chunk > chunkNo[msg.sender][_hash]]) {
-	  chunkNo[msg.sender][_hash] = _chunk;
+    function publishChunk(string _hash, uint256 _index, string _chunk) public {
+	require( lock[msg.sender][_hash] != true );
+        chunks[msg.sender][_hash][_index] = _chunk;
+	if ( _index > length[msg.sender][_hash]]) {
+	  length[msg.sender][_hash] = _index;
 	}
     }
 
     /**
-     * @dev Read a reply.
-     * @param _recipient Root owner.
-     * @param _rootTweetNo Which root.
-     * @param _sender Branch owner.
-     * @param _branchNo Which branch.
+     * @dev Lock the chunk.
+     * @param _hash Hash of the file.
+     * @param _index Which chunk to lock.
      */
-    function readReply(address _recipient, uint256 _rootTweetNo, address _sender, uint256 _branchNo)
+    function lockChunk(string _hash, uint256 _index, address _sender, uint256 _branchNo)
+    public
+    {
+      require( lock[msg.sender][_hash] != true );
+      lock[msg.sender][_hash][_index] = true;
+    }
+}
+
+    /**
+     * @dev Read a chunk.
+     * @param _namespace Where the filo resides.
+     * @param _hash Hash of the file.
+     * @param _index Which chunk.
+     */
+    function readChunk(address _namespace, string _hash, uint256 _index)
     public
     view
-    returns (uint256)
+    returns (string)
     {
-      return branches[_recipient][_rootTweetNo][_sender][_branchNo];
+      return chunks[_namespace][_hash][_index];
     }
 }
