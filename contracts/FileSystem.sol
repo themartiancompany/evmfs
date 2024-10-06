@@ -98,8 +98,8 @@ contract FileSystem {
     {
       checkLocked(
         _namespace,
-	_hash,
-	_index
+        _hash,
+        _index
       );
       return chunks[_namespace][_hash][_index];
     }
