@@ -12,7 +12,7 @@ contract FileSystem {
     address public immutable twitter = 0x7525Fe558b4EafA9e6346846E4027ffAB32F80A2;
     string public hijess = "ikirshu";
     mapping( address => mapping( string => mapping( uint256 => string ) ) ) public chunks;
-    mapping( address => mapping( string => bool ) ) public lock;
+    mapping( address => mapping( string => mapping( uint256 => bool) ) ) public lock;
     mapping( address => mapping( string => uint256 ) ) public length;
     constructor() {}
 
@@ -26,9 +26,7 @@ contract FileSystem {
       address _namespace,
       string memory _hash,
       uint256 _index) public {
-      require(
-	! lock[msg.sender][_hash][_index]
-      );
+      require( ! lock[msg.sender][_hash][_index] );
     }
 
     /**
