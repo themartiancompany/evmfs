@@ -28,7 +28,7 @@ contract FileSystem {
       uint256 _index)
       public
       view {
-      require( ! lock[msg.sender][_hash][_index] );
+      require( ! lock[_namespace][_hash][_index] );
     }
 
     /**
@@ -44,7 +44,7 @@ contract FileSystem {
       public
       view {
       require(
-	lock[msg.sender][_hash][_index]
+	lock[_namespace][_hash][_index]
       );
     }
 
