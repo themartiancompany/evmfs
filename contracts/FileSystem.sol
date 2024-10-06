@@ -17,6 +17,17 @@ contract FileSystem {
     constructor() {}
 
     /**
+     * @dev Check owner.
+     * @param _namespace Address owning the hash.
+     */
+    function checkOwner(
+      address _namespace)
+      public
+      view {
+      require( msg.sender == _namespace );
+    }
+
+    /**
      * @dev Check chunk unlock state.
      * @param _namespace Address owning the hash.
      * @param _hash Hash of the file the chunk belongs.
@@ -50,21 +61,25 @@ contract FileSystem {
 
     /**
      * @dev Publish chunk.
+     * @param _namespace Namespace for the file definition.
      * @param _hash Hash of the file the chunk belongs.
      * @param _index Which chunk are you setting.
      * @param _chunk In which post the chunk is contained.
      */
     function publishChunk(
+      address _namespace,
       string memory _hash,
       uint256 _index,
       string memory _chunk) public {
+      checkOwner(
+        _namespace);
       checkUnlocked(
-        msg.sender,
+        _namespace,
         _hash,
         _index);
-      chunks[msg.sender][_hash][_index] = _chunk;
+      chunks[_namespace][_hash][_index] = _chunk;
       if ( _index > length[msg.sender][_hash] ) {
-        length[msg.sender][_hash] = _index;
+        length[_namespace][_hash] = _index;
       }
     }
 
@@ -74,15 +89,19 @@ contract FileSystem {
      * @param _index Which chunk to lock.
      */
     function lockChunk(
+      address _namespace,
       string memory _hash,
       uint256 _index)
     public
     {
+      checkOwner(
+        _namespace
+      );
       checkUnlocked(
-        msg.sender,
+        _namespace,
 	_hash,
 	_index);
-      lock[msg.sender][_hash][_index] = true;
+      lock[_namespace][_hash][_index] = true;
     }
 
     /**
