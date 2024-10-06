@@ -14,15 +14,15 @@ source \
 
 # shellcheck disable=SC2034
 _global_variables() {
-  target_command=""
+  publish_date=""
+  target_contract=""
   wallet_path=""
   wallet_password=""
   wallet_seed=""
   target_network=""
   api_key=""
   wallet_name=""
-  target_key=""
-  target_value=""
+  target_file=""
   command_args=()
   color=""
   quiet=""
@@ -121,23 +121,79 @@ _key_get() {
   fi
 }
 
-_evm_wallet() {
+_file_size_check() {
   local \
-    _target_command="${1}" \
+    _file="${1}" \
+    _size
+  _size="$( \
+    du \
+      -b \
+      "${_file}")"
+  if [[ 10000 < "${_size}" ]]; then
+    _msg_info \
+      "writing over 2 blocks!"
+  fi
+}
+
+_file_upload() {
+  local \
+    _file="${1}" \
+    _length \
+    _queue=() \
+    _chunk \
+    _payload \
+    _chunk_prefix
+  _chunk_prefix="$( \
+    mktemp \
+      --suffix=".base64")"
+  _length="10000"
+  _file_size_check \
+    "${_file}"
+  bin2txt \
+    -L \
+      "${_length}" \
+    "${_file}" \
+    "${_chunk_prefix}"
+  _queue+=( $( \
+    find \
+      "${_chunk_prefix}"* | \
+      sort \
+        -V)
+  )
+  if [[ "${_queue[*]}" == "" ]]; then
+    _msg_error \
+      "error processing file for upload" \
+      1
+  fi
+  for _chunk \
+    in "${_queue[@]}"; do
+    _payload="$( \
+      cat \
+        "${_chunk}")"
+    echo \
+      "${_chunk}"
+    _post_send \
+      "${_address}" \
+      "${_payload}"
+  done
+}
+
+_evmfs_publish() {
+  local \
+    _target_contract="${1}" \
     _wallet_path="${2}" \
     _wallet_password="${3}" \
     _wallet_seed="${4}" \
     _network="${5}" \
     _api_key_path="${6}" \
-    _target_key="${7}" \
-    _target_value="${8}" \
+    _target_file="${7}" \
     _command_args=() \
     _cmd \
     _args=() \
     _api_key \
     _network_backend
   shift \
-    8
+    7
   _command_args+=(
     "$@"
   )
@@ -261,7 +317,16 @@ _secret_auto_detect() {
     "${_path}"
 }
 
+_evmfs_contract_auto_detect() {
+  echo \
+    "0xciao"
+}
+
 _set_overrides() {
+  _set_override \
+    "publish" \
+    "date" \
+    "$(_get_date_human)"
   _set_override \
     "wallet" \
     "name" \
@@ -272,8 +337,8 @@ _set_overrides() {
     "gnosis"
   _set_override \
     "target" \
-    "command" \
-    "get"
+    "contract" \
+    "$(_evmfs_contract_auto_detect)"
   _set_override \
     "api" \
     "key" \
@@ -292,10 +357,6 @@ _set_overrides() {
   _secret_auto_detect \
     "password" \
     "plain"
-  _set_override \
-    "target" \
-    "key" \
-    "address"
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
@@ -319,23 +380,12 @@ _usage() {
       -d '' \
       _usage_text << \
         ENDUSAGETEXT || true
-EVM network wallet
+EVM network file system file publisher
 
 Usage:
   $(_get "app" "name")
     [options]
-    <command>
-      (<command_args>)
-  commands:
-    get
-      <wallet_name>
-      <key>
-    set
-      <wallet_name>
-      <key>
-      <value>
-  keys:
-    address
+    <file>
   networks:
     alchemy
     ankr
@@ -347,13 +397,16 @@ Usage:
     publicPolygon
     quicknode
   options:
+     -A <target_contract> Address of the EVM file system 
+                          on the network.
+                          Default: $(_get "target" "contract")
      -w <wallet_path>     Wallet path.
                           Default: $(_get "wallet" "path")
      -p <wallet_password> Wallet password.
                           Default: $(_get "wallet" "password")
      -s <wallet_seed>     Wallet seed path.
                           Default: $(_get "wallet" "seed")
-     -n <network>         EVM network name ('mainnet', 'gnosis').
+     u-n <network>         EVM network name ('mainnet', 'gnosis').
                           Default: $(_get "target" "network")
      -k <api_key>         Etherscan-like service key.
                           Default: $(_get "api" "key")
@@ -383,23 +436,15 @@ _display_flags() {
 
 # Shows configuration options.
 _show_config() {
-  local \
-    _call_date
-  TZ=UTC \
-  printf \
-    -v \
-      _call_date \
-    '%(%FT%R%z)T' \
-    "${SOURCE_DATE_EPOCH}"
   _msg_info "${app_name} configuration"
-  _msg_info "                Call date:   $(_get "_call" "date")"
+  _msg_info "             Publish date:   $(_get "publish" "date")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
-  _msg_info "               Target key:   $(_get "target" "key")"
-  _msg_info "             Target value:   $(_get "target" "value")"
+  _msg_info "              Target file:   $(_get "target" "file")"
+  _msg_info "          Target contract:   $(_get "target" "contract")"
 }
 
 _globals
@@ -416,6 +461,7 @@ while \
     arg; do
   case \
     "${arg}" in
+    A) override_target_contract="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
@@ -442,29 +488,11 @@ shift \
 if (( 0 < $# )); then
   _set \
     "target" \
-    "command" \
+    "file" \
     "${1}"
 fi
-if (( 1 < $# )); then
-  _set \
-    "wallet" \
-    "name" \
-    "${2}"
-fi
-if (( 2 < $# )); then
-  _set \
-    "wallet" \
-    "key" \
-    "${3}"
-fi
-if (( 3 < $# )); then
-  _set \
-    "wallet" \
-    "value" \
-    "${4}"
-fi
 shift \
-  4 || \
+  1 || \
   true
 command_args+=(
   "$@"
@@ -480,7 +508,7 @@ app_opts=(
   "$( \
     _get \
       "target" \
-      "command")"
+      "contract")"
   "$( \
     _get \
       "wallet" \
@@ -504,13 +532,9 @@ app_opts=(
   "$( \
     _get \
       "target" \
-      "key")"
-  "$( \
-    _get \
-      "target" \
-      "value")"
+      "file")"
 )
-_evm_wallet \
+_evmfs_publish \
   "${app_opts[@]}"
 
 # vim:set sw=2 sts=-1 et:
