@@ -3,6 +3,9 @@
 
 PREFIX ?= /usr/local
 _PROJECT=evmfs
+_FS=contracts/FileSystem
+_FS_SOL=$(_FS).sol
+_FS_JSON=$(_FS).json
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib/$(_PROJECT)
@@ -21,7 +24,10 @@ install: install-scripts install-doc
 
 install-scripts:
 
-	install -vDm 755 "contracts/FileSystem.sol" "$(LIB_DIR)/contracts/FileSystem.sol"
+	mkdir -p "build"
+	install -vDm 755 "$(_FS_SOL)" "$(LIB_DIR)/$(_FS_SOL)"
+	solidity-compiler -v -o "build" "$(_FS_SOL)"
+	install -vDm 644 "$(_PROJECT)/build/$(_FS_SOL)/FileSystem.json" "$(LIB_DIR)/$(_FS_JSON)"
 	install -vDm 755 "$(_PROJECT)/publish" "$(LIB_DIR)/publish"
 	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-get" "$(BIN_DIR)/$(_PROJECT)-get"
 	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-publish" "$(BIN_DIR)/$(_PROJECT)-publish"
