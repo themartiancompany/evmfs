@@ -25,7 +25,9 @@ contract FileSystem {
     function checkUnlocked(
       address _namespace,
       string memory _hash,
-      uint256 _index) public {
+      uint256 _index)
+      public
+      view {
       require( ! lock[msg.sender][_hash][_index] );
     }
 
