@@ -54,15 +54,14 @@ contract FileSystem {
       string memory _hash,
       uint256 _index,
       string memory _chunk) public {
-	checkUnlocked(
-	  msg.sender,
-	  _hash,
-	  _index
-	);
-        chunks[msg.sender][_hash][_index] = _chunk;
-	if ( _index > length[msg.sender][_hash] ) {
-	  length[msg.sender][_hash] = _index;
-	}
+      checkUnlocked(
+        msg.sender,
+        _hash,
+        _index);
+      chunks[msg.sender][_hash][_index] = _chunk;
+      if ( _index > length[msg.sender][_hash] ) {
+        length[msg.sender][_hash] = _index;
+      }
     }
 
     /**
