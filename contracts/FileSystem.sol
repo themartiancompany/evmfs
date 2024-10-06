@@ -113,13 +113,13 @@ contract FileSystem {
      * @param _hash Hash of the file.
      * @param _index Which chunk.
      */
-    function readChunk(
+    function verifyChunk(
       address _namespace,
       string memory _hash,
       uint256 _index)
     public
     view
-    returns (string byte32)
+    returns (bytes32)
     {
       checkUnlocked(
         _namespace,
@@ -127,7 +127,9 @@ contract FileSystem {
         _index
       );
       return sha256(
-        chunks[_namespace][_hash][_index]
+	abi.encodePacked(
+          chunks[_namespace][_hash][_index]
+        )
       );
     }
 }
