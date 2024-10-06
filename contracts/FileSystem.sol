@@ -11,11 +11,26 @@ contract FileSystem {
     address public immutable deployer = 0xea02F564664A477286B93712829180be4764fAe2;
     address public immutable twitter = 0x7525Fe558b4EafA9e6346846E4027ffAB32F80A2;
     string public hijess = "ikirshu";
-    mapping( address => mapping( string => mapping( uint256 => uint256 ) ) ) public chunks;
+    mapping( address => mapping( string => mapping( uint256 => string ) ) ) public chunks;
     mapping( address => mapping( string => bool ) ) public lock;
     mapping( address => mapping( string => uint256 ) ) public length;
     constructor() {}
-    
+
+    /**
+     * @dev Check chunk lock state.
+     * @param _namespace Address owning the hash.
+     * @param _hash Hash of the file the chunk belongs.
+     * @param _index Which chunk are you checking.
+     */
+    function checkLock(
+      address _namespace,
+      string memory _hash,
+      uint256 _index) public {
+      require(
+	! lock[msg.sender][_hash][_index]
+      );
+    }
+
     /**
      * @dev Publish chunk.
      * @param _hash Hash of the file the chunk belongs.
@@ -26,7 +41,11 @@ contract FileSystem {
       string memory _hash,
       uint256 _index,
       string memory _chunk) public {
-	require( lock[msg.sender][_hash] != true );
+	checkLock(
+	  msg.sender,
+	  _hash,
+	  _index
+	);
         chunks[msg.sender][_hash][_index] = _chunk;
 	if ( _index > length[msg.sender][_hash] ) {
 	  length[msg.sender][_hash] = _index;
@@ -63,5 +82,4 @@ contract FileSystem {
     {
       return chunks[_namespace][_hash][_index];
     }
-    x
 }
