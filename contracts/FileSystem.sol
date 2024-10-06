@@ -1,14 +1,10 @@
-/**
- *Submitted for verification at gnosisscan.io on 2024-07-13
-*/
-
 // SPDX-License-Identifier: AGPL-3.0
 
 pragma solidity >=0.7.0 <0.9.0;
 
 /**
- * @title Tree
- * @dev Twitter dialogue representation.
+ * @title FileSystem
+ * @dev File system representation.
  */
 contract FileSystem {
 
@@ -17,9 +13,6 @@ contract FileSystem {
     string public hijess = "ikirshu";
     mapping( address => mapping( string => mapping( uint256 => uint256 ) ) ) public chunks;
     mapping( address => mapping( string => uint256 ) ) public chunkNo;
-    // mapping(address => mapping (uint256 => mapping (address => mapping ( uint256 => uint256)))) public branches;
-    // mapping(address => mapping (uint256 => mapping (address => mapping ( uint256 => uint256)))) public branches;
-    // mapping(address => mapping (uint256 => mapping (address => uint256))) public branchNo;
     constructor() {}
     
     /**
