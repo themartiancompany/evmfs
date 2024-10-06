@@ -19,13 +19,16 @@ contract FileSystem {
     /**
      * @dev Publish chunk.
      * @param _hash Hash of the file the chunk belongs.
-     * @param _chunk Which chunk are you setting.
-     * @param _post In which post the chunk is contained.
+     * @param _index Which chunk are you setting.
+     * @param _chunk In which post the chunk is contained.
      */
-    function publishChunk(string _hash, uint256 _index, string _chunk) public {
+    function publishChunk(
+      string memory _hash,
+      uint256 _index,
+      string memory _chunk) public {
 	require( lock[msg.sender][_hash] != true );
         chunks[msg.sender][_hash][_index] = _chunk;
-	if ( _index > length[msg.sender][_hash]]) {
+	if ( _index > length[msg.sender][_hash] ) {
 	  length[msg.sender][_hash] = _index;
 	}
     }
@@ -35,13 +38,14 @@ contract FileSystem {
      * @param _hash Hash of the file.
      * @param _index Which chunk to lock.
      */
-    function lockChunk(string _hash, uint256 _index, address _sender, uint256 _branchNo)
+    function lockChunk(
+      string memory _hash,
+      uint256 _index)
     public
     {
       require( lock[msg.sender][_hash] != true );
       lock[msg.sender][_hash][_index] = true;
     }
-}
 
     /**
      * @dev Read a chunk.
@@ -49,11 +53,15 @@ contract FileSystem {
      * @param _hash Hash of the file.
      * @param _index Which chunk.
      */
-    function readChunk(address _namespace, string _hash, uint256 _index)
+    function readChunk(
+      address _namespace,
+      string memory _hash,
+      uint256 _index)
     public
     view
     returns (string)
     {
       return chunks[_namespace][_hash][_index];
     }
+    x
 }
