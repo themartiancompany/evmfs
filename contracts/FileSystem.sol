@@ -17,17 +17,32 @@ contract FileSystem {
     constructor() {}
 
     /**
-     * @dev Check chunk lock state.
+     * @dev Check chunk unlock state.
      * @param _namespace Address owning the hash.
      * @param _hash Hash of the file the chunk belongs.
      * @param _index Which chunk are you checking.
      */
-    function checkLock(
+    function checkUnlocked(
       address _namespace,
       string memory _hash,
       uint256 _index) public {
       require(
 	! lock[msg.sender][_hash][_index]
+      );
+    }
+
+    /**
+     * @dev Check chunk lock state.
+     * @param _namespace Address owning the hash.
+     * @param _hash Hash of the file the chunk belongs.
+     * @param _index Which chunk are you checking.
+     */
+    function checkLocked(
+      address _namespace,
+      string memory _hash,
+      uint256 _index) public {
+      require(
+	lock[msg.sender][_hash][_index]
       );
     }
 
@@ -41,7 +56,7 @@ contract FileSystem {
       string memory _hash,
       uint256 _index,
       string memory _chunk) public {
-	checkLock(
+	checkUnlocked(
 	  msg.sender,
 	  _hash,
 	  _index
@@ -62,7 +77,10 @@ contract FileSystem {
       uint256 _index)
     public
     {
-      require( lock[msg.sender][_hash] != true );
+      checkUnlocked(
+        msg.sender,
+	_hash,
+	_index);
       lock[msg.sender][_hash][_index] = true;
     }
 
@@ -78,8 +96,13 @@ contract FileSystem {
       uint256 _index)
     public
     view
-    returns (string)
+    returns (string memory)
     {
+      checkLocked(
+        _namespace,
+	_hash,
+	_index
+      );
       return chunks[_namespace][_hash][_index];
     }
 }
