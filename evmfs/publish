@@ -1,0 +1,142 @@
+#!/usr/bin/env node
+
+const { ethers } = require(
+  "ethers");
+_ethers = ethers;
+_contract_factory = _ethers.ContractFactory;
+const _fs_utils = require(
+  '../libcrash-js/fs-utils');
+_dirname = _fs_utils._dirname;
+_file_read = _fs_utils._file_read;
+const _libcrash = require(
+  '../libcrash-js/crash-js');
+_app_name_get = _libcrash._app_name_get;
+_msg_info = _libcrash._msg_info;
+_msg_error = _libcrash._msg_error;
+const _wallet_get = require(
+  '../evm-wallet/wallet-get');
+const _network_provider = require(
+  '../evm-wallet/network-provider');
+_provider_get = _network_provider._provider_get;
+
+function _global_variables() {
+  method_args = [];
+  wallet_seed = "";
+  target_network = "";
+  api_key = "";
+  contract_bytecode = "";
+  file_chunk = "";
+  quiet = "";
+}
+
+async function _evm_deployer(
+  _wallet_seed,
+  _contract_bytecode_path,
+  _target_network,
+  _api_key_path) {
+  _wallet_password = "";
+  _wallet_path = [
+    _dirname(
+      _wallet_seed),
+    "wallet.dat"].join("/");
+  _api_key = _file_read(
+    _api_key_path);
+  _contract_bytecode = _file_read(
+    _contract_bytecode_path);
+  _provider = _provider_get(
+    _target_network,
+    _api_key);
+  _msg = "provider '{_provider}' generated".replace(
+    "{_provider}",
+    _provider);
+  _msg_info(
+    _msg);
+  _wallet_get_opts=[
+    _wallet_path,
+    _wallet_password,
+    _wallet_seed,
+    _provider
+  ];
+  _wallet = _wallet_get._wallet_get.apply(
+    null,
+    _wallet_get_opts);
+  console.log(
+    _wallet.address);
+  _factory = _contract_factory.fromSolidity(
+    _contract_bytecode);
+  _contract = await _factory.deploy();
+  console.log(
+    _contract);
+}
+
+function _config_show() {
+  _msgs=[];
+  _msgs.push(
+    "      Wallet seed: {wallet_seed}".replace(
+      "{wallet_seed}",
+      wallet_seed));
+  _msgs.push(
+    "   Target network: {target_network}".replace(
+      "{target_network}",
+      target_network));
+  _msgs.push(
+    "          API Key: {api_key}".replace(
+      "{api_key}",
+      api_key));
+  _msgs.push(
+    "Contract bytecode: {contract_bytecode}".replace(
+      "{contract_bytecode}",
+      contract_bytecode));
+  for ( _msg in _msgs ) {
+    _msg_info(
+      _msgs[_msg]);
+  }
+}
+
+function _cmdline_parse() {
+  quiet = "y";
+  process.argv.forEach(
+    function (
+      _value,
+      _index,
+      _array) {
+      if ( _index == 2 ) {
+        wallet_seed = _value;
+      }
+      if ( _index == 3 ) {
+        contract_bytecode = _value;
+      }
+      if ( _index == 4 ) {
+        file_chunk = _value;
+      }
+      if ( _index == 5 ) {
+        target_network = _value;
+      }
+      if ( _index == 6 ) {
+        api_key = _value;
+      }
+      if ( _value == "-v" ) {
+        quiet = "n";
+      }
+  });
+  if ( contract_bytecode == "" ) {
+    _msg_error(
+      "deployer <seed_path> <contract_bytecode> (<target_network>) (<api_key>)",
+      '1');
+  }
+}
+
+_global_variables();
+app_name = _app_name_get(); // "publish";
+_cmdline_parse();
+_config_show();
+app_opts = [
+  wallet_seed,
+  contract_bytecode,
+  file_chunk,
+  target_network,
+  api_key,
+];
+_evmfs_publish.apply(
+  null,
+  app_opts);
