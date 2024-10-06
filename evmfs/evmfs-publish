@@ -71,6 +71,11 @@ _node_run() {
   _node_path="${_lib}/node_modules" 
   export \
     NODE_PATH="${_node_path}"
+  if [[ "${quiet}" != "y" ]]; then
+    _args+=(
+      -v
+    )
+  fi
   NODE_PATH="${_node_path}" \
   node \
     "${_cmd}" \
@@ -137,7 +142,10 @@ _file_size_check() {
 
 _file_upload() {
   local \
-    _file="${1}" \
+    _contract="${1}" \
+    _namespace="${2}" \
+    _file="${3}" \
+    _sum \
     _length \
     _queue=() \
     _chunk \
@@ -147,6 +155,9 @@ _file_upload() {
     mktemp \
       --suffix=".base64")"
   _length="10000"
+  _sum="$( \
+    sha256sum \
+      "${_file}")"
   _file_size_check \
     "${_file}"
   bin2txt \
@@ -165,54 +176,82 @@ _file_upload() {
       "error processing file for upload" \
       1
   fi
+  _i=0
   for _chunk \
     in "${_queue[@]}"; do
     _payload="$( \
       cat \
         "${_chunk}")"
-    echo \
-      "${_chunk}"
-    _post_send \
-      "${_address}" \
+    _msg_info \
+      "sending ${_chunk}"
+    _chunk_publish \
+      "${_contract}" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_i}" \
       "${_payload}"
+    _i="$(( \
+      _i + 1))"
   done
+}
+
+_chunk_publish() {
+  local \
+    _contract="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index="${4}" \
+    _chunk="${5}" \
+    _publish \
+    _publish_args=()
+  _publish="$( \
+    _get_lib)/evmfs/publish"
+  _publish_args+=(
+    "${_contract}"
+    "${_namespace}"
+    "${_sum}"
+    "${_index}"
+    "${_chunk}"
+  )
+  _node_run \
+    "${_publish}" \
+    "${_publish_args[@]}"
 }
 
 _evmfs_publish() {
   local \
     _target_contract="${1}" \
-    _wallet_path="${2}" \
-    _wallet_password="${3}" \
-    _wallet_seed="${4}" \
-    _network="${5}" \
-    _api_key_path="${6}" \
-    _target_file="${7}" \
+    _wallet_name="${2}" \
+    _wallet_path="${3}" \
+    _wallet_password="${4}" \
+    _wallet_seed="${5}" \
+    _network="${6}" \
+    _api_key_path="${7}" \
+    _target_file="${8}" \
     _command_args=() \
     _cmd \
     _args=() \
     _api_key \
-    _network_backend
+    _network_backend \
+    _namespace
   shift \
-    7
+    8
   _command_args+=(
     "$@"
   )
+  _namespace="$( \
+    evm-wallet \
+     get \
+       "${_wallet_name}" \
+       "address")"
   _api_key="$( \
     _api_key_read \
       "${_api_key_path}")"
   _network_setup
-  if [[ "${_target_command}" == "get" ]]; then
-    "_key_${_target_command}" \
-      "${_target_key}"
-  fi
-  if [[ "${quiet}" != "y" ]]; then
-    _args+=(
-      -v
-    )
-  fi
-  _node_run \
-    "${_cmd}" \
-    "${_args[@]}"
+  _file_upload \
+    "${_target_contract}" \
+    "${_namespace}" \
+    "${_target_file}"
 }
 
 _wallet_path_get() {
@@ -357,6 +396,13 @@ _set_overrides() {
   _secret_auto_detect \
     "password" \
     "plain"
+  _set_override \
+    "wallet" \
+    "address" \
+    "$(evm-wallet \
+         get \
+           "${wallet_name}" \
+           "address")"
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
@@ -400,13 +446,15 @@ Usage:
      -A <target_contract> Address of the EVM file system 
                           on the network.
                           Default: $(_get "target" "contract")
+     -n <wallet_name>     Wallet name.
+                          Default: $(_get "wallet" "name")
      -w <wallet_path>     Wallet path.
                           Default: $(_get "wallet" "path")
      -p <wallet_password> Wallet password.
                           Default: $(_get "wallet" "password")
      -s <wallet_seed>     Wallet seed path.
                           Default: $(_get "wallet" "seed")
-     u-n <network>         EVM network name ('mainnet', 'gnosis').
+     -n <network>         EVM network name ('mainnet', 'gnosis').
                           Default: $(_get "target" "network")
      -k <api_key>         Etherscan-like service key.
                           Default: $(_get "api" "key")
@@ -438,6 +486,8 @@ _display_flags() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "             Publish date:   $(_get "publish" "date")"
+  _msg_info "                Namespace:   $(_get "wallet" "address")"
+  _msg_info "              Wallet name:   $(_get "wallet" "name")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
@@ -462,6 +512,7 @@ while \
   case \
     "${arg}" in
     A) override_target_contract="${OPTARG}" ;;
+    n) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
@@ -509,6 +560,10 @@ app_opts=(
     _get \
       "target" \
       "contract")"
+  "$( \
+    _get \
+      "wallet" \
+      "name")"
   "$( \
     _get \
       "wallet" \
