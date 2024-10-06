@@ -140,11 +140,11 @@ contract FileSystem {
     view
     returns (bytes32)
     {
-      checkUnlocked(
-        _namespace,
-        _hash,
-        _index
-      );
+      // checkUnlocked(
+      //   _namespace,
+      //   _hash,
+      //   _index
+      // );
       return sha256(
 	abi.encodePacked(
           chunks[_namespace][_hash][_index]
