@@ -138,17 +138,13 @@ contract FileSystem {
       uint256 _index)
     public
     view
-    returns (bytes32)
+    returns (string memory)
     {
-      // checkUnlocked(
-      //   _namespace,
-      //   _hash,
-      //   _index
-      // );
-      return sha256(
-	abi.encodePacked(
-          chunks[_namespace][_hash][_index]
-        )
-      );
+      return abi.decode(
+	sha256(
+	  abi.encode(
+            chunks[_namespace][_hash][_index]
+          ),
+	  (string)));
     }
 }
