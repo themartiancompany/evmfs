@@ -23,6 +23,8 @@ install-scripts:
 
 	install -vDm 755 "contracts/FileSystem.sol" "$(LIB_DIR)/contracts/FileSystem.sol"
 	install -vDm 755 "$(_PROJECT)/publish" "$(LIB_DIR)/publish"
+	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-get" "$(BIN_DIR)/$(_PROJECT)-get"
+	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-publish" "$(BIN_DIR)/$(_PROJECT)-publish"
 	install -vDm 755 "$(_PROJECT)/$(_PROJECT)" "$(BIN_DIR)/$(_PROJECT)"
 
 install-doc:

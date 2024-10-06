@@ -510,7 +510,7 @@ app_opts=(
       "target" \
       "value")"
 )
-_evm_wallet \
+_evmfs \
   "${app_opts[@]}"
 
 # vim:set sw=2 sts=-1 et:
