@@ -106,4 +106,28 @@ contract FileSystem {
       );
       return chunks[_namespace][_hash][_index];
     }
+
+    /**
+     * @dev Verify a chunk.
+     * @param _namespace Where the filo resides.
+     * @param _hash Hash of the file.
+     * @param _index Which chunk.
+     */
+    function readChunk(
+      address _namespace,
+      string memory _hash,
+      uint256 _index)
+    public
+    view
+    returns (string byte32)
+    {
+      checkUnlocked(
+        _namespace,
+        _hash,
+        _index
+      );
+      return sha256(
+        chunks[_namespace][_hash][_index]
+      );
+    }
 }
