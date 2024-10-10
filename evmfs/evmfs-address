@@ -84,9 +84,12 @@ _node_run() {
 }
 
 _network_setup() {
+  local \
+    _network="${1}"
   if [[ "${_network}" == "gnosis" ]]; then
     _rpc="https://rpc.gnosischain.com"
     _network_backend="${_network}"
+    _contract=""
   elif [[ "${_network}" == "ethereum" ]]; then
     _network_backend="etherscan"
   else
@@ -106,7 +109,7 @@ _api_key_read() {
     "${_path}"
 }
 
-_key_get() {
+_keddd_get() {
   local \
     _key="${1}"
   if [[ "${_key}" == "address" ]]; then
@@ -126,108 +129,14 @@ _key_get() {
   fi
 }
 
-_file_size_check() {
-  local \
-    _file="${1}" \
-    _size
-  _size="$( \
-    du \
-      -b \
-      "${_file}")"
-  if [[ 10000 < "${_size}" ]]; then
-    _msg_info \
-      "writing over 2 blocks!"
-  fi
-}
-
-_file_upload() {
-  local \
-    _contract="${1}" \
-    _namespace="${2}" \
-    _file="${3}" \
-    _sum \
-    _length \
-    _queue=() \
-    _chunk \
-    _payload \
-    _chunk_prefix
-  _chunk_prefix="$( \
-    mktemp \
-      --suffix=".base64")"
-  _length="10000"
-  _sum="$( \
-    sha256sum \
-      "${_file}")"
-  _file_size_check \
-    "${_file}"
-  bin2txt \
-    -L \
-      "${_length}" \
-    "${_file}" \
-    "${_chunk_prefix}"
-  _queue+=( $( \
-    find \
-      "${_chunk_prefix}"* | \
-      sort \
-        -V)
-  )
-  if [[ "${_queue[*]}" == "" ]]; then
-    _msg_error \
-      "error processing file for upload" \
-      1
-  fi
-  _i=0
-  for _chunk \
-    in "${_queue[@]}"; do
-    _payload="$( \
-      cat \
-        "${_chunk}")"
-    _msg_info \
-      "sending ${_chunk}"
-    _chunk_publish \
-      "${_contract}" \
-      "${_namespace}" \
-      "${_sum}" \
-      "${_i}" \
-      "${_payload}"
-    _i="$(( \
-      _i + 1))"
-  done
-}
-
-_chunk_publish() {
-  local \
-    _contract="${1}" \
-    _namespace="${2}" \
-    _sum="${3}" \
-    _index="${4}" \
-    _chunk="${5}" \
-    _publish \
-    _publish_args=()
-  _publish="$( \
-    _get_lib)/evmfs/publish"
-  _publish_args+=(
-    "${_contract}"
-    "${_namespace}"
-    "${_sum}"
-    "${_index}"
-    "${_chunk}"
-  )
-  _node_run \
-    "${_publish}" \
-    "${_publish_args[@]}"
-}
-
 _evmfs_address() {
   local \
-    _target_contract="${1}" \
+    _target_network="${1}" \
     _wallet_name="${2}" \
     _wallet_path="${3}" \
     _wallet_password="${4}" \
     _wallet_seed="${5}" \
-    _network="${6}" \
     _api_key_path="${7}" \
-    _target_file="${8}" \
     _command_args=() \
     _cmd \
     _args=() \
@@ -247,6 +156,13 @@ _evmfs_address() {
   _api_key="$( \
     _api_key_read \
       "${_api_key_path}")"
+  _config="${HOME}/.config/evmfs/${_target_network}/address"
+  if [ ! -e "${_config}" ]; then
+    mkdir \
+      -p \
+      "$(basename \
+          "${_config}")"
+  fi
   _network_setup
   _file_upload \
     "${_target_contract}" \
@@ -357,6 +273,7 @@ _secret_auto_detect() {
 }
 
 _evmfs_contract_auto_detect() {
+
   echo \
     "0xciao"
 }
@@ -429,9 +346,11 @@ _usage() {
 Returns EVM network file system contract address
 
 Usage:
+
   $(_get "app" "name")
     [options]
-    <network>
+    (<network>)
+
   networks:
     alchemy
     ankr
@@ -442,8 +361,10 @@ Usage:
     infura
     publicPolygon
     quicknode
+    Default: '$(_get "target" "network")'
+
   options:
-     -n <wallet_name>     Wallet name.
+     -N <wallet_name>     Wallet name.
                           Default: $(_get "wallet" "name")
      -w <wallet_path>     Wallet path.
                           Default: $(_get "wallet" "path")
@@ -455,6 +376,7 @@ Usage:
                           Default: $(_get "target" "network")
      -k <api_key>         Etherscan-like service key.
                           Default: $(_get "api" "key")
+
      -h                   This message.
      -c                   Enable color output
      -v                   Enable verbose output
