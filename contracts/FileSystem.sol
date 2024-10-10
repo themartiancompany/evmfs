@@ -43,7 +43,7 @@ contract FileSystem {
      */
     function getLength(
       address _namespace,
-      string memory _hash) public view virtual returns (int256) {
+      string memory _hash) public view virtual returns (uint256) {
       return length[_namespace][_hash];
     }
 
