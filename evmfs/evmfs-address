@@ -109,26 +109,6 @@ _api_key_read() {
     "${_path}"
 }
 
-_keddd_get() {
-  local \
-    _key="${1}"
-  if [[ "${_key}" == "address" ]]; then
-    _cmd="$( \
-      _wallet_address_cmd \
-        "get")"
-    _args+=(
-      "${_wallet_seed}"
-      "${_network_backend}"
-      "${_api_key_path}"
-    )
-  elif [[ "${_key}" == "seed" ]]; then
-    cat \
-      "${_wallet_seed}"
-    return \
-      0
-  fi
-}
-
 _evmfs_address() {
   local \
     _target_network="${1}" \
@@ -143,6 +123,7 @@ _evmfs_address() {
     _api_key \
     _network_backend \
     _namespace
+    _address
   shift \
     8
   _command_args+=(
@@ -156,20 +137,21 @@ _evmfs_address() {
   _api_key="$( \
     _api_key_read \
       "${_api_key_path}")"
-  _config="${HOME}/.config/evmfs/${_target_network}/address"
+  _address="${HOME}/.config/evmfs/${_target_network}/address"
   if [ ! -e "${_config}" ]; then
     mkdir \
       -p \
       "$(basename \
           "${_config}")"
+    _network_setup \
+      "${_target_network}"
+    echo \
+      "${_contract}" > \
+      "${_config}"
   fi
-  _network_setup
-  _file_upload \
-    "${_target_contract}" \
-    "${_namespace}" \
-    "${_target_file}"
+  echo \
+    "${_address}"
 }
-
 _wallet_path_get() {
   local \
     _path \
