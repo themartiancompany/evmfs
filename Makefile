@@ -29,12 +29,13 @@ install-scripts:
 	solidity-compiler -v -w "$(_PROJECT)/contracts-build" -o "$(_PROJECT)/build" "$(_FS_SOL)"
 	install -vDm 644 "$(_PROJECT)/build/$(_FS_SOL)/FileSystem.json" "$(LIB_DIR)/$(_FS_JSON)"
 	install -vDm 755 "$(_PROJECT)/publish" "$(LIB_DIR)/publish"
+	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-address" "$(BIN_DIR)/$(_PROJECT)-address"
 	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-get" "$(BIN_DIR)/$(_PROJECT)-get"
 	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-publish" "$(BIN_DIR)/$(_PROJECT)-publish"
 	install -vDm 755 "$(_PROJECT)/$(_PROJECT)" "$(BIN_DIR)/$(_PROJECT)"
 
 install-doc:
 
-	install -vDm 644 $(DOC_FILES) -t $(DOC_DIR)
+install -vDm 644 $(DOC_FILES) -t $(DOC_DIR)
 
 .PHONY: check install install-doc install-scripts shellcheck
