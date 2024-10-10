@@ -20,8 +20,9 @@ contract FileSystem {
     /**
      * @dev Returns the name of the contract.
      */
-    function name() public view virtual returns (string memory) {
-        return _name;
+    function name(
+      ) public view virtual returns (string memory) {
+      return _name;
     }
     
     /**
@@ -33,6 +34,17 @@ contract FileSystem {
       public
       view {
       require( msg.sender == _namespace );
+    }
+
+    /**
+     * @dev Returns total chunks for a file.
+     * @param _namespace Address owning the hash.
+     * @param _hash Hash of the file the chunk belongs.
+     */
+    function getLength(
+      address _namespace,
+      string memory _hash) public view virtual returns (int256) {
+      return length[_namespace][_hash];
     }
 
     /**
