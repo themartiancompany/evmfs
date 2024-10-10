@@ -262,7 +262,7 @@ _evmfs_contract_auto_detect() {
 
 _set_overrides() {
   _set_override \
-    "publish" \
+    "resolve" \
     "date" \
     "$(_get_date_human)"
   _set_override \
