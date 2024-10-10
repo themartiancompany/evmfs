@@ -11,11 +11,19 @@ contract FileSystem {
     address public immutable deployer = 0xea02F564664A477286B93712829180be4764fAe2;
     address public immutable twitter = 0x7525Fe558b4EafA9e6346846E4027ffAB32F80A2;
     string public hijess = "ikirshu";
+    string public _name = "File System";
     mapping( address => mapping( string => mapping( uint256 => string ) ) ) public chunks;
     mapping( address => mapping( string => mapping( uint256 => bool) ) ) public lock;
     mapping( address => mapping( string => uint256 ) ) public length;
     constructor() {}
 
+    /**
+     * @dev Returns the name of the contract.
+     */
+    function name() public view virtual returns (string memory) {
+        return _name;
+    }
+    
     /**
      * @dev Check owner.
      * @param _namespace Address owning the hash.
