@@ -1,0 +1,580 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="${_bin}/../lib"
+source \
+  "${_lib}/libcrash-bash/crash-bash"
+
+# shellcheck disable=SC2034
+_global_variables() {
+  resolve_date=""
+  target_network=""
+  wallet_name=""
+  wallet_path=""
+  wallet_password=""
+  wallet_seed=""
+  api_key=""
+  command_args=()
+  color=""
+  quiet=""
+}
+
+_requirements() {
+  _check_cmd \
+    'evm-wallet'
+  _check_cmd \
+    'node' \
+    'nodejs'
+}
+
+_get_conf_dir_path() {
+  local \
+    _dir
+  _dir="${HOME}/.config/$( \
+    _get \
+      "app" \
+      "name")"
+  echo \
+    "${_dir}"
+}
+
+_wallet_address_cmd() {
+  local \
+    _command="${1}" \
+    _lib
+  _lib="$( \
+    _get_lib)/evm-wallet"
+  echo \
+    "${_lib}/address-${_command}"
+}
+
+_node_run() {
+  local \
+    _cmd="${1}" \
+    _args=() \
+    _node_path \
+    _lib
+  shift \
+    1
+  _args=(
+    "$@"
+  )
+  _lib="$( \
+    _get_lib)"
+  _node_path="${_lib}/node_modules" 
+  export \
+    NODE_PATH="${_node_path}"
+  if [[ "${quiet}" != "y" ]]; then
+    _args+=(
+      -v
+    )
+  fi
+  NODE_PATH="${_node_path}" \
+  node \
+    "${_cmd}" \
+      "${_args[@]}" || \
+    true
+}
+
+_network_setup() {
+  if [[ "${_network}" == "gnosis" ]]; then
+    _rpc="https://rpc.gnosischain.com"
+    _network_backend="${_network}"
+  elif [[ "${_network}" == "ethereum" ]]; then
+    _network_backend="etherscan"
+  else
+    _network_backend="${_network}"
+  fi
+}
+
+_api_key_read() {
+  local \
+    _path="${1}"
+  if [ ! -e "${_path}" ]; then
+    _msg_error \
+      "service api key file '${_path}' not found" \
+      1
+  fi
+  cat \
+    "${_path}"
+}
+
+_key_get() {
+  local \
+    _key="${1}"
+  if [[ "${_key}" == "address" ]]; then
+    _cmd="$( \
+      _wallet_address_cmd \
+        "get")"
+    _args+=(
+      "${_wallet_seed}"
+      "${_network_backend}"
+      "${_api_key_path}"
+    )
+  elif [[ "${_key}" == "seed" ]]; then
+    cat \
+      "${_wallet_seed}"
+    return \
+      0
+  fi
+}
+
+_file_size_check() {
+  local \
+    _file="${1}" \
+    _size
+  _size="$( \
+    du \
+      -b \
+      "${_file}")"
+  if [[ 10000 < "${_size}" ]]; then
+    _msg_info \
+      "writing over 2 blocks!"
+  fi
+}
+
+_file_upload() {
+  local \
+    _contract="${1}" \
+    _namespace="${2}" \
+    _file="${3}" \
+    _sum \
+    _length \
+    _queue=() \
+    _chunk \
+    _payload \
+    _chunk_prefix
+  _chunk_prefix="$( \
+    mktemp \
+      --suffix=".base64")"
+  _length="10000"
+  _sum="$( \
+    sha256sum \
+      "${_file}")"
+  _file_size_check \
+    "${_file}"
+  bin2txt \
+    -L \
+      "${_length}" \
+    "${_file}" \
+    "${_chunk_prefix}"
+  _queue+=( $( \
+    find \
+      "${_chunk_prefix}"* | \
+      sort \
+        -V)
+  )
+  if [[ "${_queue[*]}" == "" ]]; then
+    _msg_error \
+      "error processing file for upload" \
+      1
+  fi
+  _i=0
+  for _chunk \
+    in "${_queue[@]}"; do
+    _payload="$( \
+      cat \
+        "${_chunk}")"
+    _msg_info \
+      "sending ${_chunk}"
+    _chunk_publish \
+      "${_contract}" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_i}" \
+      "${_payload}"
+    _i="$(( \
+      _i + 1))"
+  done
+}
+
+_chunk_publish() {
+  local \
+    _contract="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index="${4}" \
+    _chunk="${5}" \
+    _publish \
+    _publish_args=()
+  _publish="$( \
+    _get_lib)/evmfs/publish"
+  _publish_args+=(
+    "${_contract}"
+    "${_namespace}"
+    "${_sum}"
+    "${_index}"
+    "${_chunk}"
+  )
+  _node_run \
+    "${_publish}" \
+    "${_publish_args[@]}"
+}
+
+_evmfs_address() {
+  local \
+    _target_contract="${1}" \
+    _wallet_name="${2}" \
+    _wallet_path="${3}" \
+    _wallet_password="${4}" \
+    _wallet_seed="${5}" \
+    _network="${6}" \
+    _api_key_path="${7}" \
+    _target_file="${8}" \
+    _command_args=() \
+    _cmd \
+    _args=() \
+    _api_key \
+    _network_backend \
+    _namespace
+  shift \
+    8
+  _command_args+=(
+    "$@"
+  )
+  _namespace="$( \
+    evm-wallet \
+     get \
+       "${_wallet_name}" \
+       "address")"
+  _api_key="$( \
+    _api_key_read \
+      "${_api_key_path}")"
+  _network_setup
+  _file_upload \
+    "${_target_contract}" \
+    "${_namespace}" \
+    "${_target_file}"
+}
+
+_wallet_path_get() {
+  local \
+    _path \
+    _name
+  _name="$( \
+    _get \
+      "wallet" \
+      "name")"
+  _path="$( \
+    _get_conf_dir_path)/${_name}.dat"
+  echo \
+    "${_path}"
+}
+
+_secret_get() {
+  local \
+    _secret="${1}" \
+    _path \
+    _name
+  _name="$( \
+    _get \
+      "wallet" \
+      "name")"
+  _path="$( \
+    _get_conf_dir_path)/${_name}-${_secret}.txt"
+  echo \
+    "${_path}"
+}
+
+_api_key_get() {
+  local \
+    _name="${1}" \
+    _network="${2}" \
+    _conf_dir \
+    _service
+  if [[ "${_network}" == "ethereum" ]]; then
+    _service="etherscan"
+  elif [[ "${_network}" == "gnosis" ]]; then
+    _service="gnosisscan"
+  fi
+  _conf_dir="${HOME}/.config/${_service}"
+  mkdir \
+    -p \
+    "${_conf_dir}"
+  echo \
+    "${_conf_dir}/${_name}.txt"
+}
+
+_secret_auto_detect() {
+  local \
+    _secret="${1}" \
+    _secret_type="${2}" \
+    _dir \
+    _key_gen_opts=() \
+    _msg=()
+  _path="$( \
+    _secret_get \
+      "${_secret}")"
+  _dir="$( \
+    dirname \
+      "${_path}")"
+  if [[ ! -e "${_path}" ]]; then
+    _key_gen_opts+=(
+      -t
+        "${_secret_type}"
+    )
+    _msg=(
+      "generating ${_secret} '${_path}'"
+    )
+    if [[ "${quiet}" == "n" ]]; then
+      _msg_info \
+        "${_msg[*]}"
+    fi
+    mkdir \
+      -p \
+      "${_dir}"
+    chmod \
+      700 \
+      "${_dir}"
+    chmod \
+      700 \
+      "${_dir}"
+    key-gen \
+      "${_key_gen_opts[@]}" \
+      "${_path}"
+    chmod \
+      400 \
+      "${_path}"
+    _msg=(
+      "${_secret} '${_path}' successfully generated"
+    )
+    if [[ "${quiet}" == "n" ]]; then
+      _msg_info \
+        "${_msg[*]}"
+    fi
+  fi
+  _set_override \
+    "wallet" \
+    "${_secret}" \
+    "${_path}"
+}
+
+_evmfs_contract_auto_detect() {
+  echo \
+    "0xciao"
+}
+
+_set_overrides() {
+  _set_override \
+    "publish" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "wallet" \
+    "name" \
+    "default"
+  _set_override \
+    "target" \
+    "network" \
+    "gnosis"
+  _set_override \
+    "target" \
+    "contract" \
+    "$(_evmfs_contract_auto_detect)"
+  _set_override \
+    "api" \
+    "key" \
+    "$(_api_key_get \
+         "default" \
+         "$(_get \
+              "target" \
+              "network")")"
+  _set_override \
+    "wallet" \
+    "path" \
+    "$(_wallet_path_get)"
+  _secret_auto_detect \
+    "seed" \
+    "seed"
+  _secret_auto_detect \
+    "password" \
+    "plain"
+  _set_override \
+    "wallet" \
+    "address" \
+    "$(evm-wallet \
+         get \
+           "${wallet_name}" \
+           "address")"
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+Returns EVM network file system contract address
+
+Usage:
+  $(_get "app" "name")
+    [options]
+    <network>
+  networks:
+    alchemy
+    ankr
+    cloudflare
+    chainstack
+    etherscan
+    gnosis
+    infura
+    publicPolygon
+    quicknode
+  options:
+     -n <wallet_name>     Wallet name.
+                          Default: $(_get "wallet" "name")
+     -w <wallet_path>     Wallet path.
+                          Default: $(_get "wallet" "path")
+     -p <wallet_password> Wallet password.
+                          Default: $(_get "wallet" "password")
+     -s <wallet_seed>     Wallet seed path.
+                          Default: $(_get "wallet" "seed")
+     -n <network>         EVM network name ('mainnet', 'gnosis').
+                          Default: $(_get "target" "network")
+     -k <api_key>         Etherscan-like service key.
+                          Default: $(_get "api" "key")
+     -h                   This message.
+     -c                   Enable color output
+     -v                   Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_display_flags() {
+  local \
+    _flags=(
+      "${1}"
+    ) \
+    _flag
+  for _flag \
+    in "${_flags[@]}"; do
+  _msg_info \
+    "                             ${_flag}"
+  done
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "             Resolve date:   $(_get "resolve" "date")"
+  _msg_info "           Wallet address:   $(_get "wallet" "address")"
+  _msg_info "              Wallet name:   $(_get "wallet" "name")"
+  _msg_info "              Wallet path:   $(_get "wallet" "path")"
+  _msg_info "          Wallet password:   $(_get "wallet" "password")"
+  _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
+  _msg_info "           Target network:   $(_get "target" "network")"
+  _msg_info "                  API key:   $(_get "api" "key")"
+}
+
+_globals
+_global_variables
+_requirements
+_config_user_init \
+  "$(_get \
+       "app" \
+       "name")"
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'N:w:p:s:k:cvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    N) override_wallet_name="${OPTARG}" ;;
+    w) override_wallet_path="${OPTARG}" ;;
+    p) override_wallet_password="${OPTARG}" ;;
+    s) override_wallet_seed="${OPTARG}" ;;
+    k) override_api_key="${OPTARG}" ;;
+    c) override_color="y" ;;
+    v) override_quiet="n" ;;
+    h|?) _set_overrides && \
+         _usage \
+           0 ;;
+    *)
+    _msg_error \
+      "Invalid argument '${arg}'" \
+      0
+    _usage \
+      1
+    ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+if (( 0 < $# )); then
+  _set \
+    "target" \
+    "network" \
+    "${1}"
+fi
+shift \
+  1 || \
+  true
+command_args+=(
+  "$@"
+)
+_set_overrides
+_config_user_init \
+  "$( \
+    _get \
+      "app" \
+      "name")"
+_show_config
+app_opts=(
+  "$( \
+    _get \
+      "target" \
+      "network")"
+  "$( \
+    _get \
+      "wallet" \
+      "name")"
+  "$( \
+    _get \
+      "wallet" \
+      "path")"
+  "$( \
+    _get \
+      "wallet" \
+      "password")"
+  "$( \
+    _get \
+      "wallet" \
+      "seed")"
+  "$( \
+    _get \
+      "api" \
+      "key")"
+)
+_evmfs_address \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
