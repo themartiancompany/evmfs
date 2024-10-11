@@ -89,7 +89,7 @@ _network_setup() {
   if [[ "${_network}" == "gnosis" ]]; then
     _rpc="https://rpc.gnosischain.com"
     _network_backend="${_network}"
-    _contract=""
+    # _contract=""
   elif [[ "${_network}" == "ethereum" ]]; then
     _network_backend="etherscan"
   else
