@@ -30,6 +30,9 @@ _requirements() {
   _check_cmd \
     'evm-contract-call' \
     'evm-contracts-tools'
+  _check_cmd \
+    'txt2bin' \
+    'encoding-tools'
 }
 
 _get_conf_dir_path() {

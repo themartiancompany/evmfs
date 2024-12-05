@@ -34,6 +34,12 @@ _requirements() {
     'evm-contracts-tools'
   _check_cmd \
     'evm-wallet'
+  _check_cmd \
+    'bin2txt' \
+    'encoding-tools'
+  _check_cmd \
+    'txt2bin' \
+    'encoding-tools'
 }
 
 _get_conf_dir_path() {
