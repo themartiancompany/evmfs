@@ -1,40 +1,71 @@
 #!/usr/bin/env node
 
-const { ethers } = require(
-  "ethers");
-_ethers = ethers;
-_contract_factory = _ethers.ContractFactory;
-const _fs_utils = require(
-  '../libcrash-js/fs-utils');
-_dirname = _fs_utils._dirname;
-_file_read = _fs_utils._file_read;
-const _libcrash = require(
-  '../libcrash-js/crash-js');
-_app_name_get = _libcrash._app_name_get;
-_msg_info = _libcrash._msg_info;
-_msg_error = _libcrash._msg_error;
-const _wallet_get = require(
-  '../evm-wallet/wallet-get');
-const _network_provider = require(
-  '../evm-wallet/network-provider');
-_provider_get = _network_provider._provider_get;
+const
+  { ethers } =
+  require(
+    "ethers");
+_ethers =
+  ethers;
+_contract_factory =
+  _ethers.ContractFactory;
+const
+  _libcrash =
+  require(
+    '../libcrash-js/crash-js');
+_dirname =
+  _libcrash._dirname;
+_file_read =
+  _libcrash._file_read;
+_path_join =
+  _libcrash._path_join;
+_msg_info =
+  _libcrash._msg_info;
+_msg_error =
+  _libcrash._msg_error;
+const
+  _wallet_get =
+    require(
+      '../evm-wallet/wallet-get');
+const
+  _network_provider =
+    require(
+      '../evm-wallet/network-provider');
+_provider_get =
+  _network_provider._provider_get;
 
-function _global_variables() {
-  method_args = [];
-  wallet_seed = "";
-  target_network = "";
-  api_key = "";
-  contract_bytecode = "";
-  file_chunk = "";
-  quiet = "";
+function
+  _global_variables() {
+  method_args =
+    [];
+  wallet_seed =
+    "";
+  target_network =
+    "";
+  api_key =
+    "";
+  contract_bytecode =
+    "";
+  contract_address =
+    "";
+  file_chunk =
+    "";
+  quiet =
+    "";
 }
 
-async function _evm_deployer(
-  _wallet_seed,
-  _contract_bytecode_path,
-  _target_network,
-  _api_key_path) {
-  _wallet_password = "";
+async function
+  _evm_deployer(
+    _wallet_seed,
+    _contract_address,
+    _contract_bytecode_path,
+    _target_network,
+    _api_key_path) {
+  let
+    _wallet_password,
+    _wallet_path_list,
+    _wallet_path;
+  _wallet_password =
+    "";
   _wallet_path = [
     _dirname(
       _wallet_seed),

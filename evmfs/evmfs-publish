@@ -30,8 +30,10 @@ _global_variables() {
 
 _requirements() {
   _check_cmd \
-    'node' \
-    'nodejs'
+    'evm-contract-call' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-wallet'
 }
 
 _get_conf_dir_path() {
@@ -45,15 +47,15 @@ _get_conf_dir_path() {
     "${_dir}"
 }
 
-_wallet_address_cmd() {
-  local \
-    _command="${1}" \
-    _lib
-  _lib="$( \
-    _get_lib)/evm-wallet"
-  echo \
-    "${_lib}/address-${_command}"
-}
+# _wallet_address_cmd() {
+#   local \
+#     _command="${1}" \
+#     _lib
+#   _lib="$( \
+#     _get_lib)/evm-wallet"
+#   echo \
+#     "${_lib}/address-${_command}"
+# }
 
 _node_run() {
   local \
@@ -134,9 +136,9 @@ _file_size_check() {
     du \
       -b \
       "${_file}")"
-  if [[ 10000 < "${_size}" ]]; then
+  if [[ 23000 < "${_size}" ]]; then
     _msg_info \
-      "writing over 2 blocks!"
+      "writing over more than a single string!"
   fi
 }
 
@@ -154,7 +156,7 @@ _file_upload() {
   _chunk_prefix="$( \
     mktemp \
       --suffix=".base64")"
-  _length="10000"
+  _length="23000"
   _sum="$( \
     sha256sum \
       "${_file}")"
