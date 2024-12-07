@@ -22,6 +22,7 @@ shellcheck:
 
 contracts:
 
+	mkdir -p "$(_PROJECT)/build" "$(_PROJECT)/contracts-build"
 	solidity-compiler -v -w "$(_PROJECT)/contracts-build" -o "$(_PROJECT)/build" "$(_FS_SOL)"
 
 install: install-contracts install-scripts install-doc
@@ -32,7 +33,6 @@ install-contracts:
 
 install-scripts:
 
-	mkdir -p "$(_PROJECT)/build" "$(_PROJECT)/contracts-build"
 	install -vDm 755 "$(_FS_SOL)" "$(LIB_DIR)/$(_FS_SOL)"
 	install -vDm 755 "$(_PROJECT)/publish" "$(LIB_DIR)/publish"
 	install -vDm 755 "$(_PROJECT)/$(_PROJECT)-address" "$(BIN_DIR)/$(_PROJECT)-address"

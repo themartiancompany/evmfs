@@ -15,6 +15,7 @@ source \
 # shellcheck disable=SC2034
 _global_variables() {
   get_date=""
+  wallet_name=""
   wallet_path=""
   wallet_password=""
   wallet_seed=""
@@ -47,44 +48,175 @@ _get_conf_dir_path() {
 }
 
 _network_setup() {
-  if [[ "${_network}" == "gnosis" ]]; then
+  local \
+    _uri_network_id="${1}"
+  if [[ "${_uri_network_id}" == "" ]]; then
+    _msg=(
+      "URI does not specify a network,"
+      "assuming user set '${_target_network}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _uri_network="${_target_network}"
+  elif [[ "${_uri_network_id}" == "100" ]]; then
+    _uri_network="gnosis"
+  fi
+  if [[ "${_uri_network}" != "${_target_network}" ]]; then
+    _msg=(
+      "URI network '${_uri_network}'"
+      "different from user set network"
+      "'${_target_network}'"
+    )
+    _msg_warning \
+      "${_msg[*]}"
+  fi
+  if [[ "${_uri_network}" == "gnosis" ]]; then
     _rpc="https://rpc.gnosischain.com"
-    _network_backend="${_network}"
-  elif [[ "${_network}" == "ethereum" ]]; then
+    _network_backend="${_uri_network}"
+  elif [[ "${_uri_network}" == "ethereum" ]]; then
     _network_backend="etherscan"
   else
-    _network_backend="${_network}"
+    _network_backend="${_uri_network}"
   fi
 }
 
-_api_key_read() {
+_contract_setup() {
   local \
-    _path="${1}"
-  if [ ! -e "${_path}" ]; then
+    _contract="${1}" \
+    _evmfs_address_opts=()
+  if [[ "${_contract}" == "" ]]; then
+    _evmfs_address_opts+=(
+      -n
+        "${_uri_network}"
+    )
+    _uri_contract="$( \
+      evmfs-address \
+        "${_evmfs_address_opts[@]}")"
+  fi
+}
+
+_namespace_setup() {
+  local \
+    _namespace="${1}"
+  if [[ "${_namespace}" == "" ]]; then
+    _uri_namespace="$( \
+      evm-wallet \
+       get \
+         "${_wallet_name}" \
+         "address")"
+  fi
+}
+
+_address_section_get() {
+  local \
+    _uri="${1}" \
+    _position="${2}" \
+    _path \
+    _reversed \
+    _hash_reversed
+  _path="${_uri#evmfs://}"
+  _reversed="$( \
+    echo \
+      "${_address}" |
+      rev)"
+  _section="$( \
+    echo \
+      "${_reversed}" | \
+      cut \
+        -d \
+          "/" \
+        -f \
+          "${_position}")"
+  echo \
+    "${_section}" | \
+    rev
+}
+
+_hash_get() {
+  local \
+    _uri="${1}"
+  _address_section_get \
+    "1"
+}
+
+_namespace_get() {
+  local \
+    _uri="${1}"
+  _address_section_get \
+    "2"
+}
+
+_contract_get() {
+  local \
+    _uri="${1}"
+  _address_section_get \
+    "3"
+}
+
+_network_id_get() {
+  local \
+    _uri="${1}"
+  _address_section_get \
+    "4"
+}
+
+_hash_check() {
+  local \
+    _hash="${1}" \
+    _msg=()
+  if [[ "${_hash}" == "" ]]; then
+    _msg=(
+      "Invalid URI (empty)"
+    )
     _msg_error \
-      "service api key file '${_path}' not found" \
+      "${_msg[*]}" \
+      1
+  elif ! [[ "${_hash}"  =~ ^[a-fA-F0-9]{64}$ ]]; then
+    _msg=(
+      "Hash for the given URI does not"
+      "correspond to a SHA256 checksum." 
+    )
+    _msg_error \
+      "${_msg[*]}" \
       1
   fi
 }
 
-_key_get() {
+_chunk_get() {
   local \
-    _key="${1}"
-  if [[ "${_key}" == "address" ]]; then
-    _cmd="$( \
-      _wallet_address_cmd \
-        "get")"
-    _args+=(
-      "${_wallet_seed}"
-      "${_network_backend}"
-      "${_api_key_path}"
-    )
-  elif [[ "${_key}" == "seed" ]]; then
-    cat \
-      "${_wallet_seed}"
-    return \
-      0
-  fi
+    _chunk="${1}"
+  evm-contract-call \
+    "${_call_opts[@]}" \
+    "${_uri_contract}" \
+    "readChunk" \
+    "${_uri_namespace}" \
+    "${_uri_hash}" \
+    "${_chunk}"
+}
+
+_resource_length_get() {
+  evm-contract-call \
+    "${_call_opts[@]}" \
+    "${_uri_contract}" \
+    "getLength" \
+    "${_uri_namespace}" \
+    "${_uri_hash}"
+}
+
+_resource_get() {
+  local \
+    _length \
+    _chunk \
+    _tmp_dir
+  _tmp_dir="$( \
+    mktemp \
+      -d)"
+  _length="$(( \
+    "$(_resource_length_get)" + 1))"
+  for _chunk in $(seq ${_length}); do
+    _chunk_get \
+      "$(("${_chunk}" - 1))" >
+  done
 }
 
 _evmfs_get() {
@@ -92,20 +224,47 @@ _evmfs_get() {
     _wallet_path="${1}" \
     _wallet_password="${2}" \
     _wallet_seed="${3}" \
-    _network="${4}" \
+    _target_network="${4}" \
     _api_key_path="${5}" \
-    _target_key="${6}" \
-    _target_value="${7}" \
-    _command_args=() \
-    _cmd \
-    _args=() \
-    _network_backend
-  shift \
-    8
-  _command_args+=(
-    "$@"
+    _cache_dir="${6}" \
+    _target_contract="${7}" \
+    _target_uri="${8}" \
+    _output_file="${9}" \
+    _call_opts=() \
+    _network_backend \
+    _uri_network_id \
+    _uri_contract \
+    _uri_namespace \
+    _uri_hash
+  _uri_network_id="$( \
+    _network_id_get \
+      "${_target_uri}")"
+  _network_setup \
+    "${_uri_network_id}"
+  _uri_contract="$( \
+    _contract_get \
+      "${_target_uri}")"
+  _contract_setup \
+    "${_uri_contract}"
+  _uri_namespace="$( \
+    _namespace_get \
+      "${_target_uri}")"
+  _namespace_setup \
+    "${_uri_namespace}"
+  _uri_hash="$( \
+    _hash_get \
+      "${_target_uri}")"
+  _uri_check \
+    "${_target_uri}"
+  _call_opts+=(
+    -n
+      "${_uri_network_id}"
+    -t
+      "static"
+    -k
+      "${_api_key_path}"
   )
-  _network_setup
+  _resource_get
 }
 
 _wallet_path_get() {
@@ -170,6 +329,11 @@ _secret_auto_detect() {
     dirname \
       "${_path}")"
   if [[ ! -e "${_path}" ]]; then
+    if [[ "${quiet}" == "n" ]]; then
+      _key_gen_opts+=(
+        -v
+      )
+    fi
     _key_gen_opts+=(
       -t
         "${_secret_type}"
@@ -177,15 +341,10 @@ _secret_auto_detect() {
     _msg=(
       "generating ${_secret} '${_path}'"
     )
-    if [[ "${quiet}" == "n" ]]; then
-      _msg_info \
-        "${_msg[*]}"
-    fi
+    _msg_info \
+      "${_msg[*]}"
     mkdir \
       -p \
-      "${_dir}"
-    chmod \
-      700 \
       "${_dir}"
     chmod \
       700 \
@@ -193,16 +352,11 @@ _secret_auto_detect() {
     key-gen \
       "${_key_gen_opts[@]}" \
       "${_path}"
-    chmod \
-      400 \
-      "${_path}"
     _msg=(
       "${_secret} '${_path}' successfully generated"
     )
-    if [[ "${quiet}" == "n" ]]; then
-      _msg_info \
-        "${_msg[*]}"
-    fi
+    _msg_info \
+      "${_msg[*]}"
   fi
   _set_override \
     "wallet" \
@@ -211,6 +365,16 @@ _secret_auto_detect() {
 }
 
 _set_overrides() {
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
   _set_override \
     "get" \
     "date" \
@@ -241,16 +405,6 @@ _set_overrides() {
   _secret_auto_detect \
     "password" \
     "plain"
-  if [[ -v override_quiet ]]; then
-    quiet="${override_quiet}"
-  elif [[ -z "${quiet}" ]]; then
-    quiet="y"
-  fi
-  if [[ -v override_color ]]; then
-    color="${override_color}"
-  elif [[ -z "${color}" ]]; then
-    color="n"
-  fi
 }
 
 # Show help usage, with an exit status.
@@ -283,6 +437,11 @@ Usage:
     quicknode
 
   options:
+     -o <output_file>     Name of the file in which to save
+                          the downloaded resource.
+                          Default: $(_get "output" "file")
+     -N <wallet_name>     Wallet name.
+                          Default: $(_get "wallet" "name")
      -w <wallet_path>     Wallet path.
                           Default: $(_get "wallet" "path")
      -p <wallet_password> Wallet password.
@@ -293,6 +452,9 @@ Usage:
                           Default: $(_get "target" "network")
      -k <api_key>         Etherscan-like service key.
                           Default: $(_get "api" "key")
+     -C <cache_dir>       Etherscan-like service key.
+                          Default: $(_get "api" "key")
+
      -h                   This message.
      -c                   Enable color output
      -v                   Enable verbose output
@@ -321,12 +483,16 @@ _display_flags() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "                 Get date:   $(_get "get" "date")"
+  _msg_info "              Wallet name:   $(_get "wallet" "name")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
+  _msg_info "          Cache directory:   $(_get "cache" "dir")"
+  _msg_info "          Target contract:   $(_get "target" "contract")"
   _msg_info "          Target resource:   $(_get "target" "resource")"
+  _msg_info "              Output file:   $(_get "output" "file")"
 }
 
 _globals
@@ -339,15 +505,18 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'w:p:s:n:k:cvh?' \
+    'N:w:p:s:n:k:a:C:cvh?' \
     arg; do
   case \
     "${arg}" in
+    N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
+    a) override_target_contract="${OPTARG}" ;;
+    C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -383,6 +552,10 @@ app_opts=(
   "$( \
     _get \
       "wallet" \
+      "name")"
+  "$( \
+    _get \
+      "wallet" \
       "path")"
   "$( \
     _get \
@@ -400,6 +573,14 @@ app_opts=(
     _get \
       "api" \
       "key")"
+  "$( \
+    _get \
+      "cache" \
+      "dir")"
+  "$( \
+    _get \
+      "target" \
+      "contract")"
   "$( \
     _get \
       "target" \
