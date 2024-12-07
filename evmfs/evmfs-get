@@ -203,19 +203,64 @@ _resource_length_get() {
     "${_uri_hash}"
 }
 
+_resource_validate() {
+  local \
+    _check="${1}" \
+    _sum \
+    _msg=()
+  _sum="$( \
+    sha256sum \
+      "${_check}" \
+      awk \
+        '{print $1}')"
+  if [[ "${_sum}" != "${_uri_hash}" ]]; then
+    _msg=(
+      "Error downloading or file"
+      "corrupted."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+}
+
 _resource_get() {
   local \
+    _chunks=() \
     _length \
     _chunk \
-    _tmp_dir
+    _piece \
+    _tmp_dir \
+    _check
+    _attempt \
+    _retries
+  _retries="4"
   _tmp_dir="$( \
     mktemp \
-      -d)"
+      -d \
+      -p \
+        "${_cache_dir}")"
   _length="$(( \
     "$(_resource_length_get)" + 1))"
-  for _chunk in $(seq ${_length}); do
-    _chunk_get \
-      "$(("${_chunk}" - 1))" >
+  _attempt=1
+  while (( "${_attempt}" < "${_retries}" )); do
+    for _chunk \
+      in $(seq \
+             ${_length}); do
+      _piece="${_tmp_dir}/${_uri_hash}.${_chunk}"
+      _chunks+=(
+        "${_piece}"
+      )
+      _chunk_get \
+        "$(("${_chunk}" - 1))" > \
+        "${_piece}"
+    done
+    _check="${_tmp_dir}/${_uri_hash}.check"
+    txt2bin \
+      "${_check}" \
+      "${_chunks[@]}"
+    _resource_validate \
+      "${_check}"
   done
 }
 
@@ -380,6 +425,10 @@ _set_overrides() {
     "date" \
     "$(_get_date_human)"
   _set_override \
+    "cache" \
+    "dir" \
+    "${HOME}/.cache/evmfs"
+  _set_override \
     "wallet" \
     "name" \
     "default"
@@ -452,8 +501,9 @@ Usage:
                           Default: $(_get "target" "network")
      -k <api_key>         Etherscan-like service key.
                           Default: $(_get "api" "key")
-     -C <cache_dir>       Etherscan-like service key.
-                          Default: $(_get "api" "key")
+     -C <cache_dir>       Location where to temporary store
+                          the downloaded resource chunks.
+                          Default: $(_get "cache" "dir")
 
      -h                   This message.
      -c                   Enable color output
