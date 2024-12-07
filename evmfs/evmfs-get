@@ -202,12 +202,17 @@ _chunk_get() {
 }
 
 _resource_length_get() {
-  evm-contract-call \
-    "${_call_opts[@]}" \
-    "${_uri_contract}" \
-    "getLength" \
-    "${_uri_namespace}" \
-    "${_uri_hash}"
+  local \
+    _length
+  _length="$( \
+    evm-contract-call \
+      "${_call_opts[@]}" \
+      "${_uri_contract}" \
+      "getLength" \
+      "${_uri_namespace}" \
+      "${_uri_hash}")"
+  echo \
+    "${_length%n}"
 }
 
 _resource_validate() {
@@ -217,7 +222,7 @@ _resource_validate() {
     _msg=()
   _sum="$( \
     sha256sum \
-      "${_check}" \
+      "${_check}" | \
       awk \
         '{print $1}')"
   if [[ "${_sum}" != "${_uri_hash}" ]]; then
@@ -254,6 +259,8 @@ _resource_get() {
     for _chunk \
       in $(seq \
              ${_length}); do
+      _msg_info \
+        "Downloading chunk '${_chunk}' of '${_length}'"
       _piece="${_tmp_dir}/${_uri_hash}.${_chunk}"
       _chunks+=(
         "${_piece}"
@@ -482,6 +489,12 @@ _set_overrides() {
   _secret_auto_detect \
     "password" \
     "plain"
+  _set_override \
+    "output" \
+    "file" \
+    "$(pwd)/$( \
+      _hash_get \
+        "${_target_uri}")"
 }
 
 # Show help usage, with an exit status.
