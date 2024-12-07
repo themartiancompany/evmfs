@@ -180,8 +180,8 @@ _hash_check() {
       1
   elif ! [[ "${_hash}"  =~ ^[a-fA-F0-9]{64}$ ]]; then
     _msg=(
-      "Hash for the given URI does not"
-      "correspond to a SHA256 checksum." 
+      "Hash '${_hash}' is not"
+      "a SHA256 checksum." 
     )
     _msg_error \
       "${_msg[*]}" \
@@ -238,7 +238,7 @@ _resource_get() {
     _chunk \
     _piece \
     _tmp_dir \
-    _check
+    _check \
     _attempt \
     _retries
   _retries="4"
@@ -268,6 +268,10 @@ _resource_get() {
       "${_chunks[@]}"
     _resource_validate \
       "${_check}"
+    mv \
+      "${_check}" \
+      "${_output_file}"
+    break
   done
 }
 
@@ -285,6 +289,7 @@ _evmfs_get() {
     _output_file="${10}" \
     _call_opts=() \
     _network_backend \
+    _uri_network \
     _uri_network_id \
     _uri_contract \
     _uri_namespace \
@@ -308,10 +313,10 @@ _evmfs_get() {
     _hash_get \
       "${_target_uri}")"
   _hash_check \
-    "${_target_uri}"
+    "${_uri_hash}"
   _call_opts+=(
     -n
-      "${_uri_network_id}"
+      "${_uri_network}"
     -t
       "static"
     -k
@@ -417,6 +422,24 @@ _secret_auto_detect() {
     "${_path}"
 }
 
+_cache_dir_auto_detect() {
+  local \
+    _cache_dir
+  _cache_dir="${HOME}/.cache/evmfs"
+  if [[ ! -e "${_cache_dir}" ]]; then
+    mkdir \
+      -p \
+      "${_cache_dir}"
+    chmod \
+      700 \
+      "${_cache_dir}"
+  fi
+  _set_override \
+    "cache" \
+    "dir" \
+    "${HOME}/.cache/evmfs"
+}
+
 _set_overrides() {
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -432,10 +455,7 @@ _set_overrides() {
     "get" \
     "date" \
     "$(_get_date_human)"
-  _set_override \
-    "cache" \
-    "dir" \
-    "${HOME}/.cache/evmfs"
+  _cache_dir_auto_detect
   _set_override \
     "wallet" \
     "name" \
@@ -563,10 +583,11 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'N:w:p:s:n:k:a:C:cvh?' \
+    'o:N:w:p:s:n:k:a:C:cvh?' \
     arg; do
   case \
     "${arg}" in
+    o) override_output_file="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
