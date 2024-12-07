@@ -1,14 +1,6 @@
 #!/usr/bin/env node
 
 const
-  { ethers } =
-  require(
-    "ethers");
-_ethers =
-  ethers;
-_contract_factory =
-  _ethers.ContractFactory;
-const
   _libcrash =
   require(
     '../libcrash-js/crash-js');
@@ -23,151 +15,343 @@ _msg_info =
 _msg_error =
   _libcrash._msg_error;
 const
-  _wallet_get =
-    require(
-      '../evm-wallet/wallet-get');
-const
-  _network_provider =
-    require(
-      '../evm-wallet/network-provider');
-_provider_get =
-  _network_provider._provider_get;
+  _evm_contract_call =
+  require(
+    '../evm-contracts-tools/evm-contract-call-dynamic');
+_contract_run =
+  _evm_contract_call._contract_run
 
 function
   _global_variables() {
-  method_args =
-    [];
-  wallet_seed =
+  wallet_seed_path =
+    "";
+  api_key_path =
     "";
   target_network =
     "";
-  api_key =
-    "";
-  contract_bytecode =
-    "";
   contract_address =
     "";
-  file_chunk =
+  contract_abi_path =
     "";
+  contract_bytecode_path =
+    "";
+  file_hash =
+    "";
+  publication_namespace =
+    "";
+  file_chunks =
+    [];
   quiet =
     "";
 }
 
-async function
-  _evm_deployer(
-    _wallet_seed,
-    _contract_address,
-    _contract_bytecode_path,
-    _target_network,
-    _api_key_path) {
+function
+  _msg_info_chunk_publish(
+    _chunk,
+    _total) {
   let
-    _wallet_password,
-    _wallet_path_list,
-    _wallet_path;
-  _wallet_password =
-    "";
-  _wallet_path = [
-    _dirname(
-      _wallet_seed),
-    "wallet.dat"].join("/");
-  _api_key = _file_read(
-    _api_key_path);
-  _contract_bytecode = _file_read(
-    _contract_bytecode_path);
-  _provider = _provider_get(
-    _target_network,
-    _api_key);
-  _msg = "provider '{_provider}' generated".replace(
-    "{_provider}",
-    _provider);
+    _msg,
+    _template;
+  _template =
+    "publishing chunk '{_chunk}' of '{_total}'";
+  _msg =
+    _template.replaceAll(
+      "{_chunk}",
+      _chunk);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
   _msg_info(
     _msg);
-  _wallet_get_opts=[
-    _wallet_path,
-    _wallet_password,
-    _wallet_seed,
-    _provider
-  ];
-  _wallet = _wallet_get._wallet_get.apply(
-    null,
-    _wallet_get_opts);
-  console.log(
-    _wallet.address);
-  _factory = _contract_factory.fromSolidity(
-    _contract_bytecode);
-  _contract = await _factory.deploy();
-  console.log(
-    _contract);
 }
 
-function _config_show() {
-  _msgs=[];
-  _msgs.push(
-    "      Wallet seed: {wallet_seed}".replace(
-      "{wallet_seed}",
-      wallet_seed));
-  _msgs.push(
-    "   Target network: {target_network}".replace(
-      "{target_network}",
-      target_network));
-  _msgs.push(
-    "          API Key: {api_key}".replace(
-      "{api_key}",
-      api_key));
-  _msgs.push(
-    "Contract bytecode: {contract_bytecode}".replace(
-      "{contract_bytecode}",
-      contract_bytecode));
-  for ( _msg in _msgs ) {
-    _msg_info(
-      _msgs[_msg]);
+function
+  _msg_info_chunk_published(
+    _chunk,
+    _total) {
+  let
+    _msg,
+    _template;
+  _template =
+    "published chunk '{_chunk}' of '{_total}'";
+  _msg =
+    _template.replaceAll(
+      "{_chunk}",
+      _chunk);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
+  _msg_info(
+    _msg);
+}
+
+async function
+  _chunk_publish(
+    _contract_run_opts) {
+  let _tx;
+  try {
+    _tx = await
+      _contract_run.apply(
+        null,
+        _contract_run_opts);
+  } catch(e) {
+    _msg_error(
+      e,
+      1);
+  }
+  return _tx;
+}
+
+async function
+  _publish(
+    _wallet_seed_path,
+    _api_key_path,
+    _target_network,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _publication_namespace,
+    _file_hash,
+    _file_chunks
+  ) {
+  let
+    _contract_run_base_opts,
+    _contract_run_opts,
+    _chunk,
+    _file_chunk,
+    _file_chunk_path,
+    _method_args,
+    _msg,
+    _total_chunks,
+    _tx,
+    _wallet_password;
+  _wallet_password =
+    "";
+  _contract_run_base_opts = [
+    _wallet_seed_path,
+    _wallet_password,
+    _api_key_path,
+    _target_network,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    "publishChunk",
+  ];
+  _method_base_args = [
+    _publication_namespace,
+    _file_hash
+  ];
+  _total_chunks =
+    _file_chunks.length;
+  for ( _chunk in _file_chunks ) {
+    _msg_info_chunk_publish(
+      _chunk,
+      _total_chunks);
+    _file_chunk_path =
+      _file_chunks[_chunk];
+    _file_chunk =
+      _file_read(
+        _file_chunk_path);
+    _contract_run_opts =
+      _contract_run_base_opts;
+    _method_args =
+      _method_base_args;
+    _method_args.push(
+      _chunk);
+    _method_args.push(
+      _file_chunk);
+    _contract_run_opts.push(
+      _method_args);
+    _tx = await
+      _chunk_publish(
+        _contract_run_opts);
+    _msg_info_chunk_published(
+      _chunk,
+      _total_chunks);
   }
 }
 
-function _cmdline_parse() {
-  quiet = "y";
+function
+  _config_show() {
+  let
+    _file_chunks,
+    _line,
+    _text;
+  _text = 
+    [];
+  _text.push(
+    "          Wallet seed: {wallet_seed_path}".replace(
+      "{wallet_seed_path}",
+      wallet_seed_path));
+  _text.push(
+    "              API Key: {api_key_path}".replace(
+      "{api_key_path}",
+      api_key_path));
+  _text.push(
+    "       Target network: {target_network}".replace(
+      "{target_network}",
+      target_network));
+  _text.push(
+    "     Contract address: {contract_address}".replace(
+      "{contract_address}",
+      contract_address));
+  _text.push(
+    "         Contract ABI: {contract_abi_path}".replace(
+      "{contract_abi_path}",
+      contract_abi_path));
+  _text.push(
+    "    Contract bytecode: {contract_bytecode_path}".replace(
+      "{contract_bytecode_path}",
+      contract_bytecode_path));
+  _text.push(
+    "            File hash: {file_hash}".replace(
+      "{file_hash}",
+      file_hash));
+  _text.push(
+    "Publication namespace: {file_hash}".replace(
+      "{file_hash}",
+      file_hash));
+  _file_chunks =
+    file_chunks.join(
+    " ");
+  _text.push(
+    "      File chunks: {_file_chunks}".replace(
+      "{_file_chunks}",
+      _file_chunks));
+  for ( _line in _text ) {
+    _msg_info(
+      _text[_line]);
+  }
+}
+
+function
+  _usage() {
+  let
+    _line,
+    _text;
+  _text = [
+    "Usage:",
+    "  publish",
+    "    <quiet>",
+    "    <wallet_seed_path>",
+    "    <api_key_path>",
+    "    <target_network>",
+    "    <contract_address>",
+    "    <contract_abi_path>",
+    "    <contract_bytecode_path>",
+    "    <file_hash>",
+    "    [file_chunk]",
+    "",
+    "Args:",
+    "  <quiet>                   Can be 'y' or 'n'",
+    "                            Default: y",
+    "  <wallet_seed_path>        Path of the file containing",
+    "                            the seed phrase.",
+    "  <api_key_path>            Path of the API key for the",
+    "                            contract ABI provider service.",
+    "  <target_network>          Network on which the contract",
+    "                            resides.",
+    "  <contract_address>        Address of the contract.",
+    "  <contract_abi_path>       Contract ABI path.",
+    "  <contract_bytecode_path>  Path for the contract bytecode.",
+    "  <publication_namespace>   Namespace in which the file will be",
+    "                            published.",
+    "  <file_hash>               Hash of the file to publish.",
+    "  [file_chunks]             File chunks to publish.",
+  ];
+  for ( _line of _text ) {
+    _msg_info(
+      _line);
+  }
+  process.exit();
+}
+
+
+function 
+  _cmdline_parse() {
+  quiet = 
+    "y";
   process.argv.forEach(
     function (
       _value,
       _index,
       _array) {
       if ( _index == 2 ) {
-        wallet_seed = _value;
+        quiet =
+          _value;
       }
       if ( _index == 3 ) {
-        contract_bytecode = _value;
+        wallet_seed_path =
+          _value;
       }
       if ( _index == 4 ) {
-        file_chunk = _value;
+        api_key_path =
+          _value;
       }
       if ( _index == 5 ) {
-        target_network = _value;
+        target_network =
+          _value;
       }
       if ( _index == 6 ) {
-        api_key = _value;
+        contract_address =
+          _value;
       }
-      if ( _value == "-v" ) {
-        quiet = "n";
+      if ( _index == 7 ) {
+        contract_abi_path =
+          _value;
+      }
+      if ( _index == 8 ) {
+        contract_bytecode_path =
+          _value;
+      }
+      if ( _index == 9 ) {
+        file_hash =
+          _value;
+      }
+      if ( _index == 10 ) {
+        publication_namespace =
+          _value;
+      }
+      if ( 10 < _index ) {
+	file_chunks.push(
+          _value);
+      }
+      if ( _value == "-h" ||
+           _value == "--help" ) {
+        _usage();
       }
   });
-  if ( contract_bytecode == "" ) {
-    _msg_error(
-      "deployer <seed_path> <contract_bytecode> (<target_network>) (<api_key>)",
-      '1');
+  if ( file_hash == "" ||
+       publication_namespace  == "" ||
+       file_chunks == [] ) {
+    _usage();
   }
 }
 
 _global_variables();
-app_name = _app_name_get(); // "publish";
-_cmdline_parse();
-_config_show();
-app_opts = [
-  wallet_seed,
-  contract_bytecode,
-  file_chunk,
-  target_network,
-  api_key,
-];
-_evmfs_publish.apply(
-  null,
-  app_opts);
+
+if ( require.main == module ) {
+  _cmdline_parse();
+  _config_show();
+  app_opts = [
+    wallet_seed_path,
+    api_key_path,
+    target_network,
+    contract_address,
+    contract_abi_path,
+    contract_bytecode_path,
+    publication_namespace,
+    file_hash,
+    file_chunks,
+  ];
+  _publish.apply(
+    null,
+    app_opts);
+}
+
+module.exports = {
+  _publish:
+    _publish
+};

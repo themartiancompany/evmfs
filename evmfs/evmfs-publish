@@ -203,7 +203,7 @@ _file_upload() {
   done
 }
 
-_chunk_publish() {
+_bulk_chunk_publish() {
   local \
     _contract="${1}" \
     _namespace="${2}" \
