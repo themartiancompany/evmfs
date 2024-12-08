@@ -3,16 +3,16 @@
 
 PREFIX ?= /usr/local
 _PROJECT=evmfs
+_BUILD_DIR=$(_PROJECT)/build
+_CONTRACTS_BUILD_DIR=$(_PROJECT)/contracts-build
 _FS_NAME=FileSystem
 _FS_SOL=$(_FS_NAME).sol
 _FS_ABI=$(_FS_NAME).abi.json
 _FS_BYTECODE=$(_FS_NAME).bytecode.json
 _FS_JSON=$(_FS_NAME).json
 _CONTRACTS_PATH=contracts
-_FS_DEPLOYMENTS_PATH=$(_CONTRACTS_PATH)/deployments
-_FS_SOL_PATH=$(_CONTRACTS_PATH)/$(_FS_SOL)
-_FS_BYTECODE_PATH=$(_CONTRACTS_PATH)/$(_FS_BYTECODE)
-_FS_ABI_PATH=$(_CONTRACTS_PATH)/$(_FS_ABI)
+_FS_SOL_PATH=$(_CONTRACTS_PATH)/$(_FS_NAME)/$(_FS_SOL)
+_FS_DEPLOYMENTS_PATH=$(_CONTRACTS_PATH)/$(_FS_NAME)/deployments
 _SOLIDITY_COMPILER_BACKEND ?= solc
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
@@ -57,11 +57,13 @@ contracts:
 	  "$(_FS_SOL_PATH)";
 	mkdir \
 	  -p \
-	  "$(_PROJECT)/build" \
-	  "$(_PROJECT)/contracts-build";
-	for _network in $(_DEPLOYMENTS_PATH)/*; do \
+	  "$(_BUILD_DIR)" \
+	  "$(_CONTRACTS_BUILD_DIR)";
+	local \
+	  _network; \
+	for _network in $(_FS_DEPLOYMENTS_PATH)/*; do \
 	  source \
-	    $(_DEPLOYMENTS_PATH)/${_network}/config.sh; \
+	    $(_FS_DEPLOYMENTS_PATH)/${_network}/config.sh; \
 	  solidity-compiler \
 	    -v \
 	    -b \
