@@ -57,7 +57,7 @@ shellcheck:
 contracts:
 
 	for _network in $(DEPLOYED_NETWORKS); do \
-	  _deployment_dir="$(FS_DEPLOYMENTS_DIR)/$${_network}"; \
+	  _deployment_dir="$(_FS_DEPLOYMENTS_DIR)/$${_network}"; \
 	  _config_file="$${_deployment_dir}/config.sh"; \
 	  _build_dir="$(BUILD_DIR)/$${_network}"; \
 	  _work_dir="$(BUILD_DIR)/$${_network}/build"; \
