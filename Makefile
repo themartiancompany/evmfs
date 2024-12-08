@@ -62,7 +62,7 @@ contracts:
 	  "$(_CONTRACTS_BUILD_DIR)";
 	for _network in $(DEPLOYED_NETWORKS); do \
 	  source \
-	    $(_network)/config.sh; \
+	    ${_network}/config.sh; \
 	  solidity-compiler \
 	    -v \
 	    -b \
