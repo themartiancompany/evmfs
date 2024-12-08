@@ -69,7 +69,7 @@ contracts:
 	  solidity-compiler \
 	    -v \
 	    -b \
-	      "$(_SOLIDITY_COMPILER_BACKEND)" \
+	      "$(SOLIDITY_COMPILER_BACKEND)" \
 	    -C \
 	      $${solc_version} \
 	    -e \
