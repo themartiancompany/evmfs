@@ -4,10 +4,15 @@
 PREFIX ?= /usr/local
 _PROJECT=evmfs
 _FS_NAME=FileSystem
-_FS=contracts/$(_FS_NAME)
+_FL_SOL=$(_FS_NAME).sol
+_FS_ABI=$(_FS_NAME).abi.json
+_FS_BYTECODE=$(_FS_NAME).bytecode.json
+_FS_JSON=$(_FS_NAME).json
+_CONTRACTS_PATH=contracts
+_FS_SOL_PATH=$(_CONTRACTS_PATH)/$(_FS_SOL)
+_FS_BYTECODE_PATH=$(_CONTRACTS_PATH)/$(_FS_BYTECODE)
+_FS_ABI_PATH=$(_CONTRACTS_PATH)/$(_FS_ABI)
 _SOLIDITY_COMPILER_BACKEND ?= solc
-_FS_SOL=$(_FS).sol
-_FS_JSON=$(_FS).json
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib/$(_PROJECT)
@@ -43,23 +48,23 @@ contracts:
 	    "$(_PROJECT)/contracts-build" \
 	  -o \
 	    "$(_PROJECT)/build" \
-	  "$(_FS_SOL)";
+	  "$(_FS_SOL_PATH)";
 
 install: $(_INSTALL_CONTRACT_FUN) install-scripts install-doc
 
 install-contracts-solc:
 
 	$(_INSTALL_FILE) \
-	  "$(_PROJECT)/build/$(_FS_NAME).abi.json" \
-	  "$(LIB_DIR)/$(_FS_NAME).abi.json";
+	  "$(_PROJECT)/build/$(_FS_ABI)" \
+	  "$(LIB_DIR)/$(_FS_ABI)";
 	$(_INSTALL_FILE) \
-	  "$(_PROJECT)/build/$(_FS_NAME).bytecode.json" \
+	  "$(_PROJECT)/build/$(_FS_BYTECODE)" \
 	  "$(LIB_DIR)/$(_FS_JSON)";
 
 install-contracts-hardhat:
 
 	$(_INSTALL_FILE) \
-	  "$(_PROJECT)/build/$(_FS_SOL)/$(_FS_NAME).json" \
+	  "$(_PROJECT)/build/$(_FS_SOL)/$(_FS_JSON)" \
 	  "$(LIB_DIR)/$(_FS_JSON)";
 
 install-scripts:
