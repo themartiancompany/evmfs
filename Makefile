@@ -81,12 +81,14 @@ install-contracts: $(INSTALL_CONTRACTS_FUN)
 
 install-contracts-solc:
 
-	$(_INSTALL_FILE) \
-	  "$(_PROJECT)/build/$(_FS_ABI)" \
-	  "$(LIB_DIR)/$(_FS_ABI)";
-	$(_INSTALL_FILE) \
-	  "$(_PROJECT)/build/$(_FS_BYTECODE)" \
-	  "$(LIB_DIR)/$(_FS_JSON)";
+	for _network in $(_DEPLOYMENTS_PATH)/*; do \
+	  $(_INSTALL_FILE) \
+	    "$(_PROJECT)/build/$(_FS_ABI)" \
+	    "$(LIB_DIR)/deployments/$(_FS_ABI)";
+	  $(_INSTALL_FILE) \
+	    "$(_PROJECT)/build/$(_FS_BYTECODE)" \
+	    "$(LIB_DIR)/deployments/$(_FS_JSON)";
+	done
 
 install-contracts-hardhat:
 
