@@ -22,7 +22,7 @@ SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE="install -Dm644"
 _INSTALL_BIN="install -Dm755"
-_INSTALL_CONTRACT_FUN="install-contracts-$(_SOLIDITY_COMPILER_BACKEND)"
+_INSTALL_CONTRACTS_FUN="install-contracts-$(_SOLIDITY_COMPILER_BACKEND)"
 
 all: contracts
 
@@ -51,7 +51,9 @@ contracts:
 	    "$(_PROJECT)/build" \
 	  "$(_FS_SOL_PATH)";
 
-install: $(_INSTALL_CONTRACT_FUN) install-scripts install-doc
+install: install-contracts install-scripts install-doc
+
+install-contracts: $(INSTALL_CONTRACTS_FUN)
 
 install-contracts-solc:
 
@@ -95,4 +97,4 @@ install-doc:
 	  $(DOC_FILES) \
 	  -t $(DOC_DIR);
 
-.PHONY: check install install-doc install-scripts shellcheck
+.PHONY: all contracts check install install-contracts install-contracts-hardhat install-contracts-solc install-doc install-scripts shellcheck
