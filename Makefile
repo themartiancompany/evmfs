@@ -3,8 +3,8 @@
 
 PREFIX ?= /usr/local
 _PROJECT=evmfs
-_BUILD_DIR=$(_PROJECT)/build
-_CONTRACTS_BUILD_DIR=$(_PROJECT)/contracts-build
+_BUILD_DIR=build
+_CONTRACTS_BUILD_DIR=contracts-build
 _FS_NAME=FileSystem
 _FS_SOL=$(_FS_NAME).sol
 _FS_ABI=$(_FS_NAME).abi.json
@@ -18,6 +18,7 @@ DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib/$(_PROJECT)
 
+DEPLOYED_NETWORKS=$(wildcard $(_FS_DEPLOYMENTS_PATH)/*)
 DOC_FILES=$(wildcard *.rst)
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
@@ -59,7 +60,7 @@ contracts:
 	  -p \
 	  "$(_BUILD_DIR)" \
 	  "$(_CONTRACTS_BUILD_DIR)";
-	for _network in $(_FS_DEPLOYMENTS_PATH)/*; do \
+	for _network in $(DEPLOYED_NETWORKS); do \
 	  source \
 	    $(_FS_DEPLOYMENTS_PATH)/${_network}/config.sh; \
 	  solidity-compiler \
