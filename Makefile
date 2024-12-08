@@ -24,9 +24,9 @@ DEPLOYED_NETWORKS=$(notdir $(DEPLOYED_NETWORKS_CONFIG_DIR))
 DOC_FILES=$(wildcard *.rst)
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
-_INSTALL_FILE="install -Dm644"
-_INSTALL_BIN="install -Dm755"
-_INSTALL_CONTRACTS_FUN="install-contracts-$(SOLIDITY_COMPILER_BACKEND)"
+_INSTALL_FILE=install -Dm644
+_INSTALL_BIN=install -Dm755
+_INSTALL_CONTRACTS_FUN=install-contracts-$(SOLIDITY_COMPILER_BACKEND)
 _INSTALL_TARGETS = ' \
   install-doc \
   install-contracts \
