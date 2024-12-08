@@ -21,7 +21,9 @@ _global_variables() {
   wallet_seed=""
   target_network=""
   api_key=""
+  upload_method=""
   wallet_name=""
+  cache_dir=""
   target_file=""
   command_args=()
   color=""
@@ -53,15 +55,16 @@ _get_conf_dir_path() {
     "${_dir}"
 }
 
-# _wallet_address_cmd() {
-#   local \
-#     _command="${1}" \
-#     _lib
-#   _lib="$( \
-#     _get_lib)/evm-wallet"
-#   echo \
-#     "${_lib}/address-${_command}"
-# }
+_cache_dir_auto_detect() {
+  local \
+    _dir
+  _dir="${HOME}/.cache/$( \
+    _get \
+      "app" \
+      "name")"
+  echo \
+    "${_dir}"
+}
 
 _node_run() {
   local \
@@ -91,49 +94,6 @@ _node_run() {
     true
 }
 
-_network_setup() {
-  if [[ "${_network}" == "gnosis" ]]; then
-    _rpc="https://rpc.gnosischain.com"
-    _network_backend="${_network}"
-  elif [[ "${_network}" == "ethereum" ]]; then
-    _network_backend="etherscan"
-  else
-    _network_backend="${_network}"
-  fi
-}
-
-_api_key_read() {
-  local \
-    _path="${1}"
-  if [ ! -e "${_path}" ]; then
-    _msg_error \
-      "service api key file '${_path}' not found" \
-      1
-  fi
-  cat \
-    "${_path}"
-}
-
-_key_get() {
-  local \
-    _key="${1}"
-  if [[ "${_key}" == "address" ]]; then
-    _cmd="$( \
-      _wallet_address_cmd \
-        "get")"
-    _args+=(
-      "${_wallet_seed}"
-      "${_network_backend}"
-      "${_api_key_path}"
-    )
-  elif [[ "${_key}" == "seed" ]]; then
-    cat \
-      "${_wallet_seed}"
-    return \
-      0
-  fi
-}
-
 _file_size_check() {
   local \
     _file="${1}" \
@@ -148,24 +108,101 @@ _file_size_check() {
   fi
 }
 
+_chunk_verify() {
+  local \
+    _contract="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index="${4}" \
+    _payload="${6}" \
+    _uploaded \
+    _verify_dir
+  _verify_dir="${_cache_dir}/${_sum}/verify"
+  mkdir \
+    -p \
+    "${_verify_dir}"
+  evm-c
+}
+
+_sum_get() {
+  local \
+    _content="${1}" 
+  echo \
+    "${_content}" | \
+    sha256sum | \
+      awk \
+        '{print $1}'
+}
+
+_file_hash() {
+  local \
+    _file="${1}" \
+    _content
+  _content="$( \
+    cat \
+      "${_file}")"
+  _sum="$( \
+    _sum_get \
+      "${_content}")"
+  echo \
+   "${_sum}" 
+}
+
+_chunk_publish() {
+  local \
+    _chunk="${1}"
+  evm-contract-call \
+    "${_call_opts[@]}" \
+    "${_uri_contract}" \
+    "publishChunk" \
+    "${_uri_namespace}" \
+    "${_uri_hash}" \
+    "${_chunk}"
+
+}
+
 _file_upload() {
   local \
     _contract="${1}" \
     _namespace="${2}" \
     _file="${3}" \
+    _msg=() \
     _sum \
     _length \
     _queue=() \
+    _total_chunks \
     _chunk \
     _payload \
-    _chunk_prefix
+    _chunk_prefix \
+    _tmp_dir \
+    _evm_contract_call_opts=()
+  _evm_contract_call_opts+=(
+    -n
+      "${_target_network}"
+    -t
+      "dynamic"
+    -k
+      "${_api_key_path}"
+    -N
+      "${_wallet_name}"
+    # TODO: use locally generated
+    #       ABI and bytecode
+    # -A
+    #   "${_contract_abi}"
+  )
+  _sum="$( \
+    _file_hash \
+      "${_file}")"
+  _tmp_dir="${_cache_dir}/${_sum}"
+  mkdir \
+    -p \
+    "${_tmp_dir}"
   _chunk_prefix="$( \
     mktemp \
+      -p \
+        "${_tmp_dir}" \
       --suffix=".base64")"
-  _length="23000"
-  _sum="$( \
-    sha256sum \
-      "${_file}")"
+  _length="22000"
   _file_size_check \
     "${_file}"
   bin2txt \
@@ -184,14 +221,19 @@ _file_upload() {
       "error processing file for upload" \
       1
   fi
+  _total_chunks="${#_queue[@]}"
   _i=0
   for _chunk \
     in "${_queue[@]}"; do
     _payload="$( \
       cat \
         "${_chunk}")"
+    _msg=(
+      "sending chunk '${_chunk}'"
+      "of ${_total_chunks}"
+    )
     _msg_info \
-      "sending ${_chunk}"
+      "${_msg[*]}"
     _chunk_publish \
       "${_contract}" \
       "${_namespace}" \
@@ -201,6 +243,33 @@ _file_upload() {
     _i="$(( \
       _i + 1))"
   done
+  _i=0
+  for _chunk \
+    in "${_queue[@]}"; do
+    _payload="$( \
+      cat \
+        "${_chunk}")"
+    _msg=(
+      "verifying chunk '${_chunk}'"
+      "of ${_total_chunks}"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _chunk_verify \
+      "${_contract}" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_i}" \
+      "${_payload}"
+    _i="$(( \
+      _i + 1))"
+  done
+  _msg=(
+    "file '${_file}' uploaded and"
+    "available at URI"
+    "'evmfs://${_contract}/${_namespace}/${_sum}'")
+  _msg_info \
+    "${_msg[*]}"
 }
 
 _bulk_chunk_publish() {
@@ -233,17 +302,17 @@ _evmfs_publish() {
     _wallet_path="${3}" \
     _wallet_password="${4}" \
     _wallet_seed="${5}" \
-    _network="${6}" \
+    _target_network="${6}" \
     _api_key_path="${7}" \
-    _target_file="${8}" \
+    _upload_method="${8}" \
+    _cache_dir="${9}" \
+    _target_file="${10}" \
     _command_args=() \
     _cmd \
     _args=() \
-    _api_key \
-    _network_backend \
     _namespace
   shift \
-    8
+    10
   _command_args+=(
     "$@"
   )
@@ -252,14 +321,12 @@ _evmfs_publish() {
      get \
        "${_wallet_name}" \
        "address")"
-  _api_key="$( \
-    _api_key_read \
-      "${_api_key_path}")"
-  _network_setup
-  _file_upload \
-    "${_target_contract}" \
-    "${_namespace}" \
-    "${_target_file}"
+  if [[ "${_upload_method}" == "standalone" ]]; then
+    _file_upload \
+      "${_target_contract}" \
+      "${_namespace}" \
+      "${_target_file}"
+  fi
 }
 
 _wallet_path_get() {
@@ -365,11 +432,49 @@ _secret_auto_detect() {
 }
 
 _evmfs_contract_auto_detect() {
-  echo \
-    "0xciao"
+  local \
+    _contract \
+    _network \
+    _evmfs_address_opts=() \
+    _msg=()
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _evmfs_address_opts+=(
+    -n
+      "${_network}"
+  )
+  _contract="$( \
+    evmfs-address \
+      "${_evmfs_address_opts[@]}")"
+  if [[ "${_contract}" == "" ]]; then
+    _msg=(
+      "error getting default contract"
+      "address for network"
+      "'${_network}'"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _set_override \
+    "target" \
+    "contract" \
+    "${_contract}"
 }
 
 _set_overrides() {
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
   _set_override \
     "publish" \
     "date" \
@@ -382,10 +487,7 @@ _set_overrides() {
     "target" \
     "network" \
     "gnosis"
-  _set_override \
-    "target" \
-    "contract" \
-    "$(_evmfs_contract_auto_detect)"
+  _evmfs_contract_auto_detect
   _set_override \
     "api" \
     "key" \
@@ -411,16 +513,14 @@ _set_overrides() {
          get \
            "${wallet_name}" \
            "address")"
-  if [[ -v override_quiet ]]; then
-    quiet="${override_quiet}"
-  elif [[ -z "${quiet}" ]]; then
-    quiet="y"
-  fi
-  if [[ -v override_color ]]; then
-    color="${override_color}"
-  elif [[ -z "${color}" ]]; then
-    color="n"
-  fi
+  _set_override \
+    "cache" \
+    "dir" \
+    "$(_cache_dir_auto_detect)"
+  _set_override \
+    "upload" \
+    "method" \
+    "standalone"
 }
 
 # Show help usage, with an exit status.
@@ -466,6 +566,11 @@ Usage:
                           Default: $(_get "target" "network")
      -k <api_key>         Etherscan-like service key.
                           Default: $(_get "api" "key")
+     -m <upload_method>   It can be 'standalone' or 'bulk'
+                          Default: $(_get "upload" "method")
+     -C <cache_dir>       Work directory
+                          Default: $(_get "cache" "dir")
+
      -h                   This message.
      -c                   Enable color output
      -v                   Enable verbose output
@@ -501,8 +606,10 @@ _show_config() {
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
-  _msg_info "              Target file:   $(_get "target" "file")"
+  _msg_info "            Upload method:   $(_get "upload" "method")"
+  _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "          Target contract:   $(_get "target" "contract")"
+  _msg_info "              Target file:   $(_get "target" "file")"
 }
 
 _globals
@@ -515,7 +622,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'w:p:s:n:k:cvh?' \
+    'w:p:s:n:k:m:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -526,6 +633,7 @@ while \
     s) override_wallet_seed="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
+    m) override_upload_method="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -564,38 +672,39 @@ _config_user_init \
       "name")"
 _show_config
 app_opts=(
-  "$( \
-    _get \
-      "target" \
-      "contract")"
-  "$( \
-    _get \
-      "wallet" \
-      "name")"
-  "$( \
-    _get \
-      "wallet" \
-      "path")"
-  "$( \
-    _get \
-      "wallet" \
-      "password")"
-  "$( \
-    _get \
-      "wallet" \
-      "seed")"
-  "$( \
-    _get \
-      "target" \
-      "network")"
-  "$( \
-    _get \
-      "api" \
-      "key")"
-  "$( \
-    _get \
-      "target" \
-      "file")"
+  "$(_get \
+       "target" \
+       "contract")"
+  "$(_get \
+       "wallet" \
+       "name")"
+  "$(_get \
+       "wallet" \
+       "path")"
+  "$(_get \
+       "wallet" \
+       "password")"
+  "$(_get \
+       "wallet" \
+       "seed")"
+  "$(_get \
+       "target" \
+       "network")"
+  "$(_get \
+       "api" \
+       "key")"
+  "$(_get \
+       "cache" \
+       "dir")"
+  "$(_get \
+       "upload" \
+       "method")"
+  "$(_get \
+       "cache" \
+       "dir")"
+  "$(_get \
+       "target" \
+       "file")"
 )
 _evmfs_publish \
   "${app_opts[@]}"

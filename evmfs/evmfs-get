@@ -247,11 +247,14 @@ _resource_get() {
     _attempt \
     _retries
   _retries="4"
+  mkdir \
+    -p \
+    "${_cache_dir}/${_uri_hash}"
   _tmp_dir="$( \
     mktemp \
       -d \
       -p \
-        "${_cache_dir}")"
+        "${_cache_dir}/${_uri_hash}")"
   _length="$(( \
     "$(_resource_length_get)" + 1))"
   _attempt=1
