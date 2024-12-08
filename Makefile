@@ -82,7 +82,7 @@ install-contracts: $(INSTALL_CONTRACTS_FUN)
 
 install-contracts-solc:
 
-	for _network in $(_DEPLOYMENTS_PATH)/*; do \
+	for _network in $(DEPLOYED_NETWORKS); do \
 	  $(_INSTALL_FILE) \
 	    "$(_PROJECT)/build/$(_FS_ABI)" \
 	    "$(LIB_DIR)/deployments/$(_FS_ABI)";
