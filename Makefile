@@ -63,7 +63,7 @@ contracts:
 	  _work_dir="$(BUILD_DIR)/$${_network}/build"; \
 	  mkdir \
 	    -p \
-	    "$${_network_build_dir}"; \
+	    "$${_work_dir}"; \
 	  source \
 	    "$${_config_file}"; \
 	  solidity-compiler \
