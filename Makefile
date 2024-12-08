@@ -59,8 +59,6 @@ contracts:
 	  -p \
 	  "$(_BUILD_DIR)" \
 	  "$(_CONTRACTS_BUILD_DIR)";
-	local \
-	  _network; \
 	for _network in $(_FS_DEPLOYMENTS_PATH)/*; do \
 	  source \
 	    $(_FS_DEPLOYMENTS_PATH)/${_network}/config.sh; \
