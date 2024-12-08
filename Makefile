@@ -9,11 +9,11 @@ _FS_ABI=$(_FS_NAME).abi.json
 _FS_BYTECODE=$(_FS_NAME).bytecode.json
 _FS_JSON=$(_FS_NAME).json
 _CONTRACTS_PATH=contracts
+_FS_DEPLOYMENTS_PATH=$(_CONTRACTS_PATH)/deployments
 _FS_SOL_PATH=$(_CONTRACTS_PATH)/$(_FS_SOL)
 _FS_BYTECODE_PATH=$(_CONTRACTS_PATH)/$(_FS_BYTECODE)
 _FS_ABI_PATH=$(_CONTRACTS_PATH)/$(_FS_ABI)
 _SOLIDITY_COMPILER_BACKEND ?= solc
-_EVM_VERSION ?= 0.8.24
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib/$(_PROJECT)
@@ -59,17 +59,23 @@ contracts:
 	  -p \
 	  "$(_PROJECT)/build" \
 	  "$(_PROJECT)/contracts-build";
-	solidity-compiler \
-	  -v \
-	  -b \
-	    "$(_SOLIDITY_COMPILER_BACKEND)" \
-	  -e \
-	    "$(_EVM_VERSION)" \
-	  -w \
-	    "$(_PROJECT)/contracts-build" \
-	  -o \
-	    "$(_PROJECT)/build" \
-	  "$(_FS_SOL_PATH)";
+	for _network in $(_DEPLOYMENTS_PATH)/*; do \
+	  source \
+	    $(_DEPLOYMENTS_PATH)/${_network}/config.sh; \
+	  solidity-compiler \
+	    -v \
+	    -b \
+	      "$(_SOLIDITY_COMPILER_BACKEND)" \
+	    -C \
+	      ${solc_version} \
+	    -e \
+	      "${evm_version}" \
+	    -w \
+	      "$(_PROJECT)/contracts-build" \
+	    -o \
+	      "$(_PROJECT)/build" \
+	    "$(_FS_SOL_PATH)"; \
+	done
 
 install-contracts: $(INSTALL_CONTRACTS_FUN)
 
