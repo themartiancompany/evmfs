@@ -13,6 +13,7 @@ _FS_SOL_PATH=$(_CONTRACTS_PATH)/$(_FS_SOL)
 _FS_BYTECODE_PATH=$(_CONTRACTS_PATH)/$(_FS_BYTECODE)
 _FS_ABI_PATH=$(_CONTRACTS_PATH)/$(_FS_ABI)
 _SOLIDITY_COMPILER_BACKEND ?= solc
+_EVM_VERSION ?= 0.8.24
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib/$(_PROJECT)
@@ -60,6 +61,8 @@ contracts:
 	  -v \
 	  -b \
 	    "$(_SOLIDITY_COMPILER_BACKEND)" \
+	  -e \
+	    "$(_EVM_VERSION)" \
 	  -w \
 	    "$(_PROJECT)/contracts-build" \
 	  -o \
