@@ -53,6 +53,8 @@ shellcheck:
 
 contracts:
 
+        echo \
+	  "$(_FS_SOL_PATH)";
 	mkdir \
 	  -p \
 	  "$(_PROJECT)/build" \
