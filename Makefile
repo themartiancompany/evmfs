@@ -53,7 +53,7 @@ shellcheck:
 
 contracts:
 
-        echo \
+	echo \
 	  "$(_FS_SOL_PATH)";
 	mkdir \
 	  -p \
