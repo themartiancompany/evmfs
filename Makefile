@@ -29,6 +29,7 @@ all: contracts
 check: shellcheck
 
 shellcheck:
+
 	shellcheck \
 	  -s \
 	    bash \
