@@ -4,7 +4,7 @@
 PREFIX ?= /usr/local
 _PROJECT=evmfs
 _FS_NAME=FileSystem
-_FL_SOL=$(_FS_NAME).sol
+_FS_SOL=$(_FS_NAME).sol
 _FS_ABI=$(_FS_NAME).abi.json
 _FS_BYTECODE=$(_FS_NAME).bytecode.json
 _FS_JSON=$(_FS_NAME).json
@@ -53,8 +53,6 @@ shellcheck:
 
 contracts:
 
-	echo \
-	  "$(_FS_SOL_PATH)";
 	mkdir \
 	  -p \
 	  "$(_PROJECT)/build" \
