@@ -35,6 +35,9 @@ _requirements() {
     'evm-contract-call' \
     'evm-contracts-tools'
   _check_cmd \
+    'evm-contract-deployment-address' \
+    'evm-contracts-tools'
+  _check_cmd \
     'evm-wallet'
   _check_cmd \
     'bin2txt' \
@@ -446,6 +449,8 @@ _evmfs_contract_auto_detect() {
       "${_network}"
   )
   _contract="$( \
+    evm-contract-deployment-address \
+      -a
     evmfs-address \
       "${_evmfs_address_opts[@]}")"
   if [[ "${_contract}" == "" ]]; then
@@ -551,9 +556,9 @@ Usage:
     publicPolygon
     quicknode
   options:
-     -A <target_contract> Address of the EVM file system 
+     -A <fs_address>      Address of the EVM file system
                           on the network.
-                          Default: $(_get "target" "contract")
+                          Default: $(_get "fs" "address")
      -n <wallet_name>     Wallet name.
                           Default: $(_get "wallet" "name")
      -w <wallet_path>     Wallet path.
@@ -599,6 +604,9 @@ _display_flags() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "             Publish date:   $(_get "publish" "date")"
+  _msg_info "      File system address:   $(_get "fs" "address")"
+  _msg_info "      File system version:   $(_get "fs" "version")"
+  _msg_info "    Deployments directory:   $(_get "deployments" "dir")"
   _msg_info "                Namespace:   $(_get "wallet" "address")"
   _msg_info "              Wallet name:   $(_get "wallet" "name")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
@@ -608,7 +616,6 @@ _show_config() {
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "            Upload method:   $(_get "upload" "method")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
-  _msg_info "          Target contract:   $(_get "target" "contract")"
   _msg_info "              Target file:   $(_get "target" "file")"
 }
 
@@ -622,18 +629,21 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'w:p:s:n:k:m:cvh?' \
+    'A:V:d:N:w:p:s:n:k:m:cvh?' \
     arg; do
   case \
     "${arg}" in
-    A) override_target_contract="${OPTARG}" ;;
-    n) override_wallet_name="${OPTARG}" ;;
+    A) override_fs_address="${OPTARG}" ;;
+    V) override_fs_version="${OPTARG}" ;;
+    d) override_deployments_dir="${OPTARG}" ;;
+    N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_upload_method="${OPTARG}" ;;
+    C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -673,8 +683,14 @@ _config_user_init \
 _show_config
 app_opts=(
   "$(_get \
-       "target" \
-       "contract")"
+       "fs" \
+       "address")"
+  "$(_get \
+       "fs" \
+       "version")"
+  "$(_get \
+       "deployments" \
+       "dir")"
   "$(_get \
        "wallet" \
        "name")"
