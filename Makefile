@@ -116,7 +116,7 @@ contracts:
 	  done; \
 	done
 
-install-contract-sources:
+install-contracts-sources:
 
 	for _version in $(_FS_VERSIONS); do \
 	  $(_INSTALL_FILE) \
