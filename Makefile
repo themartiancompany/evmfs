@@ -51,7 +51,7 @@ _INSTALL_CONTRACTS_TARGETS_ALL:=\
   install-contracts-sources
 _INSTALL_TARGETS:=\
   install-doc \
-  $(_INSTALL_CONTRACTS_TARGETS)' \
+  $(_INSTALL_CONTRACTS_TARGETS) \
   install-scripts
 _INSTALL_TARGETS_ALL:=\
   install \
