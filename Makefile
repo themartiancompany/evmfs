@@ -35,6 +35,7 @@ _PHONY_TARGETS  = ' \
   all \
   contracts \
   check \
+  clean \
   install \
   $(_INSTALL_TARGETS) \
   install-contracts-hardhat \
@@ -44,6 +45,12 @@ _PHONY_TARGETS  = ' \
 all: contracts
 
 install: $(_INSTALL_TARGETS)
+
+clean:
+
+	rm \
+	  -rf \
+	  "$(BUILD_DIR)"
 
 check: shellcheck
 
