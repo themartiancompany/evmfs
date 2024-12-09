@@ -43,11 +43,13 @@ _CLEAN_TARGETS_ALL:=\
   clean
 _INSTALL_CONTRACTS_TARGETS:=\
   $(_INSTALL_CONTRACTS_DEPLOYMENT_FUN) \
+  install-contracts-deployments-config \
   install-contracts-sources
 _INSTALL_CONTRACTS_TARGETS_ALL:=\
   install-contracts \
   install-contracts-deployments-hardhat \
   install-contracts-deployment-solc \
+  install-contracts-deployments-config \
   install-contracts-sources
 _INSTALL_TARGETS:=\
   install-doc \
@@ -122,6 +124,17 @@ install-contracts-sources:
 	  $(_INSTALL_FILE) \
 	    "$(_FS_DIR)/$${_version}/$(_FS_SOL)" \
 	    "$(LIB_DIR)/contracts/$${_version}/$(_FS_SOL)"; \
+	done
+
+install-contracts-deployments-config:
+
+	for _network in $(DEPLOYED_NETWORKS); do \
+	  _deployment_dir="$(_FS_DEPLOYMENTS_DIR)/$${_network}"; \
+	  _config_file="$${_deployment_dir}/config.sh"; \
+	  _install_dir="$(LIB_DIR)/deployments/$${_network}"; \
+	  $(_INSTALL_FILE) \
+	    "$${_deployment_dir}/config.sh" \
+	    "$${_install_dir}/config.sh"; \
 	done
 
 install-contracts-deployments-solc:

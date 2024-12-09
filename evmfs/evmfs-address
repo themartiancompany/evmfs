@@ -17,6 +17,7 @@ _global_variables() {
   resolve_date=""
   target_network=""
   network_id=""
+  fs_version=""
   color=""
   quiet=""
 }
@@ -132,6 +133,10 @@ _set_overrides() {
     "network" \
     "id" \
     "100"
+  _set_override \
+    "fs" \
+    "version" \
+    "1"
 }
 
 # Show help usage, with an exit status.
@@ -154,13 +159,15 @@ Usage:
 
   networks:
     gnosis
-    Default: '$(_get "target" "network")'
 
   options:
      -n <network>         EVM network name ('gnosis').
                           Default: $(_get "target" "network")
      -i <network_id>      EVM network id.
                           Default: $(_get "network" "id")
+     -V <fs_version>      File system's contract vesion.
+                          Default: $(_get "fs" "version")
+
      -h                   This message.
      -c                   Enable color output
      -v                   Enable verbose output
@@ -191,6 +198,7 @@ _show_config() {
   _msg_info "             Resolve date:   $(_get "resolve" "date")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "               Network ID:   $(_get "network" "id")"
+  _msg_info "      File System version:   $(_get "fs" "version")"
 }
 
 _globals
@@ -203,12 +211,13 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'n:i:cvh?' \
+    'n:i:V:cvh?' \
     arg; do
   case \
     "${arg}" in
     n) override_target_network="${OPTARG}" ;;
     i) override_network_id="${OPTARG}" ;;
+    V) override_fs_version="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -243,6 +252,10 @@ app_opts=(
     _get \
       "network" \
       "id")"
+  "$( \
+    _get \
+      "fs" \
+      "version")"
 )
 _evmfs_address \
   "${app_opts[@]}"
