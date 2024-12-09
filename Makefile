@@ -134,7 +134,7 @@ install-contracts-deployments-solc:
 	  for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
 	    _build_dir="$(BUILD_DIR)/$${_deployment}"; \
-	    _install_dir"$(LIB_DIR)/deployments/$${_deployment}"; \
+	    _install_dir="$(LIB_DIR)/deployments/$${_deployment}"; \
 	    $(_INSTALL_FILE) \
 	      "$${_build_dir}/$(_FS_ABI)" \
 	      "$${_install_dir}/$(_FS_ABI)"; \
@@ -154,7 +154,7 @@ install-contracts-deployments-hardhat:
 	  for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
 	    _build_dir="$(BUILD_DIR)/$${_deployment}; \
-	    _install_dir"$(LIB_DIR)/deployments/$${_deployment}"; \
+	    _install_dir="$(LIB_DIR)/deployments/$${_deployment}"; \
 	    $(_INSTALL_FILE) \
 	      "$${_build_dir}/$(_FS_SOL)/$(_FS_JSON)" \
 	      "$${_install_dir}/$(_FS_JSON)"; \
