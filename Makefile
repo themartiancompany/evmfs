@@ -18,46 +18,47 @@ BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib/$(_PROJECT)
 BUILD_DIR=build
 CONTRACTS_BUILD_WORK_DIR=contracts-build
-SOLIDITY_COMPILER_BACKEND ?= solc
+SOLIDITY_COMPILER_BACKEND:=solc
 
 DEPLOYED_NETWORKS_CONFIG_DIR=$(wildcard $(_FS_DEPLOYMENTS_DIR)/*)
 DEPLOYED_NETWORKS=$(notdir $(DEPLOYED_NETWORKS_CONFIG_DIR))
 DOC_FILES=$(wildcard *.rst)
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
-_INSTALL_FILE=install -Dm644
-_INSTALL_EXE=install -Dm755
-_INSTALL_CONTRACTS_DEPLOYMENT_FUN='\
+_INSTALL_FILE := install -Dm644
+_INSTALL_EXE := install -Dm755
+_INSTALL_CONTRACTS_DEPLOYMENT_FUN := ' \
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)'
-_BUILD_TARGETS=contracts
-_BUILD_TARGETS_ALL = ' \
+_BUILD_TARGETS := ' \
+  contracts'
+_BUILD_TARGETS_ALL := ' \
   all \
   $(_BUILD_TARGETS)'
-_CHECK_TARGETS = ' \
+_CHECK_TARGETS := ' \
   shellcheck'
-_CHECK_TARGETS_ALL = ' \
+_CHECK_TARGETS_ALL := ' \
   check \
   $(_CHECK_TARGETS)'
-_CLEAN_TARGETS_ALL = ' \
+_CLEAN_TARGETS_ALL := ' \
   clean'
-_INSTALL_CONTRACTS_TARGETS = ' \
+_INSTALL_CONTRACTS_TARGETS := ' \
   $(_INSTALL_CONTRACTS_DEPLOYMENT_FUN) \
   install-contracts-sources'
-_INSTALL_CONTRACTS_TARGETS_ALL = ' \
+_INSTALL_CONTRACTS_TARGETS_ALL := ' \
   install-contracts \
   install-contracts-deployments-hardhat \
   install-contracts-deployment-solc \
   install-contracts-sources'
-_INSTALL_TARGETS = ' \
+_INSTALL_TARGETS := ' \
   install-doc \
   $(_INSTALL_CONTRACTS_TARGETS)' \
   install-scripts'
-_INSTALL_TARGETS_ALL = ' \
+_INSTALL_TARGETS_ALL := ' \
   install \
   install-doc \
   $(_INSTALL_CONTRACTS_TARGETS_ALL) \
   install-scripts'
-_PHONY_TARGETS  = ' \
+_PHONY_TARGETS  := ' \
   $(_BUILD_TARGETS_ALL) \
   $(_CHECK_TARGETS_ALL) \
   $(_CLEAN_TARGETS_ALL) \
