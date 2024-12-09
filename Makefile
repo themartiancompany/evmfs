@@ -26,39 +26,57 @@ DOC_FILES=$(wildcard *.rst)
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -Dm644
-_INSTALL_BIN=install -Dm755
+_INSTALL_EXE=install -Dm755
 _INSTALL_CONTRACTS_DEPLOYMENT_FUN = ' \
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)'
-_INSTALL_TARGETS = ' \
-  install-doc \
-  install-contracts \
-  install-scripts'
+_BUILD_TARGETS = ' \
+  contracts'
+_BUILD_TARGETS_ALL = ' \
+  all \
+  $(_BUILD_TARGETS)'
+_CHECK_TARGETS = ' \
+  shellcheck'
+_CHECK_TARGETS_ALL = ' \
+  check \
+  $(_CHECK_TARGETS)'
+_CLEAN_TARGETS_ALL = '
+  clean'
 _INSTALL_CONTRACTS_TARGETS = ' \
   $(_INSTALL_CONTRACTS_DEPLOYMENT_FUN) \
   install-contract-sources'
-_PHONY_TARGETS  = ' \
-  all \
-  contracts \
-  check \
-  clean \
-  install \
-  $(_INSTALL_TARGETS) \
+_INSTALL_CONTRACTS_TARGETS_ALL = ' \
+  install-contracts \
   install-contracts-deployments-hardhat \
-  install-contracts-deployments-solc \
-  install-contract-sources \
-  shellcheck'
+  install-contracts-deployment-solc \
+  install-contract-sources'
+_INSTALL_TARGETS = ' \
+  install-doc \
+  $(_INSTALL_CONTRACTS_TARGETS)' \
+  install-scripts'
+_INSTALL_TARGETS_ALL = ' \
+  install \
+  install-doc \
+  $(_INSTALL_CONTRACTS_TARGETS_ALL) \
+  install-scripts'
+_PHONY_TARGETS  = ' \
+  $(_BUILD_TARGETS_ALL) \
+  $(_CHECK_TARGETS_ALL) \
+  $(_CLEAN_TARGETS_ALL) \
+  $(_INSTALL_TARGETS_ALL)'
 
-all: contracts
+all: $(_BUILD_TARGETS)
 
 install: $(_INSTALL_TARGETS)
+
+check: $(_CHECK_TARGETS)
+
+install-contracts: $(INSTALL_CONTRACTS_TARGETS)
 
 clean:
 
 	rm \
 	  -rf \
 	  "$(BUILD_DIR)"
-
-check: shellcheck
 
 shellcheck:
 
@@ -97,8 +115,6 @@ contracts:
 	      "$(_FS_SOL_PATH)"; \
 	  done; \
 	done
-
-install-contracts: $(INSTALL_CONTRACTS_TARGETS)
 
 install-contract-sources:
 
@@ -144,31 +160,31 @@ install-contracts-deployments-hardhat:
 	      "$${_install_dir}/$(_FS_JSON)"; \
 	done
 
-install-scripts:
-
-	$(_INSTALL_BIN) \
-	  "$(_FS_SOL)" \
-	  "$(LIB_DIR)/$(_FS_SOL)";
-	$(_INSTALL_BIN) \
-	  "$(_PROJECT)/publish" \
-	  "$(LIB_DIR)/publish";
-	$(_INSTALL_BIN) \
-	  "$(_PROJECT)/$(_PROJECT)-address" \
-	  "$(BIN_DIR)/$(_PROJECT)-address";
-	$(_INSTALL_BIN) \
-	  "$(_PROJECT)/$(_PROJECT)-get" \
-	  "$(BIN_DIR)/$(_PROJECT)-get";
-	$(_INSTALL_BIN) \
-	  "$(_PROJECT)/$(_PROJECT)-publish" \
-	  "$(BIN_DIR)/$(_PROJECT)-publish";
-	$(_INSTALL_BIN) \
-	  "$(_PROJECT)/$(_PROJECT)" \
-	  "$(BIN_DIR)/$(_PROJECT)";
-
 install-doc:
 
 	$(_INSTALL_FILE) \
 	  $(DOC_FILES) \
 	  -t $(DOC_DIR);
+
+install-scripts:
+
+	$(_INSTALL_EXE) \
+	  "$(_FS_SOL)" \
+	  "$(LIB_DIR)/$(_FS_SOL)";
+	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/publish" \
+	  "$(LIB_DIR)/publish";
+	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/$(_PROJECT)-address" \
+	  "$(BIN_DIR)/$(_PROJECT)-address";
+	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/$(_PROJECT)-get" \
+	  "$(BIN_DIR)/$(_PROJECT)-get";
+	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/$(_PROJECT)-publish" \
+	  "$(BIN_DIR)/$(_PROJECT)-publish";
+	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/$(_PROJECT)" \
+	  "$(BIN_DIR)/$(_PROJECT)";
 
 .PHONY: $(_PHONY_TARGETS)
