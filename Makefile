@@ -133,7 +133,7 @@ install-contracts-deployments-config:
 	for _network in $(DEPLOYED_NETWORKS); do \
 	  _deployment_dir="$(_FS_DEPLOYMENTS_DIR)/$${_network}"; \
 	  _config_file="$${_deployment_dir}/config.sh"; \
-	  _install_dir="$(LIB_DIR)/$(_FS_NAME)/deployments/$${_network}"; \
+	  _install_dir="$(LIB_DIR)/deployments/$(_FS_NAME)$${_network}"; \
 	  $(_INSTALL_FILE) \
 	    "$${_deployment_dir}/config.sh" \
 	    "$${_install_dir}/config.sh"; \
@@ -149,7 +149,7 @@ install-contracts-deployments-solc:
 	  for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
 	    _build_dir="$(BUILD_DIR)/$${_deployment}"; \
-	    _install_dir="$(LIB_DIR)/$(_FS_NAME)/deployments/$${_deployment}"; \
+	    _install_dir="$(LIB_DIR)/deployments/$(_FS_NAME)/$${_deployment}"; \
 	    $(_INSTALL_FILE) \
 	      "$${_build_dir}/$(_FS_ABI)" \
 	      "$${_install_dir}/$(_FS_ABI)"; \
@@ -169,7 +169,7 @@ install-contracts-deployments-hardhat:
 	  for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
 	    _build_dir="$(BUILD_DIR)/$${_deployment}; \
-	    _install_dir="$(LIB_DIR)/$(_FS_NAME)/deployments/$${_deployment}"; \
+	    _install_dir="$(LIB_DIR)/deployments/$(_FS_NAME)/$${_deployment}"; \
 	    $(_INSTALL_FILE) \
 	      "$${_build_dir}/$(_FS_SOL)/$(_FS_JSON)" \
 	      "$${_install_dir}/$(_FS_JSON)"; \
