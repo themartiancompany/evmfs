@@ -27,7 +27,7 @@ SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -Dm644
 _INSTALL_EXE=install -Dm755
-_INSTALL_CONTRACTS_DEPLOYMENT_FUN = ' \
+_INSTALL_CONTRACTS_DEPLOYMENT_FUN='\
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)'
 _BUILD_TARGETS=contracts
 _BUILD_TARGETS_ALL = ' \
@@ -42,12 +42,12 @@ _CLEAN_TARGETS_ALL = ' \
   clean'
 _INSTALL_CONTRACTS_TARGETS = ' \
   $(_INSTALL_CONTRACTS_DEPLOYMENT_FUN) \
-  install-contract-sources'
+  install-contracts-sources'
 _INSTALL_CONTRACTS_TARGETS_ALL = ' \
   install-contracts \
   install-contracts-deployments-hardhat \
   install-contracts-deployment-solc \
-  install-contract-sources'
+  install-contracts-sources'
 _INSTALL_TARGETS = ' \
   install-doc \
   $(_INSTALL_CONTRACTS_TARGETS)' \
