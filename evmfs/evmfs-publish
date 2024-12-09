@@ -15,14 +15,16 @@ source \
 # shellcheck disable=SC2034
 _global_variables() {
   publish_date=""
-  target_contract=""
+  fs_address=""
+  fs_version=""
+  deployments_dir=""
+  wallet_name=""
   wallet_path=""
   wallet_password=""
   wallet_seed=""
   target_network=""
   api_key=""
   upload_method=""
-  wallet_name=""
   cache_dir=""
   target_file=""
   command_args=()
