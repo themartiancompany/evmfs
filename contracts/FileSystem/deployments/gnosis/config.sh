@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+declare \
+  -A \
+  solc_version \
+  evm_version \
+  contract_address
+
 solc_version=(
   ["v1"]="0.8.24"
 )
