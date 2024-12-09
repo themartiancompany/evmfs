@@ -30,7 +30,7 @@ _INSTALL_EXE=install -Dm755
 _INSTALL_CONTRACTS_DEPLOYMENT_FUN:=\
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)
 _BUILD_TARGETS:=\
-  contracts'
+  contracts
 _BUILD_TARGETS_ALL:=\
   all \
   $(_BUILD_TARGETS)
