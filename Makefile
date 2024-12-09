@@ -92,7 +92,7 @@ contracts:
 	  _config_file="$${_deployment_dir}/config.sh"; \
 	  source \
 	    "$${_config_file}"; \
-          for _version in "${!contract_address[@]}"; do \
+	for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
 	    _build_dir="$(BUILD_DIR)/$${_deployment}"; \
 	    _work_dir="$${_build_dir}/build"; \
@@ -131,7 +131,7 @@ install-contracts-deployments-solc:
 	  _config_file="$${_deployment_dir}/config.sh"; \
 	  source \
 	    "$${_config_file}"; \
-	  for _version in "${!contract_address[@]}"; do \
+	  for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
 	    _build_dir="$(BUILD_DIR)/$${_deployment}; \
 	    _install_dir"$(LIB_DIR)/deployments/$${_deployment}"; \
@@ -151,7 +151,7 @@ install-contracts-deployments-hardhat:
 	  _config_file="$${_deployment_dir}/config.sh"; \
 	  source \
 	    "$${_config_file}"; \
-	  for _version in "${!contract_address[@]}"; do \
+	  for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
 	    _build_dir="$(BUILD_DIR)/$${_deployment}; \
 	    _install_dir"$(LIB_DIR)/deployments/$${_deployment}"; \
