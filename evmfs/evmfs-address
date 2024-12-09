@@ -18,6 +18,7 @@ _global_variables() {
   target_network=""
   network_id=""
   fs_version=""
+  user_defined=""
   color=""
   quiet=""
 }
@@ -37,62 +38,74 @@ _get_conf_dir_path() {
     "${_dir}"
 }
 
-_network_setup() {
+_contract_address_get() {
+  local \
+    _network="${1}" \
+
+}
+
+_network_check() {
   local \
     _target_network="${1}" \
     _target_network_id="${2}" \
     _msg=()
   if [[ "${_target_network}" == "gnosis" ]]; then
     _network_id="100"
-    _contract_address="0x69470b18f8b8b5f92b48f6199dcb147b4be96571"
   else
     _msg=(
-      "No Ethereum Virtual Machine file system"
+      "no Ethereum Virtual Machine file system"
       "deployed on network '${_target_network}'"
     )
     _msg_error \
       "${_msg[*]}" \
       1
   fi
-  if [[ "${_target_network_id}" != "${_network_id}" ]]; then
+  if [[ "${_target_network_id}" != "" ]]; then
+    if [[ "${_target_network_id}" != "${_network_id}" ]]; then
     _msg=(
-      "Requested target network ID"
+      "requested target network ID"
       "'${_target_network_id}' does"
       "not correspond to '${_target_network}'"
       "known ID '${_network_id}'"
     )
     _msg_error \
-      "ID ${_requested}" \
+      "${_msg[*]}" \
       1
+    fi
   fi
-
 }
 
-_address_file_user_save() {
-  local \
-    _network_id="${1}" \
-    _address="${2}" \
-    _conf_dir \
-    _address_file
-  _conf_dir="${HOME}/.config/evmfs/${_network_id}"
-  _address_file="${_conf_dir}/address"
-  if [ ! -e "${_address_file}" ]; then
-    mkdir \
-      -p \
-      "${_conf_dir}"
-    echo \
-      "${_address}" > \
-      "${_address_file}"
-    chmod \
-      400 \
-      "${_address_file}"
-  fi
+_user_deployments_init() {
+  mkdir \
+    -p \
+    "${_deployments_path}"
+  chmod \
+    700 \
+    "${_deployments_path}"
+  cp \
+    -r \
+    "$(_fs_deployments_path_get \
+         "system")/"* \
+    "${_deployments_path}"
+}
+
+_user_deployments_check() {
+   if [[ ! -e "${_deployments_path}" ]]; then
+     _user_deployments_init
+   fi
 }
 
 _evmfs_address() {
   local \
     _target_network="${1}" \
     _target_network_id="${2}" \
+    _fs_version="${3}" \
+    _user_defined="${4}" \
+    _deployments_path="${5}" \
+    _system_deployments_path \
+    _user_deployments_path \
+    _network_id \
+    _contract_address \
     _args=() \
     _msg=()
   shift \
@@ -100,14 +113,84 @@ _evmfs_address() {
   _args+=(
     "$@"
   )
-  _network_setup \
+  _network_check \
     "${_target_network}" \
     "${_target_network_id}"
-  _address_file_user_save \
-    "${_target_network_id}" \
-    "${_contract_address}"
+  if [[ "${_user_defined}" == "n" ]]; then
+    _system_deployments_path="$( \
+      _fs_deployments_path_get \
+        "system")"
+    if [[ "${_deployments_path}" != "${_system_deployments_path}" ]]; then
+      _msg=(
+        "to set a custom deployments path"
+        "you need to enable the user-defined"
+        "deployments switch with '-u'"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+    _network_check \
+      "${_target_network}" \
+      "${_target_network_id}" \
+      "${_fs_version}"
+  elif [[ "${_user_defined}" == "y" ]]; then
+    _user_deployments_path="$( \
+      _fs_deployments_path_get \
+        "user")"
+    if [[ "${_deployments_path}" != "${_user_deployments_path}" ]]; then
+      _msg=(
+        "using custom deployments path"
+        "'${_deployments_path}'"
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_deployments_path}" == "${_user_deployments_path}" ]]; then
+      _user_deployments_check
+    fi
+  fi
+  _contract_address_get \
+    "${_deployments_path}" \
+
   echo \
     "${_contract_address}"
+}
+
+_fs_deployments_path_get() {
+  local \
+    _type="${1}" \
+    _conf_dir
+  if [[ "${_type}" == "system" ]]; then
+    _conf_dir="$( \
+      _get_lib)"
+  elif [[ "${_type}" == "user" ]]; then
+    _conf_dir="${HOME}/.config"
+  fi
+  echo \
+    "${_conf_dir}/evmfs/deployment"
+}
+
+_deployments_path_auto_detect() {
+  local \
+    _deployments \
+    _user_defined
+  _user_defined="$( \
+    _get \
+      "user" \
+      "defined")"
+  if [[ "${_user_defined}" == "n" ]]; then
+    _deployments="$( \
+      _fs_deployments_path \
+        "system")"
+  elif [[ "${_user_defined}" == "y" ]]; then
+    _deployments="$( \
+      _fs_deployments_path \
+        "system")"
+  fi
+  _set_override \
+    "deployments" \
+    "dir" \
+    "${_deployments}"
 }
 
 _set_overrides() {
@@ -132,11 +215,16 @@ _set_overrides() {
   _set_override \
     "network" \
     "id" \
-    "100"
+    ""
   _set_override \
     "fs" \
     "version" \
     "1"
+  _set_override \
+    "user" \
+    "defined" \
+    "n"
+  _deployments_path_auto_detect
 }
 
 # Show help usage, with an exit status.
@@ -167,6 +255,14 @@ Usage:
                           Default: $(_get "network" "id")
      -V <fs_version>      File system's contract vesion.
                           Default: $(_get "fs" "version")
+     -u                   Returns contract address for
+                          user-defined file system
+                          deployment instead of the
+                          system one.
+                          Default: $(_get "user" "defined")
+     -d                   Specify contracts deployments path
+                          Default: $(_get "deployments" "path")
+
 
      -h                   This message.
      -c                   Enable color output
@@ -199,6 +295,8 @@ _show_config() {
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "               Network ID:   $(_get "network" "id")"
   _msg_info "      File System version:   $(_get "fs" "version")"
+  _msg_info "     User-defined address:   $(_get "user" "defined")"
+  _msg_info "         Deployments path:   $(_get "deployments" "path")"
 }
 
 _globals
@@ -211,13 +309,15 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'n:i:V:cvh?' \
+    'n:i:V:ud:cvh?' \
     arg; do
   case \
     "${arg}" in
     n) override_target_network="${OPTARG}" ;;
     i) override_network_id="${OPTARG}" ;;
     V) override_fs_version="${OPTARG}" ;;
+    u) override_user_defined="y" ;;
+    d) override_deployments_path="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -256,6 +356,14 @@ app_opts=(
     _get \
       "fs" \
       "version")"
+  "$( \
+    _get \
+      "user" \
+      "defined")"
+  "$( \
+    _get \
+      "deployments" \
+      "path")"
 )
 _evmfs_address \
   "${app_opts[@]}"
