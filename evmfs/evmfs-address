@@ -27,21 +27,14 @@ _requirements() {
   true
 }
 
-_get_conf_dir_path() {
-  local \
-    _dir
-  _dir="${HOME}/.config/$( \
-    _get \
-      "app" \
-      "name")"
-  echo \
-    "${_dir}"
-}
-
 _contract_address_get() {
   local \
-    _network="${1}" \
-
+    _deployments_path="${1}" \
+    _network="${2}" \
+    _fs_version="${3}" \
+    _config
+  _config="${_deployments_path}/config.sh"
+  source 
 }
 
 _network_check() {
@@ -151,7 +144,8 @@ _evmfs_address() {
   fi
   _contract_address_get \
     "${_deployments_path}" \
-
+    "${_target_network}" \
+    "${_fs_version}"
   echo \
     "${_contract_address}"
 }
