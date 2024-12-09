@@ -133,7 +133,7 @@ install-contracts-deployments-config:
 	for _network in $(DEPLOYED_NETWORKS); do \
 	  _deployment_dir="$(_FS_DEPLOYMENTS_DIR)/$${_network}"; \
 	  _config_file="$${_deployment_dir}/config.sh"; \
-	  _install_dir="$(LIB_DIR)/deployments/$(_FS_NAME)$${_network}"; \
+	  _install_dir="$(LIB_DIR)/deployments/$(_FS_NAME)/$${_network}"; \
 	  $(_INSTALL_FILE) \
 	    "$${_deployment_dir}/config.sh" \
 	    "$${_install_dir}/config.sh"; \
