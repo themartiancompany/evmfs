@@ -169,9 +169,6 @@ install-doc:
 install-scripts:
 
 	$(_INSTALL_EXE) \
-	  "$(_FS_SOL)" \
-	  "$(LIB_DIR)/$(_FS_SOL)";
-	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/publish" \
 	  "$(LIB_DIR)/publish";
 	$(_INSTALL_EXE) \
