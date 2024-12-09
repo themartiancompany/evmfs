@@ -436,12 +436,17 @@ _secret_auto_detect() {
     "${_path}"
 }
 
-_evmfs_contract_auto_detect() {
+_fs_address_auto_detect() {
   local \
-    _contract \
+    _address \
     _network \
-    _evmfs_address_opts=() \
+    _deployments_dir \
+    _evm_contract_deployment_address_opts=() \
     _msg=()
+  _deployments_dir="$( \
+    _get \
+      "deployments" \
+      "dir")"
   _network="$( \
     _get \
       "target" \
@@ -450,7 +455,7 @@ _evmfs_contract_auto_detect() {
     -n
       "${_network}"
   )
-  _contract="$( \
+  _address="$( \
     evm-contract-deployment-address \
       -a
     evmfs-address \
@@ -469,6 +474,30 @@ _evmfs_contract_auto_detect() {
     "target" \
     "contract" \
     "${_contract}"
+}
+
+_deployments_dir_auto_detect() {
+  local \
+    _user_level \
+    _evm_contract_deployments_dir_opts=() \
+    _deployments_dir
+  _user_level="$( \
+    _get \
+      "user" \
+      "level")"
+  if [[ "${_user_level}" == "y" ]]; then
+    _evm_contract_deployments_dir_opts+=(
+      -u
+    )
+  fi
+  _deployments_dir="$( \
+    evm-contract-deployments-dir \
+      "${_evm_contract_deployments_dir_opts[@]}" \
+      "evmfs")"
+  _set_override \
+    "deployments" \
+    "dir" \
+    "${_deployments_dir}"
 }
 
 _set_overrides() {
@@ -494,7 +523,6 @@ _set_overrides() {
     "target" \
     "network" \
     "gnosis"
-  _evmfs_contract_auto_detect
   _set_override \
     "api" \
     "key" \
@@ -528,6 +556,12 @@ _set_overrides() {
     "upload" \
     "method" \
     "standalone"
+  _set_override \
+    "user" \
+    "level" \
+    "n"
+  _deployments_dir_auto_detect
+  _evmfs_contract_auto_detect
 }
 
 # Show help usage, with an exit status.
@@ -561,6 +595,9 @@ Usage:
      -A <fs_address>      Address of the EVM file system
                           on the network.
                           Default: $(_get "fs" "address")
+     -V <fs_version>      Version of the target EVM file
+                          system.
+                          Default: $(_get "fs" "version")
      -n <wallet_name>     Wallet name.
                           Default: $(_get "wallet" "name")
      -w <wallet_path>     Wallet path.
@@ -631,13 +668,14 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:d:N:w:p:s:n:k:m:cvh?' \
+    'A:V:d:uN:w:p:s:n:k:m:cvh?' \
     arg; do
   case \
     "${arg}" in
     A) override_fs_address="${OPTARG}" ;;
     V) override_fs_version="${OPTARG}" ;;
     d) override_deployments_dir="${OPTARG}" ;;
+    u) override_user_level="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
