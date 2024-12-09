@@ -112,7 +112,7 @@ contracts:
 	      -o \
 	        "$${_build_dir}" \
 	      -l \
-	      "$(_FS_SOL_PATH)"; \
+	      "$(_FS_DIR)/$${_version}/$(_FS_SOL)"; \
 	  done; \
 	done
 
@@ -121,7 +121,7 @@ install-contract-sources:
 	for _version in $(_FS_VERSIONS); do \
 	  $(_INSTALL_FILE) \
 	    "$(_FS_DIR)/$${_version}/$(_FS_SOL)" \
-	    "$(LIB_DIR)/contracts/$${_version}"; \
+	    "$(LIB_DIR)/contracts/$${_version}/$(_FS_SOL)"; \
 	done
 
 install-contracts-deployments-solc:
