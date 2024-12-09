@@ -10,7 +10,8 @@ _FS_BYTECODE=$(_FS_NAME).bytecode.json
 _FS_JSON=$(_FS_NAME).json
 _CONTRACTS_PATH=contracts
 _FS_DIR=$(_CONTRACTS_PATH)/$(_FS_NAME)
-_FS_SOL_PATH=$(_FS_DIR)/$(_FS_SOL)
+_FS_VERSIONS_DIRS=$(wildcard $(_FS_DIR)/v*)
+_FS_VERSIONS=$(notdir $(_FS_VERSIONS_DIRS))
 _FS_DEPLOYMENTS_DIR=$(_FS_DIR)/deployments
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
@@ -26,11 +27,15 @@ SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -Dm644
 _INSTALL_BIN=install -Dm755
-_INSTALL_CONTRACTS_FUN=install-contracts-$(SOLIDITY_COMPILER_BACKEND)
+_INSTALL_CONTRACTS_DEPLOYMENT_FUN = ' \
+  install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)'
 _INSTALL_TARGETS = ' \
   install-doc \
   install-contracts \
   install-scripts'
+_INSTALL_CONTRACTS_TARGETS = ' \
+  $(_INSTALL_CONTRACTS_DEPLOYMENT_FUN) \
+  install-contract-sources'
 _PHONY_TARGETS  = ' \
   all \
   contracts \
@@ -38,8 +43,9 @@ _PHONY_TARGETS  = ' \
   clean \
   install \
   $(_INSTALL_TARGETS) \
-  install-contracts-hardhat \
-  install-contracts-solc \
+  install-contracts-deployments-hardhat \
+  install-contracts-deployments-solc \
+  install-contract-sources \
   shellcheck'
 
 all: contracts
@@ -66,50 +72,76 @@ contracts:
 	for _network in $(DEPLOYED_NETWORKS); do \
 	  _deployment_dir="$(_FS_DEPLOYMENTS_DIR)/$${_network}"; \
 	  _config_file="$${_deployment_dir}/config.sh"; \
-	  _build_dir="$(BUILD_DIR)/$${_network}"; \
-	  _work_dir="$(BUILD_DIR)/$${_network}/build"; \
-	  mkdir \
-	    -p \
-	    "$${_work_dir}"; \
 	  source \
 	    "$${_config_file}"; \
-	  solidity-compiler \
-	    -v \
-	    -b \
-	      "$(SOLIDITY_COMPILER_BACKEND)" \
-	    -C \
-	      $${solc_version} \
-	    -e \
-	      "$${evm_version}" \
-	    -w \
-	      "$${_work_dir}" \
-	    -o \
-	      "$${_build_dir}" \
-	    -l \
-	    "$(_FS_SOL_PATH)"; \
+          for _version in "${!contract_address[@]}"; do \
+	    _deployment="$${_network}/$${_version}"; \
+	    _build_dir="$(BUILD_DIR)/$${_deployment}"; \
+	    _work_dir="$${_build_dir}/build"; \
+	    mkdir \
+	      -p \
+	      "$${_work_dir}"; \
+	    solidity-compiler \
+	      -v \
+	      -b \
+	        "$(SOLIDITY_COMPILER_BACKEND)" \
+	      -C \
+	        $${solc_version["$${_version}"]} \
+	      -e \
+	        "$${evm_version["$${_version}"]}" \
+	      -w \
+	        "$${_work_dir}" \
+	      -o \
+	        "$${_build_dir}" \
+	      -l \
+	      "$(_FS_SOL_PATH)"; \
+	  done; \
 	done
 
-install-contracts: $(INSTALL_CONTRACTS_FUN)
+install-contracts: $(INSTALL_CONTRACTS_TARGETS)
 
-install-contracts-solc:
+install-contract-sources:
 
-	for _network in $(DEPLOYED_NETWORKS); do \
-	  _build_dir="$(BUILD_DIR)/$${_network}"; \
+	for _version in $(_FS_VERSIONS); do \
 	  $(_INSTALL_FILE) \
-	    "$${_build_dir}/$(_FS_ABI)" \
-	    "$(LIB_DIR)/$${_network}/$(_FS_ABI)";
-	  $(_INSTALL_FILE) \
-	    "$${_build_dir}/$(_FS_BYTECODE)" \
-	    "$(LIB_DIR)/$${_network}/$(_FS_JSON)";
+	    "$(_FS_DIR)/$${_version}/$(_FS_SOL)" \
+	    "$(LIB_DIR)/contracts/$${_version}"; \
 	done
 
-install-contracts-hardhat:
+install-contracts-deployments-solc:
 
 	for _network in $(DEPLOYED_NETWORKS); do \
-	  _build_dir="$(BUILD_DIR)/$${_network}"; \
-	  $(_INSTALL_FILE) \
-	    "$${_build_dir}/$(_FS_SOL)/$(_FS_JSON)" \
-	    "$(LIB_DIR)/$${_network}/$(_FS_JSON)"; \
+	  _deployment_dir="$(_FS_DEPLOYMENTS_DIR)/$${_network}"; \
+	  _config_file="$${_deployment_dir}/config.sh"; \
+	  source \
+	    "$${_config_file}"; \
+	  for _version in "${!contract_address[@]}"; do \
+	    _deployment="$${_network}/$${_version}"; \
+	    _build_dir="$(BUILD_DIR)/$${_deployment}; \
+	    _install_dir"$(LIB_DIR)/deployments/$${_deployment}"; \
+	    $(_INSTALL_FILE) \
+	      "$${_build_dir}/$(_FS_ABI)" \
+	      "$${_install_dir}/$(_FS_ABI)"; \
+	    $(_INSTALL_FILE) \
+	      "$${_build_dir}/$(_FS_BYTECODE)" \
+	      "$${_install_dir}/$(_FS_JSON)"; \
+	  done; \
+	done
+
+install-contracts-deployments-hardhat:
+
+	for _network in $(DEPLOYED_NETWORKS); do \
+	  _deployment_dir="$(_FS_DEPLOYMENTS_DIR)/$${_network}"; \
+	  _config_file="$${_deployment_dir}/config.sh"; \
+	  source \
+	    "$${_config_file}"; \
+	  for _version in "${!contract_address[@]}"; do \
+	    _deployment="$${_network}/$${_version}"; \
+	    _build_dir="$(BUILD_DIR)/$${_deployment}; \
+	    _install_dir"$(LIB_DIR)/deployments/$${_deployment}"; \
+	    $(_INSTALL_FILE) \
+	      "$${_build_dir}/$(_FS_SOL)/$(_FS_JSON)" \
+	      "$${_install_dir}/$(_FS_JSON)"; \
 	done
 
 install-scripts:
