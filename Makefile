@@ -73,7 +73,7 @@ install: $(_INSTALL_TARGETS)
 check: $(_CHECK_TARGETS)
 
 
-install-contracts: $(INSTALL_CONTRACTS_TARGETS)
+install-contracts: $(_INSTALL_CONTRACTS_TARGETS)
 
 
 clean:
