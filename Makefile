@@ -63,13 +63,18 @@ _PHONY_TARGETS  = ' \
   $(_CLEAN_TARGETS_ALL) \
   $(_INSTALL_TARGETS_ALL)'
 
+
 all: $(_BUILD_TARGETS)
+
 
 install: $(_INSTALL_TARGETS)
 
+
 check: $(_CHECK_TARGETS)
 
+
 install-contracts: $(INSTALL_CONTRACTS_TARGETS)
+
 
 clean:
 
@@ -77,12 +82,14 @@ clean:
 	  -rf \
 	  "$(BUILD_DIR)"
 
+
 shellcheck:
 
 	shellcheck \
 	  -s \
 	    bash \
 	  $(SCRIPT_FILES);
+
 
 contracts:
 
@@ -115,6 +122,7 @@ contracts:
 	  done; \
 	done
 
+
 install-contract-sources:
 
 	for _version in $(_FS_VERSIONS); do \
@@ -122,6 +130,7 @@ install-contract-sources:
 	    "$(_FS_DIR)/$${_version}/$(_FS_SOL)" \
 	    "$(LIB_DIR)/contracts/$${_version}"; \
 	done
+
 
 install-contracts-deployments-solc:
 
@@ -143,6 +152,7 @@ install-contracts-deployments-solc:
 	  done; \
 	done
 
+
 install-contracts-deployments-hardhat:
 
 	for _network in $(DEPLOYED_NETWORKS); do \
@@ -159,11 +169,13 @@ install-contracts-deployments-hardhat:
 	      "$${_install_dir}/$(_FS_JSON)"; \
 	done
 
+
 install-doc:
 
 	$(_INSTALL_FILE) \
 	  $(DOC_FILES) \
 	  -t $(DOC_DIR);
+
 
 install-scripts:
 
@@ -185,5 +197,6 @@ install-scripts:
 	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/$(_PROJECT)" \
 	  "$(BIN_DIR)/$(_PROJECT)";
+
 
 .PHONY: $(_PHONY_TARGETS)
