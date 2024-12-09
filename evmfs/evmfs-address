@@ -27,14 +27,27 @@ _requirements() {
   true
 }
 
-_contract_address_get() {
+_fs_address_get() {
   local \
-    _deployments_path="${1}" \
+    _deployments="${1}" \
     _network="${2}" \
     _fs_version="${3}" \
-    _config
-  _config="${_deployments_path}/config.sh"
-  source 
+    _config \
+    _address
+  _config="${_deployments}/${_contract}/${_network}/config.sh"
+  source \
+    "${_config}"
+  _address="${contract_address["v${_fs_version}"]}"
+  if [[ "${_address}" == "" ]]; then
+    _msg=(
+      "no FileSystem v${_fs_version} deployment"
+      "specified for network '${_network}'"
+      "at path '${_deployments}'"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
 }
 
 _network_check() {
@@ -92,9 +105,10 @@ _evmfs_address() {
   local \
     _target_network="${1}" \
     _target_network_id="${2}" \
-    _fs_version="${3}" \
-    _user_defined="${4}" \
-    _deployments_path="${5}" \
+    _target_contract="${3}" \
+    _contract_version="${4}" \
+    _user_defined="${5}" \
+    _deployments_path="${6}" \
     _system_deployments_path \
     _user_deployments_path \
     _network_id \
@@ -102,7 +116,7 @@ _evmfs_address() {
     _args=() \
     _msg=()
   shift \
-    2
+    6
   _args+=(
     "$@"
   )
@@ -161,7 +175,7 @@ _fs_deployments_path_get() {
     _conf_dir="${HOME}/.config"
   fi
   echo \
-    "${_conf_dir}/evmfs/deployment"
+    "${_conf_dir}/evmfs/deployments"
 }
 
 _deployments_path_auto_detect() {
@@ -211,7 +225,11 @@ _set_overrides() {
     "id" \
     ""
   _set_override \
-    "fs" \
+    "target" \
+    "contract" \
+    "FileSystem"
+  _set_override \
+    "contract" \
     "version" \
     "1"
   _set_override \
@@ -243,24 +261,26 @@ Usage:
     gnosis
 
   options:
-     -n <network>         EVM network name ('gnosis').
-                          Default: $(_get "target" "network")
-     -i <network_id>      EVM network id.
-                          Default: $(_get "network" "id")
-     -V <fs_version>      File system's contract vesion.
-                          Default: $(_get "fs" "version")
-     -u                   Returns contract address for
-                          user-defined file system
-                          deployment instead of the
-                          system one.
-                          Default: $(_get "user" "defined")
-     -d                   Specify contracts deployments path
-                          Default: $(_get "deployments" "path")
+     -n <network>           EVM network name ('gnosis').
+                            Default: $(_get "target" "network")
+     -i <network_id>        EVM network id.
+                            Default: $(_get "network" "id")
+     -C <target_contract>   Target contract ('FileSystem')
+                            Default: $(_get "target" "contract")
+     -V <contract_version>  Contract vesion.
+                            Default: $(_get "fs" "version")
+     -u                     Returns contract address for
+                            user-defined file system
+                            deployment instead of the
+                            system one.
+                            Default: $(_get "user" "defined")
+     -d                     Specify contracts deployments path
+                            Default: $(_get "deployments" "path")
 
 
-     -h                   This message.
-     -c                   Enable color output
-     -v                   Enable verbose output
+     -h                     This message.
+     -c                     Enable color output
+     -v                     Enable verbose output
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -288,7 +308,8 @@ _show_config() {
   _msg_info "             Resolve date:   $(_get "resolve" "date")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "               Network ID:   $(_get "network" "id")"
-  _msg_info "      File System version:   $(_get "fs" "version")"
+  _msg_info "          Target contract:   $(_get "target" "contract")"
+  _msg_info "         Contract version:   $(_get "contract" "version")"
   _msg_info "     User-defined address:   $(_get "user" "defined")"
   _msg_info "         Deployments path:   $(_get "deployments" "path")"
 }
@@ -303,13 +324,14 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'n:i:V:ud:cvh?' \
+    'n:i:C:V:ud:cvh?' \
     arg; do
   case \
     "${arg}" in
     n) override_target_network="${OPTARG}" ;;
     i) override_network_id="${OPTARG}" ;;
-    V) override_fs_version="${OPTARG}" ;;
+    C) override_target_contract="${OPTARG}" ;;
+    V) override_contract_version="${OPTARG}" ;;
     u) override_user_defined="y" ;;
     d) override_deployments_path="${OPTARG}" ;;
     c) override_color="y" ;;
@@ -348,7 +370,11 @@ app_opts=(
       "id")"
   "$( \
     _get \
-      "fs" \
+      "target" \
+      "contract")"
+  "$( \
+    _get \
+      "contract" \
       "version")"
   "$( \
     _get \

@@ -22,7 +22,9 @@ SOLIDITY_COMPILER_BACKEND=solc
 
 DEPLOYED_NETWORKS_CONFIG_DIR=$(wildcard $(_FS_DEPLOYMENTS_DIR)/*)
 DEPLOYED_NETWORKS=$(notdir $(DEPLOYED_NETWORKS_CONFIG_DIR))
-DOC_FILES=$(wildcard *.rst)
+DOC_FILES=\
+  $(wildcard *.rst) \
+  $(wildcard *.md)
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -Dm644
