@@ -475,8 +475,9 @@ _network_auto_detect() {
     _deployments
   _contract="FileSystem"
   _deployments="$( \
-    "deployments" \
-    "dir")"
+    _get \
+      "deployments" \
+      "dir")"
   _contract_deployment="${_deployments}/${_contract}"
   _network="$( \
     evm-contract-deployment-networks \
@@ -601,10 +602,7 @@ _set_overrides() {
     "name" \
     "default"
   _deployments_dir_auto_detect
-  _set_override \
-    "target" \
-    "network" \
-    "gnosis"
+  _network_auto_detect
   _set_override \
     "api" \
     "key" \
@@ -687,7 +685,7 @@ $(_display_networks \
                             Default: $(_get "fs" "version")
      -d <deployments_dir>   Contracts deployments directory.
                             Default: $(_get "deployments" "dir")
-     -n <wallet_name>       Wallet name.
+     -N <wallet_name>       Wallet name.
                             Default: $(_get "wallet" "name")
      -w <wallet_path>       Wallet path.
                             Default: $(_get "wallet" "path")
