@@ -163,20 +163,24 @@ _file_hash() {
 
 _chunk_publish() {
   local \
-    _chunk="${1}"
+    _fs_address="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index="${4}" \
+    _payload="${5}"
   evm-contract-call \
-    "${_call_opts[@]}" \
-    "${_uri_contract}" \
+    "${_evm_contract_call_opts[@]}" \
+    "${_fs_address}" \
     "publishChunk" \
-    "${_uri_namespace}" \
-    "${_uri_hash}" \
-    "${_chunk}"
-
+    "${_namespace}" \
+    "${_sum}" \
+    "${_index}" \
+    "${_payload}"
 }
 
 _file_upload() {
   local \
-    _contract="${1}" \
+    _fs_address="${1}" \
     _namespace="${2}" \
     _file="${3}" \
     _msg=() \
@@ -185,10 +189,13 @@ _file_upload() {
     _queue=() \
     _total_chunks \
     _chunk \
+    _index \
     _payload \
     _chunk_prefix \
     _tmp_dir \
-    _evm_contract_call_opts=()
+    _bin2txt_opts=() \
+    _evm_contract_call_opts=() \
+    _chunk_publish_opts=()
   _evm_contract_call_opts+=(
     -n
       "${_target_network}"
@@ -218,24 +225,41 @@ _file_upload() {
   _length="22000"
   _file_size_check \
     "${_file}"
+  _bin2txt_opts+=(
+    -L
+      "${_length}"
+  )
+  if [[ "${quiet}" == "n" ]]; then
+    _bin2txt_opts+=(
+      -v
+    )
+  fi
   bin2txt \
-    -L \
-      "${_length}" \
+    "${_bin2txt_opts[@]}" \
     "${_file}" \
     "${_chunk_prefix}"
-  _queue+=( $( \
+  _total_chunks="$( \
     find \
-      "${_chunk_prefix}"* | \
-      sort \
-        -V)
-  )
+      "${_chunk_prefix}."* \
+      -type \
+        "f" \
+      -printf \
+        '.' | \
+      wc \
+        -c)"
+  for _chunk \
+    in $(seq \
+           "${_total_chunks}"); do
+    _queue+=(
+      "${_chunk_prefix}.${_chunk}"
+    )
+  done
   if [[ "${_queue[*]}" == "" ]]; then
     _msg_error \
       "error processing file for upload" \
       1
   fi
-  _total_chunks="${#_queue[@]}"
-  _i=0
+  _index=0
   for _chunk \
     in "${_queue[@]}"; do
     _payload="$( \
@@ -247,16 +271,19 @@ _file_upload() {
     )
     _msg_info \
       "${_msg[*]}"
-    _chunk_publish \
-      "${_contract}" \
-      "${_namespace}" \
-      "${_sum}" \
-      "${_i}" \
+    _chunk_publish_opts=(
+      "${_fs_address}"
+      "${_namespace}"
+      "${_sum}"
+      "${_index}"
       "${_payload}"
-    _i="$(( \
-      _i + 1))"
+    )
+    _chunk_publish \
+      "${_chunk_publish_opts[@]}"
+    _index="$(( \
+      _index + 1))"
   done
-  _i=0
+  _index=0
   for _chunk \
     in "${_queue[@]}"; do
     _payload="$( \
@@ -269,25 +296,26 @@ _file_upload() {
     _msg_info \
       "${_msg[*]}"
     _chunk_verify \
-      "${_contract}" \
+      "${_fs_address}" \
       "${_namespace}" \
       "${_sum}" \
-      "${_i}" \
+      "${_index}" \
       "${_payload}"
-    _i="$(( \
-      _i + 1))"
+    _index="$(( \
+      _index + 1))"
   done
   _msg=(
     "file '${_file}' uploaded and"
     "available at URI"
-    "'evmfs://${_contract}/${_namespace}/${_sum}'")
+    "'evmfs://${_fs_address}/${_namespace}/${_sum}'")
   _msg_info \
     "${_msg[*]}"
 }
 
+# TODO:
 _bulk_chunk_publish() {
   local \
-    _contract="${1}" \
+    _fs_address="${1}" \
     _namespace="${2}" \
     _sum="${3}" \
     _index="${4}" \
@@ -297,11 +325,21 @@ _bulk_chunk_publish() {
   _publish="$( \
     _get_lib)/evmfs/publish"
   _publish_args+=(
-    "${_contract}"
-    "${_namespace}"
-    "${_sum}"
-    "${_index}"
-    "${_chunk}"
+    # wallet_seed_path,
+    # api_key_path,
+    # target_network,
+    # contract_address,
+    # contract_abi_path,
+    # contract_bytecode_path,
+    # publication_namespace,
+    # file_hash,
+    # file_chunks,
+    #
+    # "${_fs_address}"
+    # "${_namespace}"
+    # "${_sum}"
+    # "${_index}"
+    # "${_chunk}"
   )
   _node_run \
     "${_publish}" \
@@ -310,7 +348,7 @@ _bulk_chunk_publish() {
 
 _evmfs_publish() {
   local \
-    _target_contract="${1}" \
+    _fs_address="${1}" \
     _wallet_name="${2}" \
     _wallet_path="${3}" \
     _wallet_password="${4}" \
@@ -336,7 +374,7 @@ _evmfs_publish() {
        "address")"
   if [[ "${_upload_method}" == "standalone" ]]; then
     _file_upload \
-      "${_target_contract}" \
+      "${_fs_address}" \
       "${_namespace}" \
       "${_target_file}"
   fi
@@ -720,7 +758,7 @@ $(_display_networks \
                             Default: $(_get "wallet" "password")
      -s <wallet_seed>       Wallet seed path.
                             Default: $(_get "wallet" "seed")
-     -n <network>           EVM network name ('mainnet', 'gnosis').
+     -n <network>           EVM network name (${_networks[*]}).
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
