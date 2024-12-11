@@ -127,7 +127,7 @@ _chunk_verify() {
     _namespace="${2}" \
     _sum="${3}" \
     _index="${4}" \
-    _payload="${5}" \
+    _chunk="${5}" \
     _remote \
     _verify_dir \
     _local_sum \
@@ -144,16 +144,14 @@ _chunk_verify() {
     "chunks" \
     "${_namespace}" \
     "${_sum}" \
-    "${_index}" \
-    "${_payload}" > \
+    "${_index}" > \
     "${_remote}"
   _local_sum="$( \
-    _sum_get \
+    _file_hash \
       "${_chunk}")"
   _remote_sum="$( \
-    _sum_get \
+    _file_hash \
       "${_remote}")"
-    "${_verify_dir}/${_index}"
   if [[ "${_local_sum}" != "${_remote_sum}" ]]; then
     _msg=(
       "somehow local chunk '${_chunk}',"
@@ -167,6 +165,21 @@ _chunk_verify() {
       "${_msg[*]}" \
       1
   fi
+}
+
+_chunk_lock() {
+  local \
+    _contract="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index="${4}"
+  evm-contract-call \
+    "${_evm_contract_call_opts[@]}" \
+    "${_fs_address}" \
+    "lockChunk" \
+    "${_namespace}" \
+    "${_sum}" \
+    "${_index}"
 }
 
 _sum_get() {
@@ -301,7 +314,7 @@ _file_upload() {
       cat \
         "${_chunk}")"
     _msg=(
-      "sending chunk '${_chunk}'"
+      "publishing chunk '${_chunk}'"
       "of ${_total_chunks}"
     )
     _msg_info \
@@ -315,6 +328,12 @@ _file_upload() {
     )
     _chunk_publish \
       "${_chunk_publish_opts[@]}"
+    _msg=(
+      "published chunk '${_chunk}'"
+      "of ${_total_chunks}"
+    )
+    _msg_info \
+      "${_msg[*]}"
     _index="$(( \
       _index + 1))"
   done
@@ -335,8 +354,13 @@ _file_upload() {
       "${_namespace}" \
       "${_sum}" \
       "${_index}" \
-      "${_payload}" \
       "${_chunk}"
+    _msg=(
+      "verified chunk '${_chunk}'"
+      "of ${_total_chunks}"
+    )
+    _msg_info \
+      "${_msg[*]}"
     _index="$(( \
       _index + 1))"
   done
@@ -359,7 +383,7 @@ _file_upload() {
       "${_fs_address}" \
       "${_namespace}" \
       "${_sum}" \
-      "${_index}" \
+      "${_index}"
     _index="$(( \
       _index + 1))"
   done
