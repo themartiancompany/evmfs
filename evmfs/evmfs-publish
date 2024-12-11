@@ -448,7 +448,8 @@ _deployments_dir_auto_detect() {
   local \
     _user_level \
     _evm_contract_deployments_dir_opts=() \
-    _deployments_dir
+    _deployments_dir \
+    _system_deployments
   _user_level="$( \
     _get \
       "user" \
@@ -462,6 +463,29 @@ _deployments_dir_auto_detect() {
     evm-contract-deployments-dir \
       "${_evm_contract_deployments_dir_opts[@]}" \
       "evmfs")"
+  if [[ ! -d "${_deployments_dir}" ]]; then
+    _system_deployments="$( \
+     evm-contract-deployments-dir \
+       "evmfs")"
+    _msg=(
+      "user deployments directory"
+      "'${_deployments_dir}' does"
+      "not exists, importing system deployments"
+      "directory '${_system_deployments}'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    mkdir \
+      -p \
+      "${_deployments_dir}"
+    chmod \
+      700 \
+      "${_deployments_dir}"
+    cp \
+     -r \
+     "${_system_deployments}/"* \
+     "${_deployments_dir}"
+  fi
   _set_override \
     "deployments" \
     "dir" \
@@ -581,7 +605,6 @@ _fs_address_auto_detect() {
     "${_address}"
 }
 
-
 _set_overrides() {
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -601,6 +624,10 @@ _set_overrides() {
     "wallet" \
     "name" \
     "default"
+  _set_override \
+    "user" \
+    "level" \
+    "n"
   _deployments_dir_auto_detect
   _network_auto_detect
   _set_override \
@@ -636,10 +663,6 @@ _set_overrides() {
     "upload" \
     "method" \
     "standalone"
-  _set_override \
-    "user" \
-    "level" \
-    "n"
   _fs_version_auto_detect
   _fs_address_auto_detect
 }
@@ -657,7 +680,7 @@ _usage() {
       "dir")/FileSystem"
   _networks="$( \
     evm-contract-deployment-networks \
-      -a \
+      -A \
       "${_fs_deployment}")"
   IFS='' \
     read \
@@ -683,6 +706,10 @@ $(_display_networks \
      -V <fs_version>        Version of the target EVM file
                             system.
                             Default: $(_get "fs" "version")
+     -u                     Whether to retrieve file system
+                            address from user directory or custom
+                            deployment.
+                            Default: $(_get "user" "level")
      -d <deployments_dir>   Contracts deployments directory.
                             Default: $(_get "deployments" "dir")
      -N <wallet_name>       Wallet name.
@@ -745,6 +772,7 @@ _show_config() {
   _msg_info "             Publish date:   $(_get "publish" "date")"
   _msg_info "      File system address:   $(_get "fs" "address")"
   _msg_info "      File system version:   $(_get "fs" "version")"
+  _msg_info "               User level:   $(_get "user" "level")"
   _msg_info "    Deployments directory:   $(_get "deployments" "dir")"
   _msg_info "                Namespace:   $(_get "wallet" "address")"
   _msg_info "              Wallet name:   $(_get "wallet" "name")"
@@ -768,14 +796,14 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:d:uN:w:p:s:n:k:m:cvh?' \
+    'A:V:ud:N:w:p:s:n:k:m:cvh?' \
     arg; do
   case \
     "${arg}" in
     A) override_fs_address="${OPTARG}" ;;
     V) override_fs_version="${OPTARG}" ;;
+    u) override_user_level="y" ;;
     d) override_deployments_dir="${OPTARG}" ;;
-    u) override_user_level="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
