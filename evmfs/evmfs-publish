@@ -18,10 +18,12 @@ _global_variables() {
   fs_address=""
   fs_version=""
   deployments_dir=""
+  user_level=""
   wallet_name=""
   wallet_path=""
   wallet_password=""
   wallet_seed=""
+  wallet_address=""
   target_network=""
   api_key=""
   upload_method=""
@@ -38,6 +40,12 @@ _requirements() {
     'evm-contracts-tools'
   _check_cmd \
     'evm-contract-deployment-address' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-contract-deployment-versions' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-contract-deployments-dir' \
     'evm-contracts-tools'
   _check_cmd \
     'evm-wallet'
@@ -436,46 +444,6 @@ _secret_auto_detect() {
     "${_path}"
 }
 
-_fs_address_auto_detect() {
-  local \
-    _address \
-    _network \
-    _deployments_dir \
-    _evm_contract_deployment_address_opts=() \
-    _msg=()
-  _deployments_dir="$( \
-    _get \
-      "deployments" \
-      "dir")"
-  _network="$( \
-    _get \
-      "target" \
-      "network")"
-  _evmfs_address_opts+=(
-    -n
-      "${_network}"
-  )
-  _address="$( \
-    evm-contract-deployment-address \
-      -a
-    evmfs-address \
-      "${_evmfs_address_opts[@]}")"
-  if [[ "${_contract}" == "" ]]; then
-    _msg=(
-      "error getting default contract"
-      "address for network"
-      "'${_network}'"
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-  _set_override \
-    "target" \
-    "contract" \
-    "${_contract}"
-}
-
 _deployments_dir_auto_detect() {
   local \
     _user_level \
@@ -500,6 +468,119 @@ _deployments_dir_auto_detect() {
     "${_deployments_dir}"
 }
 
+_network_auto_detect() {
+  local \
+    _contract \
+    _contract_deployment \
+    _deployments
+  _contract="FileSystem"
+  _deployments="$( \
+    "deployments" \
+    "dir")"
+  _contract_deployment="${_deployments}/${_contract}"
+  _network="$( \
+    evm-contract-deployment-networks \
+      -C \
+      "${_contract_deployment}")"
+  _set_override \
+    "target" \
+    "network" \
+    "${_network}"
+}
+
+_fs_version_auto_detect() {
+  local \
+    _config \
+    _deployments \
+    _network \
+    _version
+  _deployments="$( \
+    _get \
+      "deployments" \
+      "dir")"
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _config="${_deployments}/FileSystem/${_network}/config.sh"
+  _version="$( \
+    evm-contract-deployment-versions \
+      -H \
+      "${_config}")"
+  _set_override \
+    "fs" \
+    "version" \
+    "${_version}"
+}
+
+_fs_address_auto_detect() {
+  local \
+    _address \
+    _network \
+    _deployments \
+    _user \
+    _version \
+    _evm_contract_deployment_address_opts=() \
+    _msg=()
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _evm_contract_deployment_address_opts+=(
+    -n
+      "${_network}"
+  )
+  _version="$( \
+    _get \
+      "fs" \
+      "version")"
+  if [[ "${_version}" != "" ]]; then
+    _evm_contract_deployment_address_opts+=(
+      -V
+        "${_version}"
+    )
+  fi
+  _user="$( \
+    _get \
+      "user" \
+      "level")"
+  if [[ "${_user}" == "n" ]]; then
+    _evm_contract_deployment_address_opts+=(
+      -a
+        "evmfs"
+    )
+  elif [[ "${_user}" == "y" ]]; then
+    _deployments="$( \
+      _get \
+        "deployments" \
+        "dir")"
+    _evm_contract_deployment_address_opts+=(
+      -u
+      -d
+        "${_deployments}" 
+    )
+  fi
+  _address="$( \
+    evm-contract-deployment-address \
+      "${_evm_contract_deployment_address_opts[@]}" \
+      "FileSystem")"
+  if [[ "${_address}" == "" ]]; then
+    _msg=(
+      "error getting FileSystem version"
+      "${_version} deployment address"
+      "for network '${_network}'"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _set_override \
+    "fs" \
+    "address" \
+    "${_address}"
+}
+
+
 _set_overrides() {
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -519,6 +600,7 @@ _set_overrides() {
     "wallet" \
     "name" \
     "default"
+  _deployments_dir_auto_detect
   _set_override \
     "target" \
     "network" \
@@ -560,15 +642,25 @@ _set_overrides() {
     "user" \
     "level" \
     "n"
-  _deployments_dir_auto_detect
-  _evmfs_contract_auto_detect
+  _fs_version_auto_detect
+  _fs_address_auto_detect
 }
 
 # Show help usage, with an exit status.
 # $1: exit status number.
 _usage() {
   local \
+    _fs_deployment \
+    _networks \
     _usage_text
+  _fs_deployment="$( \
+    _get \
+      "deployments" \
+      "dir")/FileSystem"
+  _networks="$( \
+    evm-contract-deployment-networks \
+      -a \
+      "${_fs_deployment}")"
   IFS='' \
     read \
       -r \
@@ -581,43 +673,40 @@ Usage:
   $(_get "app" "name")
     [options]
     <file>
-  networks:
-    alchemy
-    ankr
-    cloudflare
-    chainstack
-    etherscan
-    gnosis
-    infura
-    publicPolygon
-    quicknode
-  options:
-     -A <fs_address>      Address of the EVM file system
-                          on the network.
-                          Default: $(_get "fs" "address")
-     -V <fs_version>      Version of the target EVM file
-                          system.
-                          Default: $(_get "fs" "version")
-     -n <wallet_name>     Wallet name.
-                          Default: $(_get "wallet" "name")
-     -w <wallet_path>     Wallet path.
-                          Default: $(_get "wallet" "path")
-     -p <wallet_password> Wallet password.
-                          Default: $(_get "wallet" "password")
-     -s <wallet_seed>     Wallet seed path.
-                          Default: $(_get "wallet" "seed")
-     -n <network>         EVM network name ('mainnet', 'gnosis').
-                          Default: $(_get "target" "network")
-     -k <api_key>         Etherscan-like service key.
-                          Default: $(_get "api" "key")
-     -m <upload_method>   It can be 'standalone' or 'bulk'
-                          Default: $(_get "upload" "method")
-     -C <cache_dir>       Work directory
-                          Default: $(_get "cache" "dir")
 
-     -h                   This message.
-     -c                   Enable color output
-     -v                   Enable verbose output
+  networks:
+$(_display_networks \
+     "${_networks[*]}")
+
+  options:
+     -A <fs_address>        Address of the EVM file system
+                            on the network.
+                            Default: $(_get "fs" "address")
+     -V <fs_version>        Version of the target EVM file
+                            system.
+                            Default: $(_get "fs" "version")
+     -d <deployments_dir>   Contracts deployments directory.
+                            Default: $(_get "deployments" "dir")
+     -n <wallet_name>       Wallet name.
+                            Default: $(_get "wallet" "name")
+     -w <wallet_path>       Wallet path.
+                            Default: $(_get "wallet" "path")
+     -p <wallet_password>   Wallet password.
+                            Default: $(_get "wallet" "password")
+     -s <wallet_seed>       Wallet seed path.
+                            Default: $(_get "wallet" "seed")
+     -n <network>           EVM network name ('mainnet', 'gnosis').
+                            Default: $(_get "target" "network")
+     -k <api_key>           Etherscan-like service key.
+                            Default: $(_get "api" "key")
+     -m <upload_method>     It can be 'standalone' or 'bulk'
+                            Default: $(_get "upload" "method")
+     -C <cache_dir>         Work directory
+                            Default: $(_get "cache" "dir")
+
+     -h                     This message.
+     -c                     Enable color output
+     -v                     Enable verbose output
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -628,14 +717,27 @@ ENDUSAGETEXT
 
 _display_flags() {
   local \
+    _flag \
     _flags=(
       "${1}"
-    ) \
-    _flag
+    )
   for _flag \
     in "${_flags[@]}"; do
   _msg_info \
     "                             ${_flag}"
+  done
+}
+
+_display_networks() {
+  local \
+    _network \
+    _networks=(
+      "${1}"
+    )
+  for _network \
+    in "${_networks[@]}"; do
+  echo \
+    "    ${_network}"
   done
 }
 
