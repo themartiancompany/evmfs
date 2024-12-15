@@ -104,17 +104,17 @@ contracts:
 	      -p \
 	      "$${_work_dir}"; \
 	    _build="true"; \
-            if [[ "$(SOLIDITY_COMPILER_BACKEND)" == "solc" ]]; then \
+	    if [[ "$(SOLIDITY_COMPILER_BACKEND)" == "solc" ]]; then \
 	      if [[ -e "$${_build_dir}/$(_FS_ABI)" ]] && \
 	         [[ -e "$${_build_dir}/$(_FS_BYTECODE)" ]]; then \
 		 _build="false"; \
 	      fi; \
-            elif [[ "$(SOLIDITY_COMPILER_BACKEND)" == "solc" ]]; then \
+	    elif [[ "$(SOLIDITY_COMPILER_BACKEND)" == "hardhat" ]]; then \
 	      if [[ -e "$${_build_dir}/contracts/$(_FS_SOL)/$(_FS_JSON)" ]]; then \
 		 _build="false"; \
 	      fi; \
 	    fi; \
-            if [[ "$${_build}" == "true" ]]; then \
+	    if [[ "$${_build}" == "true" ]]; then \
 	      solidity-compiler \
 	        -v \
 	        -b \
