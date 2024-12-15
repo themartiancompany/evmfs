@@ -185,6 +185,7 @@ install-contracts-deployments-hardhat:
 	    $(_INSTALL_FILE) \
 	      "$${_build_dir}/contracts/$(_FS_SOL)/$(_FS_JSON)" \
 	      "$${_install_dir}/$(_FS_JSON)"; \
+	  done; \
 	done
 
 install-doc:
