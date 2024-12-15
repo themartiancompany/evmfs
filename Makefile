@@ -168,7 +168,7 @@ install-contracts-deployments-hardhat:
 	    "$${_config_file}"; \
 	  for _version in "$${!contract_address[@]}"; do \
 	    _deployment="$${_network}/$${_version}"; \
-	    _build_dir="$(BUILD_DIR)/$${_deployment}; \
+	    _build_dir="$(BUILD_DIR)/$${_deployment}"; \
 	    _install_dir="$(LIB_DIR)/deployments/$(_FS_NAME)/$${_deployment}"; \
 	    $(_INSTALL_FILE) \
 	      "$${_build_dir}/$(_FS_SOL)/$(_FS_JSON)" \
