@@ -110,7 +110,7 @@ contracts:
 		 _build="false"; \
 	      fi; \
             elif [[ "$(SOLIDITY_COMPILER_BACKEND)" == "solc" ]]; then \
-	      if [[ -e "$${_build_dir}/$(_FS_JSON)" ]]; then \
+	      if [[ -e "$${_build_dir}/contracts/$(_FS_SOL)/$(_FS_JSON)" ]]; then \
 		 _build="false"; \
 	      fi; \
 	    fi; \
@@ -127,7 +127,6 @@ contracts:
 	          "$${_work_dir}" \
 	        -o \
 	          "$${_build_dir}" \
-	        -l \
 	        "$(_FS_DIR)/$${_version}/$(_FS_SOL)"; \
 	    fi; \
 	  done; \
@@ -184,7 +183,7 @@ install-contracts-deployments-hardhat:
 	    _build_dir="$(BUILD_DIR)/$${_deployment}"; \
 	    _install_dir="$(LIB_DIR)/deployments/$(_FS_NAME)/$${_deployment}"; \
 	    $(_INSTALL_FILE) \
-	      "$${_build_dir}/$(_FS_SOL)/$(_FS_JSON)" \
+	      "$${_build_dir}/contracts/$(_FS_SOL)/$(_FS_JSON)" \
 	      "$${_install_dir}/$(_FS_JSON)"; \
 	done
 
