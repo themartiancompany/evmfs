@@ -103,20 +103,33 @@ contracts:
 	    mkdir \
 	      -p \
 	      "$${_work_dir}"; \
-	    solidity-compiler \
-	      -v \
-	      -b \
-	        "$(SOLIDITY_COMPILER_BACKEND)" \
-	      -C \
-	        $${solc_version["$${_version}"]} \
-	      -e \
-	        "$${evm_version["$${_version}"]}" \
-	      -w \
-	        "$${_work_dir}" \
-	      -o \
-	        "$${_build_dir}" \
-	      -l \
-	      "$(_FS_DIR)/$${_version}/$(_FS_SOL)"; \
+	    _build="true"; \
+            if [[ "$(SOLIDITY_COMPILER_BACKEND)" == "solc" ]]; then \
+	      if [[ -e "$${_build_dir}/$(_FS_ABI)" ]] && \
+	         [[ -e "$${_build_dir}/$(_FS_BYTECODE)" ]]; then \
+		 _build="false"; \
+	      fi; \
+            elif [[ "$(SOLIDITY_COMPILER_BACKEND)" == "solc" ]]; then \
+	      if [[ -e "$${_build_dir}/$(_FS_JSON)" ]]; then \
+		 _build="false"; \
+	      fi; \
+	    fi; \
+            if [[ "$${_build}" == "true" ]]; then \
+	      solidity-compiler \
+	        -v \
+	        -b \
+	          "$(SOLIDITY_COMPILER_BACKEND)" \
+	        -C \
+	          $${solc_version["$${_version}"]} \
+	        -e \
+	          "$${evm_version["$${_version}"]}" \
+	        -w \
+	          "$${_work_dir}" \
+	        -o \
+	          "$${_build_dir}" \
+	        -l \
+	        "$(_FS_DIR)/$${_version}/$(_FS_SOL)"; \
+	    fi; \
 	  done; \
 	done
 
@@ -155,7 +168,7 @@ install-contracts-deployments-solc:
 	      "$${_install_dir}/$(_FS_ABI)"; \
 	    $(_INSTALL_FILE) \
 	      "$${_build_dir}/$(_FS_BYTECODE)" \
-	      "$${_install_dir}/$(_FS_JSON)"; \
+	      "$${_install_dir}/$(_FS_BYTECODE)"; \
 	  done; \
 	done
 
