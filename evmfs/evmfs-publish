@@ -68,10 +68,7 @@ _get_conf_dir_path() {
 _cache_dir_auto_detect() {
   local \
     _dir
-  _dir="${HOME}/.cache/$( \
-    _get \
-      "app" \
-      "name")"
+  _dir="${HOME}/.cache/evmfs"
   echo \
     "${_dir}"
 }
@@ -282,7 +279,7 @@ _contract_call_opts_setup() {
 _work_dir_setup() {
   local \
     _msg=()
-  _tmp_dir="${_cache_dir}/${_sum}"
+  _tmp_dir="${_cache_dir}/${_sum}/publish"
   _msg=(
     "setting up work directory"
     "'${_tmp_dir}'"

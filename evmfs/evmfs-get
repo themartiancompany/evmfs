@@ -245,7 +245,7 @@ _resource_get() {
   _retries="4"
   mkdir \
     -p \
-    "${_cache_dir}/${_uri_hash}"
+    "${_cache_dir}/${_uri_hash}/get"
   _tmp_dir="$( \
     mktemp \
       -d \
