@@ -114,7 +114,7 @@ _evmfs() {
     -s
       "${_wallet_seed}"
     -n
-      "${_target_network}"
+      "${_network}"
     -k
       "${_api_key_path}"
     -C
@@ -718,6 +718,7 @@ _show_config() {
   _msg_info "            Upload method:   $(_get "upload" "method")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "              Output file:   $(_get "output" "file")"
+  _msg_info "           Target command:   $(_get "target" "command")"
   _msg_info "               Target key:   $(_get "target" "key")"
   _msg_info "             Target value:   $(_get "target" "value")"
 }
@@ -795,14 +796,14 @@ if (( 1 < $# )); then
     "key" \
     "${2}"
 fi
-if (( 1 < $# )); then
+if (( 2 < $# )); then
   _set \
     "target" \
     "value" \
-    "${2}"
+    "${3}"
 fi
 shift \
-  2 || \
+  3 || \
   true
 command_args+=(
   "$@"
