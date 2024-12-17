@@ -143,7 +143,7 @@ _chunk_verify() {
     -p \
     "${_verify_dir}"
   evm-contract-call \
-    "${_evm_contract_call_opts[@]}" \
+    "${_verify_call_opts[@]}" \
     "${_fs_address}" \
     "chunks" \
     "${_namespace}" \
@@ -162,8 +162,7 @@ _chunk_verify() {
       "corresponding to chunk having"
       "index '${_index}' on the blockchain"
       "has not been written correctly"
-      "on the blockchain. It's currently"
-      "suggested to look into this manually."
+      "on the blockchain at address '$(_publishing_address_get)'"
     )
     _msg_error \
       "${_msg[*]}" \
@@ -218,7 +217,7 @@ _chunk_publish() {
     _index="${4}" \
     _payload="${5}"
   evm-contract-call \
-    "${_evm_contract_call_opts[@]}" \
+    "${_publish_call_opts[@]}" \
     "${_fs_address}" \
     "publishChunk" \
     "${_namespace}" \
@@ -227,38 +226,20 @@ _chunk_publish() {
     "${_payload}"
 }
 
-_file_upload_standalone() {
+_contract_call_opts_setup() {
   local \
-    _target_network="${1}" \
-    _fs_address="${2}" \
-    _namespace="${3}" \
-    _file="${4}" \
-    _abi="${5}" \
-    _bytecode="${6}" \
-    _compiler_output="${7}" \
-    _msg=() \
-    _sum \
-    _length \
-    _queue=() \
-    _total_chunks \
-    _chunk \
-    _index \
-    _payload \
-    _chunk_prefix \
-    _tmp_dir \
-    _bin2txt_opts=() \
-    _evm_contract_call_opts=() \
-    _chunk_publish_opts=()
+    _msg=()
   if [[ "${quiet}" == "n" ]]; then
-    _evm_contract_call_opts+=(
+    _publish_call_opts+=(
+      -v
+    )
+    _lock_call_opts+=(
       -v
     )
   fi
   _evm_contract_call_opts+=(
     -n
       "${_target_network}"
-    -t
-      "dynamic"
     -N
       "${_wallet_name}"
     -k
@@ -270,20 +251,37 @@ _file_upload_standalone() {
     -C
       "${_compiler_output}"
   )
+  _check_call_opts+(
+    "${_evm_contract_call_opts[@]}"
+    -t
+      "static"
+  )
+  _publish_call_opts+(
+    "${_evm_contract_call_opts[@]}"
+    -t
+      "dynamic"
+  )
+  _verify_call_opts+(
+    "${_evm_contract_call_opts[@]}"
+    -t
+      "static"
+  )
+  _lock_call_opts+(
+    "${_evm_contract_call_opts[@]}"
+    -t
+      "dynamic"
+  )
   _msg=(
     "evm-contract-call will be called"
-    "with options '${_evm_contract_call_opts[*]}'"
+    "with base options '${_evm_contract_call_opts[*]}'"
   )
   _msg_info \
     "${_msg[*]}"
-  _msg=(
-    "re-evaluating file hashsum"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _sum="$( \
-    _file_hash \
-      "${_file}")"
+}
+
+_work_dir_setup() {
+  local \
+    _msg=()
   _tmp_dir="${_cache_dir}/${_sum}"
   _msg=(
     "setting up work directory"
@@ -294,12 +292,18 @@ _file_upload_standalone() {
   mkdir \
     -p \
     "${_tmp_dir}"
+}
+
+_file_encode() {
+  local \
+    _msg=() \
+    _length
+  _length=22000
   _chunk_prefix="$( \
     mktemp \
       -p \
         "${_tmp_dir}" \
       --suffix=".base64")"
-  _length="22000"
   _file_size_check \
     "${_file}"
   _bin2txt_opts+=(
@@ -322,6 +326,12 @@ _file_upload_standalone() {
     "${_bin2txt_opts[@]}" \
     "${_file}" \
     "${_chunk_prefix}"
+}
+
+_queue_setup() {
+  local \
+    _chunk \
+    _msg=()
   _total_chunks="$( \
     find \
       "${_chunk_prefix}"* \
@@ -354,6 +364,15 @@ _file_upload_standalone() {
   )
   _msg_info \
     "${_msg[*]}"
+}
+
+_chunks_publish() {
+  local \
+    _chunk \
+    _index \
+    _passed_flag \
+    _payload \
+    _msg=()
   _index=0
   for _chunk \
     in "${_queue[@]}"; do
@@ -361,49 +380,90 @@ _file_upload_standalone() {
       cat \
         "${_chunk}")"
     _msg=(
-      "publishing chunk '${_chunk}'"
+      "checking chunk '${_chunk}'"
+      "$(( "${_index}" + 1 ))"
       "of ${_total_chunks}"
     )
     _msg_info \
       "${_msg[*]}"
-    _chunk_publish_opts=(
+    _chunk_check_opts=(
       "${_fs_address}"
       "${_namespace}"
       "${_sum}"
       "${_index}"
-      "${_payload}"
+      "${_chunk}"
     )
-    _chunk_publish \
-      "${_chunk_publish_opts[@]}"
-    _msg=(
-      "published chunk '${_chunk}'"
-      "of ${_total_chunks}"
-    )
-    _msg_info \
-      "${_msg[*]}"
+    _chunk_check \
+      "${_chunk_check_opts[@]}"
+    if [[ "${_passed_flag}" == "true" ]]; then
+      _msg=(
+        "chunk '${_chunk}' correctly published"
+        "already at index '${_index}'"
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_passed_flag}" == "false" ]]; then
+      _msg=(
+        "publishing chunk '${_chunk}'"
+        "$(( "${_index}" + 1 ))"
+        "of ${_total_chunks}"
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _chunk_publish_opts=(
+        "${_fs_address}"
+        "${_namespace}"
+        "${_sum}"
+        "${_index}"
+        "${_payload}"
+      )
+      _chunk_publish \
+        "${_chunk_publish_opts[@]}"
+      _msg=(
+        "published chunk"
+        "$(( ${_index} + 1))"
+        "of ${_total_chunks}"
+      )
+      _msg_info \
+        "${_msg[*]}"
+    fi
     _index="$(( \
       _index + 1))"
   done
+  _msg=(
+    "all '${_total_chunks}' chunks"
+    "correctly published"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_chunks_verify() {
+  local \
+    _index \
+    _chunk \
+    _msg=()
   _index=0
   for _chunk \
     in "${_queue[@]}"; do
-    _payload="$( \
-      cat \
-        "${_chunk}")"
     _msg=(
       "verifying chunk '${_chunk}'"
       "of ${_total_chunks}"
     )
     _msg_info \
       "${_msg[*]}"
-    _chunk_verify \
-      "${_fs_address}" \
-      "${_namespace}" \
-      "${_sum}" \
-      "${_index}" \
+    _chunk_verify_opts=(
+      "${_fs_address}"
+      "${_namespace}"
+      "${_sum}"
+      "${_index}"
       "${_chunk}"
+    )
+    _chunk_verify \
+      "${_chunk_verify_opts[@]}"
     _msg=(
       "verified chunk '${_chunk}'"
+      "$(( "${_index}" + 1 ))"
       "of ${_total_chunks}"
     )
     _msg_info \
@@ -417,11 +477,19 @@ _file_upload_standalone() {
   )
   _msg_info \
     "${_msg[*]}"
+}
+
+_chunks_lock() {
+  local \
+    _index \
+    _chunk \
+    _msg=()
   _index=0
   for _chunk \
     in "${_queue[@]}"; do
     _msg=(
       "locking chunk '${_chunk}'"
+      "$(( "${_index}" + 1))"
       "of ${_total_chunks}"
     )
     _msg_info \
@@ -431,19 +499,107 @@ _file_upload_standalone() {
       "${_namespace}" \
       "${_sum}" \
       "${_index}"
+    _msg=(
+      "chunk '${_chunk}'"
+      "$(( "${_index}" + 1))"
+      "of ${_total_chunks}"
+      "correctly locked."
+    )
+    _msg_info \
+      "${_msg[*]}"
+
     _index="$(( \
       _index + 1))"
   done
   _msg=(
     "all '${_total_chunks}' chunks"
-    "correctly locked"
+    "correctly locked."
   )
   _msg_info \
     "${_msg[*]}"
+}
+
+_chunk_check() {
+  local \
+    _contract="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index="${4}" \
+    _chunk="${5}" \
+    _remote \
+    _check_dir \
+    _local_sum \
+    _remote_sum \
+    _msg=()
+  _passed_flag="false"
+  _check_dir="${_cache_dir}/${_sum}/check"
+  _remote="${_verify_dir}/${_index}"
+  mkdir \
+    -p \
+    "${_check_dir}"
+  evm-contract-call \
+    "${_check_call_opts[@]}" \
+    "${_fs_address}" \
+    "chunks" \
+    "${_namespace}" \
+    "${_sum}" \
+    "${_index}" > \
+    "${_remote}"
+  _local_sum="$( \
+    _file_hash \
+      "${_chunk}")"
+  _remote_sum="$( \
+    _file_hash \
+      "${_remote}")"
+  if [[ "${_local_sum}" == "${_remote_sum}" ]]; then
+    _passed_flag="true"
+  fi
+}
+
+_file_upload_standalone() {
+  local \
+    _target_network="${1}" \
+    _fs_address="${2}" \
+    _namespace="${3}" \
+    _file="${4}" \
+    _abi="${5}" \
+    _bytecode="${6}" \
+    _compiler_output="${7}" \
+    _msg=() \
+    _sum \
+    _queue=() \
+    _total_chunks \
+    _chunk \
+    _payload \
+    _chunk_prefix \
+    _tmp_dir \
+    _bin2txt_opts=() \
+    _evm_contract_call_opts=() \
+    _check_call_opts=() \
+    _publish_call_opts=() \
+    _verify_call_opts=() \
+    _lock_call_opts=() \
+    _chunk_publish_opts=()
+  _contract_call_opts_setup
+  _msg=(
+    "re-evaluating file hashsum"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _sum="$( \
+    _file_hash \
+      "${_file}")"
+  _work_dir_setup
+  _publication_status_check
+  _file_encode
+  _queue_setup
+  _chunks_publish
+  _chunks_verify
+  _chunks_lock
   _msg=(
     "file '${_file}' uploaded and"
     "available at URI"
-    "'evmfs://${_fs_address}/${_namespace}/${_sum}'"
+    "'$(_publishing_address_get)'"
   )
   _msg_info \
     "${_msg[*]}"
