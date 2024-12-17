@@ -112,13 +112,14 @@ _file_size_check() {
   _size="$( \
     du \
       -b \
-      "${_file}")"
+      "${_file}" | \
+      awk '{print $1}')"
   _msg=(
     "file '${_file}' has size '${_size}' bytes"
   )
   _msg_info \
     "${_msg[*]}"
-  if (( 23000 < "${_size}" )); then
+  if (( 22000 < "${_size}" )); then
     _msg_info \
       "writing over more than a single string!"
   fi
@@ -272,10 +273,21 @@ _file_upload() {
   )
   _msg_info \
     "${_msg[*]}"
+  _msg=(
+    "re-evaluating file hashsum"
+  )
+  _msg_info \
+    "${_msg[*]}"
   _sum="$( \
     _file_hash \
       "${_file}")"
   _tmp_dir="${_cache_dir}/${_sum}"
+  _msg=(
+    "setting up work directory"
+    "'${_tmp_dir}'"
+  )
+  _msg_info \
+    "${_msg[*]}"
   mkdir \
     -p \
     "${_tmp_dir}"
@@ -296,6 +308,13 @@ _file_upload() {
       -v
     )
   fi
+  _msg=(
+    "encoding file with base64 encoding"
+    "and splitting it into 22000 characters"
+    "chunks"
+  )
+  _msg_info \
+    "${_msg[*]}"
   bin2txt \
     "${_bin2txt_opts[@]}" \
     "${_file}" \
@@ -309,18 +328,29 @@ _file_upload() {
         '.' | \
       wc \
         -c)"
-  for _chunk \
-    in $(seq \
-           "${_total_chunks}"); do
+  if [[ "${_total_chunks}" == "1" ]]; then
     _queue+=(
-      "${_chunk_prefix}.${_chunk}"
+      "${_chunk_prefix}"
     )
-  done
+  elif (( 1 < "${_total_chunks}")); then
+    for _chunk \
+      in $(seq \
+             "${_total_chunks}"); do
+      _queue+=(
+        "${_chunk_prefix}.${_chunk}"
+      )
+    done
+  fi
   if [[ "${_queue[*]}" == "" ]]; then
     _msg_error \
       "error processing file for upload" \
       1
   fi
+  _msg=(
+    "upload queue: ${_queue[*]}"
+  )
+  _msg_info \
+    "${_msg[*]}"
   _index=0
   for _chunk \
     in "${_queue[@]}"; do
