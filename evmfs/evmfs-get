@@ -973,11 +973,6 @@ if (( 0 < $# )); then
     "${1}"
 fi
 _set_overrides
-_config_user_init \
-  "$( \
-    _get \
-      "app" \
-      "name")"
 _show_config
 app_opts=(
   "$( \
