@@ -268,8 +268,8 @@ _file_upload() {
       "${_bytecode}"
   )
   _msg=(
-    "calling evm-contract-call with"
-    "options '${_evm_contract_call_opts[*]}'"
+    "evm-contract-call will be called"
+    "with options '${_evm_contract_call_opts[*]}'"
   )
   _msg_info \
     "${_msg[*]}"
@@ -497,6 +497,16 @@ _bytecode_get() {
     _name="${3}" \
     _version="${4}"
   echo \
+    "${_deployments}/${_name}/${_network}/${_version}/${_name}.bin"
+}
+
+_compiler_output_get() {
+  local \
+    _deployments="${1}" \
+    _network="${2}" \
+    _name="${3}" \
+    _version="${4}"
+  echo \
     "${_deployments}/${_name}/${_network}/${_version}/${_name}.json"
 }
 
@@ -530,14 +540,20 @@ _evmfs_publish() {
      get \
        "${_wallet_name}" \
        "address")"
+  _fs_abi="$( \
+    _abi_get \
+      "${_deployments_dir}" \
+      "${_target_network}" \
+      "FileSystem" \
+      "${_fs_version}")"
   _fs_bytecode="$( \
     _bytecode_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
-  _fs_abi="$( \
-    _abi_get \
+  _fs_compiler_output="$( \
+    _compiler_output_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
