@@ -251,22 +251,22 @@ _contract_call_opts_setup() {
     -C
       "${_compiler_output}"
   )
-  _check_call_opts+(
+  _check_call_opts+=(
     "${_evm_contract_call_opts[@]}"
     -t
       "static"
   )
-  _publish_call_opts+(
+  _publish_call_opts+=(
     "${_evm_contract_call_opts[@]}"
     -t
       "dynamic"
   )
-  _verify_call_opts+(
+  _verify_call_opts+=(
     "${_evm_contract_call_opts[@]}"
     -t
       "static"
   )
-  _lock_call_opts+(
+  _lock_call_opts+=(
     "${_evm_contract_call_opts[@]}"
     -t
       "dynamic"
@@ -590,7 +590,6 @@ _file_upload_standalone() {
     _file_hash \
       "${_file}")"
   _work_dir_setup
-  _publication_status_check
   _file_encode
   _queue_setup
   _chunks_publish
