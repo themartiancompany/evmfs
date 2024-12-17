@@ -35,8 +35,23 @@ _global_variables() {
 
 _requirements() {
   _check_cmd \
+    'evm-chains-explorers'
+  _check_cmd \
+    'evm-chains-info'
+  _check_cmd \
     'evm-contract-call' \
     'evm-contracts-tools'
+  _check_cmd \
+    'evm-contract-deployment-address' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-contract-deployment-versions' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-contract-deployments-dir' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-wallet'
   _check_cmd \
     'txt2bin' \
     'encoding-tools'
@@ -45,10 +60,7 @@ _requirements() {
 _get_conf_dir_path() {
   local \
     _dir
-  _dir="${HOME}/.config/$( \
-    _get \
-      "app" \
-      "name")"
+  _dir="${HOME}/.config/evmfs"
   echo \
     "${_dir}"
 }
@@ -229,6 +241,12 @@ _resource_validate() {
     _msg_error \
       "${_msg[*]}" \
       1
+  elif [[ "${_sum}" == "${_uri_hash}" ]]; then
+    _msg=(
+      "File correctly downloaded."
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
 }
 
@@ -241,7 +259,8 @@ _resource_get() {
     _tmp_dir \
     _check \
     _attempt \
-    _retries
+    _retries \
+    _msg=()
   _retries="4"
   mkdir \
     -p \
@@ -258,8 +277,12 @@ _resource_get() {
     for _chunk \
       in $(seq \
              ${_length}); do
+      _msg=(
+        "Downloading chunk"
+        "'${_chunk}' of '${_length}'"
+      )
       _msg_info \
-        "Downloading chunk '${_chunk}' of '${_length}'"
+        "${_msg[*]}"
       _piece="${_tmp_dir}/${_uri_hash}.${_chunk}"
       _chunks+=(
         "${_piece}"
@@ -279,6 +302,12 @@ _resource_get() {
       "${_output_file}"
     break
   done
+  _msg=(
+    "Output correctly moved onto"
+    "'${_output_file}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
 }
 
 _abi_get() {
@@ -929,6 +958,14 @@ shift \
   $(( \
     OPTIND - 1 \
   ))
+if (( $# < 1 )); then
+  _msg_error \
+    "no URI given" \
+    0
+  _set_overrides
+  _usage \
+    1
+fi
 if (( 0 < $# )); then
   _set \
     "target" \

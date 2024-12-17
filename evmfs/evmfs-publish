@@ -36,6 +36,10 @@ _global_variables() {
 
 _requirements() {
   _check_cmd \
+    'evm-chains-explorers'
+  _check_cmd \
+    'evm-chains-info'
+  _check_cmd \
     'evm-contract-call' \
     'evm-contracts-tools'
   _check_cmd \
@@ -1259,7 +1263,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:ud:N:w:p:s:n:k:m:cvh?' \
+    'A:V:ud:N:w:p:s:n:k:m:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1293,6 +1297,14 @@ shift \
   $(( \
     OPTIND - 1 \
   ))
+if (( $# < 1 )); then
+  _msg_error \
+    "no file given" \
+    0
+  _set_overrides
+  _usage \
+    1
+fi
 if (( 0 < $# )); then
   _set \
     "target" \

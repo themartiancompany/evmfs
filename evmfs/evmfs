@@ -14,15 +14,25 @@ source \
 
 # shellcheck disable=SC2034
 _global_variables() {
+  call_date=""
   target_command=""
+  fs_address=""
+  fs_version=""
+  deployments_dir=""
+  user_level=""
+  wallet_name=""
   wallet_path=""
   wallet_password=""
   wallet_seed=""
+  wallet_address=""
   target_network=""
   api_key=""
   wallet_name=""
   target_key=""
   target_value=""
+  upload_method=""
+  output_file=""
+  cache_dir=""
   command_args=()
   color=""
   quiet=""
@@ -30,8 +40,11 @@ _global_variables() {
 
 _requirements() {
   _check_cmd \
-    'node' \
-    'nodejs'
+    'evmfs-get' \
+    'evmfs'
+  _check_cmd \
+    'evmfs-publish' \
+    'evmfs'
 }
 
 _get_conf_dir_path() {
@@ -45,118 +58,96 @@ _get_conf_dir_path() {
     "${_dir}"
 }
 
-_wallet_address_cmd() {
+_cache_dir_auto_detect() {
   local \
-    _command="${1}" \
-    _lib
-  _lib="$( \
-    _get_lib)/evm-wallet"
+    _dir
+  _dir="${HOME}/.cache/evmfs"
   echo \
-    "${_lib}/address-${_command}"
+    "${_dir}"
 }
 
-_node_run() {
-  local \
-    _cmd="${1}" \
-    _args=() \
-    _node_path \
-    _lib
-  shift \
-    1
-  _args=(
-    "$@"
-  )
-  _lib="$( \
-    _get_lib)"
-  _node_path="${_lib}/node_modules" 
-  export \
-    NODE_PATH="${_node_path}"
-  NODE_PATH="${_node_path}" \
-  node \
-    "${_cmd}" \
-      "${_args[@]}" || \
-    true
-}
-
-_network_setup() {
-  if [[ "${_network}" == "gnosis" ]]; then
-    _rpc="https://rpc.gnosischain.com"
-    _network_backend="${_network}"
-  elif [[ "${_network}" == "ethereum" ]]; then
-    _network_backend="etherscan"
-  else
-    _network_backend="${_network}"
-  fi
-}
-
-_api_key_read() {
-  local \
-    _path="${1}"
-  if [ ! -e "${_path}" ]; then
-    _msg_error \
-      "service api key file '${_path}' not found" \
-      1
-  fi
-  cat \
-    "${_path}"
-}
-
-_key_get() {
-  local \
-    _key="${1}"
-  if [[ "${_key}" == "address" ]]; then
-    _cmd="$( \
-      _wallet_address_cmd \
-        "get")"
-    _args+=(
-      "${_wallet_seed}"
-      "${_network_backend}"
-      "${_api_key_path}"
-    )
-  elif [[ "${_key}" == "seed" ]]; then
-    cat \
-      "${_wallet_seed}"
-    return \
-      0
-  fi
-}
-
-_evm_wallet() {
+_evmfs() {
   local \
     _target_command="${1}" \
-    _wallet_path="${2}" \
-    _wallet_password="${3}" \
-    _wallet_seed="${4}" \
-    _network="${5}" \
-    _api_key_path="${6}" \
-    _target_key="${7}" \
-    _target_value="${8}" \
+    _fs_address="${2}" \
+    _fs_version="${3}" \
+    _deployments_dir="${4}" \
+    _wallet_name="${5}" \
+    _wallet_path="${6}" \
+    _wallet_password="${7}" \
+    _wallet_seed="${8}" \
+    _network="${9}" \
+    _api_key_path="${10}" \
+    _upload_method="${11}" \
+    _cache_dir="${12}" \
+    _user_level="${13}" \
+    _output_file="${14}" \
+    _target_key="${15}" \
+    _target_value="${16}" \
     _command_args=() \
     _cmd \
-    _args=() \
-    _api_key \
-    _network_backend
+    _args=()
   shift \
-    8
+    16
   _command_args+=(
     "$@"
   )
-  _api_key="$( \
-    _api_key_read \
-      "${_api_key_path}")"
-  _network_setup
-  if [[ "${_target_command}" == "get" ]]; then
-    "_key_${_target_command}" \
-      "${_target_key}"
-  fi
   if [[ "${quiet}" != "y" ]]; then
     _args+=(
       -v
     )
   fi
-  _node_run \
-    "${_cmd}" \
-    "${_args[@]}"
+  _args+=(
+    -A
+      "${_fs_address}"
+    -V
+      "${_fs_version}"
+    -d
+      "${_deployments_dir}"
+    -N
+      "${_wallet_name}"
+    -w
+      "${_wallet_path}"
+    -p
+      "${_wallet_password}"
+    -s
+      "${_wallet_seed}"
+    -n
+      "${_target_network}"
+    -k
+      "${_api_key_path}"
+    -C
+      "${_cache_dir}"
+  )
+  if [[ "${_user_level}" == "y" ]]; then
+    _args+=(
+      -u
+    )
+  fi
+  if [[ "${_target_command}" == "get" ]]; then
+    if [[ "${_output_file}" != "" ]]; 
+      _args+=(
+        -o
+          "${_output_file}"
+      )
+    _uri="${_target_key}"
+    _args+=(
+    )
+    "_key_${_target_command}" \
+      "${_target_key}"
+  elif [[ "${_target_command}" == "publish" ]]; then
+    _args+=(
+      -m
+        "${_upload_method}"
+    )
+  else
+    _msg=(
+      "command '${_target_command}' not known"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
 }
 
 _wallet_path_get() {
@@ -188,23 +179,42 @@ _secret_get() {
     "${_path}"
 }
 
-_api_key_get() {
+_api_key_auto_detect() {
   local \
-    _name="${1}" \
-    _network="${2}" \
-    _conf_dir \
-    _service
-  if [[ "${_network}" == "ethereum" ]]; then
-    _service="etherscan"
-  elif [[ "${_network}" == "gnosis" ]]; then
-    _service="gnosisscan"
+    _chain="${1}" \
+    _chain_name \
+    _key \
+    _msg=()
+  _key="$( \
+    evm-chains-explorers \
+      -c \
+        "${_chain}" \
+      -s \
+        'kirsh' \
+      get \
+        keys)"
+  _chain_name="$( \
+    evm-chains-info \
+      -o \
+        "name" \
+      "${_chain}")"
+  if [[ ! -e "${_key}" ]]; then
+    _msg=(
+      "Found no provider services"
+      "keys for chain '${_chain_name}'."
+      "Check available service"
+      "providers with \"evm-chains-info"
+      "-o explorers '${_chain}'\""
+      "and add the relative api key in"
+      "'<user_home>/.config/evm-chains-explorers/<service>/default.txt'"
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
-  _conf_dir="${HOME}/.config/${_service}"
-  mkdir \
-    -p \
-    "${_conf_dir}"
-  echo \
-    "${_conf_dir}/${_name}.txt"
+  _set_override \
+    "api" \
+    "key" \
+    "${_key}"
 }
 
 _secret_auto_detect() {
@@ -261,27 +271,279 @@ _secret_auto_detect() {
     "${_path}"
 }
 
+_deployments_dir_auto_detect() {
+  local \
+    _user_level \
+    _evm_contract_deployments_dir_opts=() \
+    _deployments_dir \
+    _system_deployments
+  _user_level="$( \
+    _get \
+      "user" \
+      "level")"
+  if [[ "${_user_level}" == "y" ]]; then
+    _evm_contract_deployments_dir_opts+=(
+      -u
+    )
+  fi
+  _deployments_dir="$( \
+    evm-contract-deployments-dir \
+      "${_evm_contract_deployments_dir_opts[@]}" \
+      "evmfs")"
+  if [[ ! -d "${_deployments_dir}" ]]; then
+    _system_deployments="$( \
+     evm-contract-deployments-dir \
+       "evmfs")"
+    _msg=(
+      "user deployments directory"
+      "'${_deployments_dir}' does"
+      "not exists, importing system deployments"
+      "directory '${_system_deployments}'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    mkdir \
+      -p \
+      "${_deployments_dir}"
+    chmod \
+      700 \
+      "${_deployments_dir}"
+    cp \
+     -r \
+     "${_system_deployments}/"* \
+     "${_deployments_dir}"
+  fi
+  _set_override \
+    "deployments" \
+    "dir" \
+    "${_deployments_dir}"
+}
+
+_network_auto_detect() {
+  local \
+    _contract \
+    _contract_deployment \
+    _deployments \
+    _user \
+    _msg=()
+  _contract="FileSystem"
+  _deployments="$( \
+    _get \
+      "deployments" \
+      "dir")"
+  _contract_deployment="${_deployments}/${_contract}"
+  _user="$( \
+    _get \
+      "user" \
+      "level")"
+  if [[ "${_user}" == "y" ]]; then
+    _msg=(
+     "User deployments enabled, looking"
+     "for cheapest network deployments at" 
+     "path '${_contract_deployment}'"
+   )
+   _msg_info \
+     "${_msg[*]}"
+  fi
+  _network="$( \
+    evm-contract-deployment-networks \
+      -C \
+      "${_contract_deployment}")"
+  if [[ "${_user}" == "y" ]]; then
+    _msg=(
+      "Found network '${_network}'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
+  _set_override \
+    "target" \
+    "network" \
+    "${_network}"
+}
+
+_fs_version_auto_detect() {
+  local \
+    _config \
+    _deployments \
+    _network \
+    _version
+  _deployments="$( \
+    _get \
+      "deployments" \
+      "dir")"
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _config="${_deployments}/FileSystem/${_network}/config.sh"
+  _version="$( \
+    evm-contract-deployment-versions \
+      -H \
+      "${_config}")"
+  _set_override \
+    "fs" \
+    "version" \
+    "${_version}"
+}
+
+_fs_address_auto_detect() {
+  local \
+    _address \
+    _network \
+    _deployments \
+    _user \
+    _version \
+    _evm_contract_deployment_address_opts=() \
+    _msg=()
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _evm_contract_deployment_address_opts+=(
+    -n
+      "${_network}"
+  )
+  _version="$( \
+    _get \
+      "fs" \
+      "version")"
+  if [[ "${_version}" != "" ]]; then
+    _evm_contract_deployment_address_opts+=(
+      -V
+        "${_version}"
+    )
+  fi
+  _user="$( \
+    _get \
+      "user" \
+      "level")"
+  if [[ "${_user}" == "n" ]]; then
+    _evm_contract_deployment_address_opts+=(
+      -a
+        "evmfs"
+    )
+  elif [[ "${_user}" == "y" ]]; then
+    _deployments="$( \
+      _get \
+        "deployments" \
+        "dir")"
+    _evm_contract_deployment_address_opts+=(
+      -u
+      -d
+        "${_deployments}" 
+    )
+  fi
+  _address="$( \
+    evm-contract-deployment-address \
+      "${_evm_contract_deployment_address_opts[@]}" \
+      "FileSystem")"
+  if [[ "${_address}" == "" ]]; then
+    _msg=(
+      "error getting FileSystem version"
+      "${_version} deployment address"
+      "for network '${_network}'"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _set_override \
+    "fs" \
+    "address" \
+    "${_address}"
+}
+
+_address_section_get() {
+  local \
+    _uri="${1}" \
+    _position="${2}" \
+    _path \
+    _reversed \
+    _hash_reversed
+  _path="${_uri#evmfs://}"
+  _reversed="$( \
+    echo \
+      "${_uri}" |
+      rev)"
+  _section="$( \
+    echo \
+      "${_reversed}" | \
+      cut \
+        -d \
+          "/" \
+        -f \
+          "${_position}")"
+  echo \
+    "${_section}" | \
+    rev
+}
+
+_hash_get() {
+  local \
+    _uri="${1}"
+  _address_section_get \
+    "${_uri}" \
+    "1"
+}
+
+_output_file_auto_detect() {
+  local \
+    _output_file \
+    _target_uri
+  _output_file=""
+  if [[ "${_target_command}" == "get" ]]; then
+    _target_uri="$( \
+      _get \
+        "target" \
+        "key")"
+    _output_file="$( \
+      pwd)/$( \
+        _hash_get \
+          "${_target_uri}")"
+  fi
+  _set_override \
+    "output" \
+    "file" \
+    "${_output_file}"
+}
+
 _set_overrides() {
+  local \
+    _output_file \
+    _target_uri
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  _set_override \
+    "call" \
+    "date" \
+    "$(_get_date_human)"
   _set_override \
     "wallet" \
     "name" \
     "default"
   _set_override \
-    "target" \
-    "network" \
-    "gnosis"
+    "user" \
+    "level" \
+    "n"
+  _deployments_dir_auto_detect
+  _network_auto_detect
+  _api_key_auto_detect \
+    "$(_get \
+         "target" \
+         "network")"
   _set_override \
     "target" \
     "command" \
     "get"
-  _set_override \
-    "api" \
-    "key" \
-    "$(_api_key_get \
-         "default" \
-         "$(_get \
-              "target" \
-              "network")")"
   _set_override \
     "wallet" \
     "path" \
@@ -293,26 +555,40 @@ _set_overrides() {
     "password" \
     "plain"
   _set_override \
-    "target" \
-    "key" \
-    "address"
-  if [[ -v override_quiet ]]; then
-    quiet="${override_quiet}"
-  elif [[ -z "${quiet}" ]]; then
-    quiet="y"
-  fi
-  if [[ -v override_color ]]; then
-    color="${override_color}"
-  elif [[ -z "${color}" ]]; then
-    color="n"
-  fi
+    "wallet" \
+    "address" \
+    "$(evm-wallet \
+         get \
+           "${wallet_name}" \
+           "address")"
+  _set_override \
+    "cache" \
+    "dir" \
+    "$(_cache_dir_auto_detect)"
+  _set_override \
+    "upload" \
+    "method" \
+    "standalone"
+  _output_path_auto_detect
+  _fs_version_auto_detect
+  _fs_address_auto_detect
 }
 
 # Show help usage, with an exit status.
 # $1: exit status number.
 _usage() {
   local \
+    _fs_deployment \
+    _networks \
     _usage_text
+  _fs_deployment="$( \
+    _get \
+      "deployments" \
+      "dir")/FileSystem"
+  _networks="$( \
+    evm-contract-deployment-networks \
+      -A \
+      "${_fs_deployment}")"
   IFS='' \
     read \
       -r \
@@ -334,22 +610,45 @@ Usage:
       <file_path>
 
   networks:
-    gnosis
+$(_display_networks \
+     "${_networks[*]}")
 
   options:
-     -w <wallet_path>     Wallet path.
-                          Default: $(_get "wallet" "path")
-     -p <wallet_password> Wallet password.
-                          Default: $(_get "wallet" "password")
-     -s <wallet_seed>     Wallet seed path.
-                          Default: $(_get "wallet" "seed")
-     -n <network>         EVM network name ('mainnet', 'gnosis').
-                          Default: $(_get "target" "network")
-     -k <api_key>         Etherscan-like service key.
-                          Default: $(_get "api" "key")
-     -h                   This message.
-     -c                   Enable color output
-     -v                   Enable verbose output
+     -A <fs_address>        Address of the EVM file system
+                            on the network.
+                            Default: $(_get "fs" "address")
+     -V <fs_version>        Version of the target EVM file
+                            system.
+                            Default: $(_get "fs" "version")
+     -o <output_file>       Name of the file in which to save
+                            the downloaded resource.
+                            Default: $(_get "output" "file")
+     -u                     Whether to retrieve file system
+                            address from user directory or custom
+                            deployment.
+                            Default: $(_get "user" "level")
+     -d <deployments_dir>   Contracts deployments directory.
+                            Default: $(_get "deployments" "dir")
+     -N <wallet_name>       Wallet name.
+                            Default: $(_get "wallet" "name")
+     -w <wallet_path>       Wallet path.
+                            Default: $(_get "wallet" "path")
+     -p <wallet_password>   Wallet password.
+                            Default: $(_get "wallet" "password")
+     -s <wallet_seed>       Wallet seed path.
+                            Default: $(_get "wallet" "seed")
+     -n <network>           EVM network name ('mainnet', 'gnosis').
+                            Default: $(_get "target" "network")
+     -k <api_key>           Etherscan-like service key.
+                            Default: $(_get "api" "key")
+     -m <upload_method>     It can be 'standalone' or 'bulk'
+                            Default: $(_get "upload" "method")
+     -C <cache_dir>         Work directory
+                            Default: $(_get "cache" "dir")
+
+     -h                     This message.
+     -c                     Enable color output
+     -v                     Enable verbose output
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -371,23 +670,44 @@ _display_flags() {
   done
 }
 
+_display_networks() {
+  local \
+    _network \
+    _network_name \
+    _networks=(
+      "${1}"
+    )
+  for _network \
+    in "${_networks[@]}"; do
+    _network_name="$( \
+      evm-chains-info \
+        -i \
+          "id" \
+        -o \
+          "name" \
+        "${_network}")"
+  echo \
+    "    ${_network_name}"
+  done
+}
+
 # Shows configuration options.
 _show_config() {
-  local \
-    _call_date
   TZ=UTC \
-  printf \
-    -v \
-      _call_date \
-    '%(%FT%R%z)T' \
-    "${SOURCE_DATE_EPOCH}"
   _msg_info "${app_name} configuration"
-  _msg_info "                Call date:   $(_get "_call" "date")"
+  _msg_info "                Call date:   $(_get "call" "date")"
+  _msg_info "      File system address:   $(_get "fs" "address")"
+  _msg_info "      File system version:   $(_get "fs" "version")"
+  _msg_info "               User level:   $(_get "user" "level")"
+  _msg_info "    Deployments directory:   $(_get "deployments" "dir")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
+  _msg_info "            Upload method:   $(_get "upload" "method")"
+  _msg_info "          Cache directory:   $(_get "cache" "dir")"
+  _msg_info "              Output file:   $(_get "output" "file")"
   _msg_info "               Target key:   $(_get "target" "key")"
   _msg_info "             Target value:   $(_get "target" "value")"
 }
@@ -402,15 +722,23 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'w:p:s:n:k:cvh?' \
+    'A:V:o:ud:N:w:p:s:n:k:m:C:cvh?' \
     arg; do
   case \
     "${arg}" in
+    A) override_fs_address="${OPTARG}" ;;
+    V) override_fs_version="${OPTARG}" ;;
+    o) override_output_file="${OPTARG}" ;;
+    u) override_user_level="y" ;;
+    d) override_deployments_dir="${OPTARG}" ;;
+    N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
+    m) override_upload_method="${OPTARG}" ;;
+    C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -429,6 +757,22 @@ shift \
   $(( \
     OPTIND - 1 \
   ))
+if (( $# < 1 )); then
+  _msg_error \
+    "no command given" \
+    0
+  _set_overrides
+  _usage \
+    1
+fi
+if (( $# < 2 )); then
+  _msg_error \
+    "no value given" \
+    0
+  _set_overrides
+  _usage \
+    1
+fi
 if (( 0 < $# )); then
   _set \
     "target" \
@@ -437,24 +781,18 @@ if (( 0 < $# )); then
 fi
 if (( 1 < $# )); then
   _set \
-    "wallet" \
-    "name" \
+    "target" \
+    "key" \
     "${2}"
 fi
-if (( 2 < $# )); then
+if (( 1 < $# )); then
   _set \
-    "wallet" \
-    "key" \
-    "${3}"
-fi
-if (( 3 < $# )); then
-  _set \
-    "wallet" \
+    "target" \
     "value" \
-    "${4}"
+    "${2}"
 fi
 shift \
-  4 || \
+  2 || \
   true
 command_args+=(
   "$@"
@@ -467,30 +805,48 @@ _config_user_init \
       "name")"
 _show_config
 app_opts=(
-  "$( \
-    _get \
+  "$(_get \
       "target" \
       "command")"
-  "$( \
-    _get \
+  "$(_get \
+       "fs" \
+       "address")"
+  "$(_get \
+       "fs" \
+       "version")"
+  "$(_get \
+       "deployments" \
+       "dir")"
+  "$(_get \
+       "wallet" \
+       "name")"
+  "$(_get \
       "wallet" \
       "path")"
-  "$( \
-    _get \
+  "$(_get \
       "wallet" \
       "password")"
-  "$( \
-    _get \
+  "$(_get \
       "wallet" \
       "seed")"
-  "$( \
-    _get \
+  "$(_get \
       "target" \
       "network")"
-  "$( \
-    _get \
+  "$(_get \
       "api" \
       "key")"
+  "$(_get \
+       "upload" \
+       "method")"
+  "$(_get \
+       "cache" \
+       "dir")"
+  "$(_get \
+       "user" \
+       "level")"
+  "$(_get \
+       "output" \
+       "file")"
   "$( \
     _get \
       "target" \
