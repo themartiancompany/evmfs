@@ -115,6 +115,7 @@ _file_size_check() {
       "${_file}")"
   _msg=(
     "file '${_file}' has size '${_size}' bytes"
+  )
   _msg_info \
     "${_msg[*]}"
   if (( 23000 < "${_size}" )); then
@@ -301,7 +302,7 @@ _file_upload() {
     "${_chunk_prefix}"
   _total_chunks="$( \
     find \
-      "${_chunk_prefix}."* \
+      "${_chunk_prefix}"* \
       -type \
         "f" \
       -printf \
