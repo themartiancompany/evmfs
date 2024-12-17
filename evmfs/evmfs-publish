@@ -107,12 +107,17 @@ _node_run() {
 _file_size_check() {
   local \
     _file="${1}" \
-    _size
+    _size \
+    _msg=()
   _size="$( \
     du \
       -b \
       "${_file}")"
-  if [[ 23000 < "${_size}" ]]; then
+  _msg=(
+    "file '${_file}' has size '${_size}' bytes"
+  _msg_info \
+    "${_msg[*]}"
+  if (( 23000 < "${_size}" )); then
     _msg_info \
       "writing over more than a single string!"
   fi
@@ -241,6 +246,11 @@ _file_upload() {
     _bin2txt_opts=() \
     _evm_contract_call_opts=() \
     _chunk_publish_opts=()
+  if [[ "${quiet}" == "n" ]]; then
+    _evm_contract_call_opts+=(
+      -v
+    )
+  fi
   _evm_contract_call_opts+=(
     -n
       "${_target_network}"
@@ -255,6 +265,12 @@ _file_upload() {
     -B
       "${_bytecode}"
   )
+  _msg=(
+    "calling evm-contract-call with"
+    "options '${_evm_contract_call_opts[*]}'"
+  )
+  _msg_info \
+    "${_msg[*]}"
   _sum="$( \
     _file_hash \
       "${_file}")"
@@ -535,23 +551,42 @@ _secret_get() {
     "${_path}"
 }
 
-_api_key_get() {
+_api_key_auto_detect() {
   local \
-    _name="${1}" \
-    _network="${2}" \
-    _conf_dir \
-    _service
-  if [[ "${_network}" == "ethereum" ]]; then
-    _service="etherscan"
-  elif [[ "${_network}" == "gnosis" ]]; then
-    _service="gnosisscan"
+    _chain="${1}" \
+    _chain_name \
+    _key \
+    _msg=()
+  _key="$( \
+    evm-chains-explorers \
+      -c \
+        "${_chain}" \
+      -s \
+        'kirsh' \
+      get \
+        keys)"
+  _chain_name="$( \
+    evm-chains-info \
+      -o \
+        "name" \
+      "${_chain}")"
+  if [[ ! -e "${_key}" ]]; then
+    _msg=(
+      "Found no provider services"
+      "keys for chain '${_chain_name}'."
+      "Check available service"
+      "providers with \"evm-chains-info"
+      "-o explorers '${_chain}'\""
+      "and add the relative api key in"
+      "'<user_home>/.config/evm-chains-explorers/<service>/default.txt'"
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
-  _conf_dir="${HOME}/.config/${_service}"
-  mkdir \
-    -p \
-    "${_conf_dir}"
-  echo \
-    "${_conf_dir}/${_name}.txt"
+  _set_override \
+    "api" \
+    "key" \
+    "${_key}"
 }
 
 _secret_auto_detect() {
@@ -660,17 +695,39 @@ _network_auto_detect() {
   local \
     _contract \
     _contract_deployment \
-    _deployments
+    _deployments \
+    _user \
+    _msg=()
   _contract="FileSystem"
   _deployments="$( \
     _get \
       "deployments" \
       "dir")"
   _contract_deployment="${_deployments}/${_contract}"
+  _user="$( \
+    _get \
+      "user" \
+      "level")"
+  if [[ "${_user}" == "y" ]]; then
+    _msg=(
+     "User deployments enabled, looking"
+     "for cheapest network deployments at" 
+     "path '${_contract_deployment}'"
+   )
+   _msg_info \
+     "${_msg[*]}"
+  fi
   _network="$( \
     evm-contract-deployment-networks \
       -C \
       "${_contract_deployment}")"
+  if [[ "${_user}" == "y" ]]; then
+    _msg=(
+      "Found network '${_network}'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
   _set_override \
     "target" \
     "network" \
@@ -794,14 +851,10 @@ _set_overrides() {
     "n"
   _deployments_dir_auto_detect
   _network_auto_detect
-  _set_override \
-    "api" \
-    "key" \
-    "$(_api_key_get \
-         "default" \
-         "$(_get \
-              "target" \
-              "network")")"
+  _api_key_auto_detect \
+    "$(_get \
+         "target" \
+         "network")"
   _set_override \
     "wallet" \
     "path" \
@@ -904,6 +957,36 @@ ENDUSAGETEXT
     "${1}"
 }
 
+_publishing_address_get() {
+  local \
+    _network \
+    _fs_address \
+    _namespace \
+    _file \
+    _sum
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _fs_address="$( \
+    _get \
+      "fs" \
+      "address")"
+  _namespace="$( \
+    _get \
+      "wallet" \
+      "address")"
+  _file="$( \
+    _get \
+      "target" \
+      "file")"
+  _sum="$( \
+    _file_hash \
+      "${_file}")"
+  echo \
+    "evmfs://${_network}/${_fs_address}/${_namespace}/${_sum}"
+}
+
 _display_flags() {
   local \
     _flag \
@@ -920,13 +1003,21 @@ _display_flags() {
 _display_networks() {
   local \
     _network \
+    _network_name \
     _networks=(
       "${1}"
     )
   for _network \
     in "${_networks[@]}"; do
+    _network_name="$( \
+      evm-chains-info \
+        -i \
+          "id" \
+        -o \
+          "name" \
+        "${_network}")"
   echo \
-    "    ${_network}"
+    "    ${_network_name}"
   done
 }
 
@@ -948,6 +1039,7 @@ _show_config() {
   _msg_info "            Upload method:   $(_get "upload" "method")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "              Target file:   $(_get "target" "file")"
+  _msg_info "       Publishing address:   $(_publishing_address_get)"
 }
 
 _globals
@@ -998,7 +1090,8 @@ if (( 0 < $# )); then
   _set \
     "target" \
     "file" \
-    "${1}"
+    "$(realpath \
+         "${1}")"
 fi
 shift \
   1 || \
