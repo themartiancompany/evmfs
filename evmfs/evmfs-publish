@@ -533,7 +533,7 @@ _chunk_check() {
     _msg=()
   _passed_flag="false"
   _check_dir="${_cache_dir}/${_sum}/check"
-  _remote="${_verify_dir}/${_index}"
+  _remote="${_check_dir}/${_index}"
   mkdir \
     -p \
     "${_check_dir}"
