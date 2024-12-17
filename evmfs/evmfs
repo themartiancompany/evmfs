@@ -84,8 +84,9 @@ _evmfs() {
     _output_file="${14}" \
     _target_key="${15}" \
     _target_value="${16}" \
+    _target_uri \
+    _target_file \
     _command_args=() \
-    _cmd \
     _args=()
   shift \
     16
@@ -130,15 +131,17 @@ _evmfs() {
         -o
           "${_output_file}"
       )
-    _uri="${_target_key}"
+    fi
+    _target_uri="${_target_key}"
     _args+=(
+      "${_target_uri}"
     )
-    "_key_${_target_command}" \
-      "${_target_key}"
   elif [[ "${_target_command}" == "publish" ]]; then
+    _target_file="${_target_key}"
     _args+=(
       -m
         "${_upload_method}"
+      "${_target_file}"
     )
   else
     _msg=(
@@ -148,6 +151,8 @@ _evmfs() {
       "${_msg[*]}" \
       1
   fi
+  "evmfs-${_target_command}" \
+    "${_args[@]}"
 }
 
 _wallet_path_get() {
