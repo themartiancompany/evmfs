@@ -177,7 +177,7 @@ _chunk_lock() {
     _sum="${3}" \
     _index="${4}"
   evm-contract-call \
-    "${_evm_contract_call_opts[@]}" \
+    "${_lock_call_opts[@]}" \
     "${_fs_address}" \
     "lockChunk" \
     "${_namespace}" \
