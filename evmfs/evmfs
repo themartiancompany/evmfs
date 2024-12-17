@@ -126,7 +126,7 @@ _evmfs() {
     )
   fi
   if [[ "${_target_command}" == "get" ]]; then
-    if [[ "${_output_file}" != "" ]]; 
+    if [[ "${_output_file}" != "" ]]; then
       _args+=(
         -o
           "${_output_file}"
@@ -574,7 +574,7 @@ _set_overrides() {
     "upload" \
     "method" \
     "standalone"
-  _output_path_auto_detect
+  _output_file_auto_detect
   _fs_version_auto_detect
   _fs_address_auto_detect
 }
