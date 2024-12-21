@@ -370,9 +370,14 @@ _chunks_publish() {
   _index=0
   for _chunk \
     in "${_queue[@]}"; do
-    _payload="$( \
-      cat \
-        "${_chunk}")"
+    IFS= \
+    read \
+      -rd \
+        '' \
+      _payload < \
+      <( cat \
+           "${_chunk}") || \
+      true
     _msg=(
       "checking chunk '${_chunk}'"
       "$(( "${_index}" + 1 ))"
