@@ -187,28 +187,13 @@ _chunk_lock() {
     "${_index}"
 }
 
-_sum_get() {
-  local \
-    _content="${1}" 
-  echo \
-    "${_content}" | \
-    sha256sum | \
-      awk \
-        '{print $1}'
-}
-
 _file_hash() {
   local \
     _file="${1}" \
-    _content
-  _content="$( \
-    cat \
-      "${_file}")"
-  _sum="$( \
-    _sum_get \
-      "${_content}")"
-  echo \
-   "${_sum}" 
+  sha256sum \
+    "${_file}" | \
+    awk \
+      '{print $1}'
 }
 
 _chunk_publish() {
