@@ -189,7 +189,7 @@ _chunk_lock() {
 
 _file_hash() {
   local \
-    _file="${1}" \
+    _file="${1}"
   sha256sum \
     "${_file}" | \
     awk \
