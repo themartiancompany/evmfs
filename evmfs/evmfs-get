@@ -220,7 +220,7 @@ _resource_length_get() {
       "${_uri_namespace}" \
       "${_uri_hash}")"
   echo \
-    "${_length%n}"
+    "${_length}"
 }
 
 _resource_validate() {
