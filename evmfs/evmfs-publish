@@ -727,6 +727,9 @@ _evmfs_publish() {
       "${_fs_abi}" \
       "${_fs_bytecode}" \
       "${_fs_compiler_output}"
+  elif [[ "${_upload_method}" == "simulate" ]]; then
+    echo \
+      "$(_publishing_address_get)"
   else
     _msg_error \
       "unknown upload method '${_upload_method}'"
@@ -1152,7 +1155,7 @@ $(_display_networks \
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
-     -m <upload_method>     It can be 'standalone' or 'bulk'
+     -m <upload_method>     It can be 'standalone' or 'simulate'
                             Default: $(_get "upload" "method")
      -C <cache_dir>         Work directory
                             Default: $(_get "cache" "dir")
