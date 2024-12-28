@@ -178,8 +178,7 @@ _secret_get() {
     _get \
       "wallet" \
       "name")"
-  _path="$( \
-    _get_conf_dir_path)/${_name}-${_secret}.txt"
+  _path="${HOME}/.config/evm-wallet/${_name}-${_secret}.txt"
   echo \
     "${_path}"
 }
