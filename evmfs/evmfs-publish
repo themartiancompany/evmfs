@@ -601,7 +601,7 @@ _file_upload_standalone() {
     "available at URI"
     "'$(_publishing_address_get)'"
   )
-  echo \
+  _msg_info \
     "${_msg[*]}"
 }
 

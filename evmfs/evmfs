@@ -651,7 +651,8 @@ $(_display_networks \
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
-     -m <upload_method>     It can be 'standalone' or 'bulk'
+     -m <upload_method>     It can be 'standalone', 'bulk' or
+                            'simulate'
                             Default: $(_get "upload" "method")
      -C <cache_dir>         Work directory
                             Default: $(_get "cache" "dir")
