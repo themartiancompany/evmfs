@@ -482,6 +482,7 @@ _chunks_lock() {
   local \
     _index \
     _chunk \
+    _locked \
     _msg=()
   _index=0
   for _chunk \
@@ -493,20 +494,47 @@ _chunks_lock() {
     )
     _msg_info \
       "${_msg[*]}"
-    _chunk_lock \
-      "${_fs_address}" \
-      "${_namespace}" \
-      "${_sum}" \
-      "${_index}"
-    _msg=(
-      "chunk '${_chunk}'"
-      "$(( "${_index}" + 1))"
-      "of ${_total_chunks}"
-      "correctly locked."
-    )
-    _msg_info \
-      "${_msg[*]}"
-
+    _locked="$( \
+      evm-contract-call \
+        "${_check_call_opts[@]}" \
+        "${_fs_address}" \
+        "lock" \
+        "${_namespace}" \
+        "${_sum}" \
+        "${_index}")"
+    if [[ "${_locked}" == "false" ]]; then
+      _chunk_lock \
+        "${_fs_address}" \
+        "${_namespace}" \
+        "${_sum}" \
+        "${_index}"
+      _msg=(
+        "chunk '${_chunk}'"
+        "$(( "${_index}" + 1))"
+        "of ${_total_chunks}"
+        "correctly locked."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_locked}" == "true" ]]; then
+      _msg=(
+        "chunk '${_chunk}'"
+        "$(( "${_index}" + 1))"
+        "of ${_total_chunks}"
+        "already locked."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_locked}" == "" ]]; then
+      _msg=(
+        "Error retrieving lock state"
+        "for chunk '${_chunk}'"
+        "$(( "${_index}" + 1))"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
     _index="$(( \
       _index + 1))"
   done
@@ -744,8 +772,7 @@ _wallet_path_get() {
     _get \
       "wallet" \
       "name")"
-  _path="$( \
-    _get_conf_dir_path)/${_name}.dat"
+  _path="${HOME}/.config/evm-wallet/${_name}.dat"
   echo \
     "${_path}"
 }
