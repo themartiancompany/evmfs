@@ -51,7 +51,7 @@ _INSTALL_CONTRACTS_TARGETS:=\
 _INSTALL_CONTRACTS_TARGETS_ALL:=\
   install-contracts \
   install-contracts-deployments-hardhat \
-  install-contracts-deployment-solc \
+  install-contracts-deployments-solc \
   install-contracts-deployments-config \
   install-contracts-sources
 _INSTALL_TARGETS:=\
