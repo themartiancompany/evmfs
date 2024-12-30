@@ -83,7 +83,7 @@ contracts:
 	  -C \
 	    . \
 	  -b \
-	    "$(SOLIDITY_COMPILER_BACKEND)" 
+	    "$(SOLIDITY_COMPILER_BACKEND)" \
 	  -w \
 	    "$(BUILD_DIR)"
 
