@@ -89,6 +89,9 @@ contracts:
 
 install-contracts-sources:
 
+	install \
+	  -dm755 \
+	  "$(LIB_DIR)"
 	evm-make \
 	  -C \
 	    . \
@@ -102,6 +105,9 @@ install-contracts-sources:
 
 install-contracts-deployments-config:
 
+	install \
+	  -dm755 \
+	  "$(LIB_DIR)"
 	evm-make \
 	  -C \
 	    . \
@@ -115,6 +121,9 @@ install-contracts-deployments-config:
 
 install-contracts-deployments-solc:
 
+	install \
+	  -dm755 \
+	  "$(LIB_DIR)"
 	evm-make \
 	  -C \
 	    . \
@@ -128,6 +137,9 @@ install-contracts-deployments-solc:
 
 install-contracts-deployments-hardhat:
 
+	install \
+	  -dm755 \
+	  "$(LIB_DIR)"
 	evm-make \
 	  -C \
 	    . \
