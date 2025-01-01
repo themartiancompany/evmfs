@@ -594,10 +594,13 @@ _usage() {
     _get \
       "deployments" \
       "dir")/FileSystem"
-  _networks="$( \
+  _networks=( $( \
     evm-contract-deployment-networks \
       -A \
-      "${_fs_deployment}")"
+      "${_fs_deployment}")
+  )
+  _msg_info \
+    "ciao ${_networks[*]}"
   IFS='' \
     read \
       -r \
@@ -620,7 +623,7 @@ Usage:
 
   networks:
 $(_display_networks \
-     "${_networks[*]}")
+     "${_networks[@]}")
 
   options:
      -A <fs_address>        Address of the EVM file system
@@ -646,7 +649,8 @@ $(_display_networks \
                             Default: $(_get "wallet" "password")
      -s <wallet_seed>       Wallet seed path.
                             Default: $(_get "wallet" "seed")
-     -n <network>           EVM network name (${_networks[*]}).
+     -n <network>           EVM network name. Use either name
+                            or ID.
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
@@ -682,10 +686,11 @@ _display_flags() {
 
 _display_networks() {
   local \
+    _networks=() \
     _network \
-    _network_name \
-    _networks=(
-      "${1}"
+    _network_name
+  _networks=(
+      "$@"
     )
   for _network \
     in "${_networks[@]}"; do
@@ -697,7 +702,7 @@ _display_networks() {
           "name" \
         "${_network}")"
   echo \
-    "    ${_network_name}"
+    "    '${_network_name}' (${_network})"
   done
 }
 
