@@ -599,8 +599,6 @@ _usage() {
       -A \
       "${_fs_deployment}")
   )
-  _msg_info \
-    "ciao ${_networks[*]}"
   IFS='' \
     read \
       -r \
