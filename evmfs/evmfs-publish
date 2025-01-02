@@ -1285,10 +1285,6 @@ _show_config() {
 _globals
 _global_variables
 _requirements
-_config_user_init \
-  "$(_get \
-       "app" \
-       "name")"
 # shellcheck disable=SC2034
 while \
   getopts \
