@@ -80,6 +80,7 @@ shellcheck:
 contracts:
 
 	evm-make \
+	  -v \
 	  -C \
 	    . \
 	  -b \
@@ -90,6 +91,7 @@ contracts:
 install-contracts-sources:
 
 	evm-make \
+	  -v \
 	  -C \
 	    . \
 	  -b \
@@ -103,6 +105,7 @@ install-contracts-sources:
 install-contracts-deployments-config:
 
 	evm-make \
+	  -v \
 	  -C \
 	    . \
 	  -b \
@@ -116,6 +119,7 @@ install-contracts-deployments-config:
 install-contracts-deployments-solc:
 
 	evm-make \
+	  -v \
 	  -C \
 	    . \
 	  -b \
@@ -129,6 +133,7 @@ install-contracts-deployments-solc:
 install-contracts-deployments-hardhat:
 
 	evm-make \
+	  -v \
 	  -C \
 	    . \
 	  -b \
