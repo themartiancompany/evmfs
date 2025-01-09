@@ -359,6 +359,23 @@ _queue_setup() {
     "${_msg[*]}"
 }
 
+_verify_skip() {
+  local \
+    _chunk="${1}" \
+    _verify_queue_new=() \
+    _due
+  for _due in "${_verify_queue[@]}"; do
+    if [[ "${_due}" != "${_chunk}" ]]; then
+      _verify_queue_new+=(
+        "${_due}"
+      )
+    fi
+  done
+  _verify_queue=(
+    "${_verify_queue_new[@]}"
+  )
+}
+
 _chunks_publish() {
   local \
     _chunk \
@@ -400,9 +417,8 @@ _chunks_publish() {
       )
       _msg_info \
         "${_msg[*]}"
-      _verify_queue=(
-        "${_verify_queue[@]/${_chunk}}"
-      )
+      _verify_skip \
+        "${_chunk}"
     elif [[ "${_passed_flag}" == "false" ]]; then
       _msg=(
         "publishing chunk '${_chunk}'"

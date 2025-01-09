@@ -8,9 +8,17 @@ _bin="$( \
       command \
         -v \
 	  "env")")"
-_lib="${_bin}/../lib"
-source \
-  "${_lib}/libcrash-bash/crash-bash"
+_lib="$( \
+  realpath \
+    "${_bin}/../lib")"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_libevm="${_lib}/libevm/libevm"
+_sourced \
+  "${_crash_bash}" ||
+  source \
+    "${_crash_bash}"
+_sourced \
+  "${_libevm}"
 
 # shellcheck disable=SC2034
 _global_variables() {
@@ -244,12 +252,34 @@ _resource_validate() {
   fi
 }
 
+_chunks_get() {
+  local \
+    _length="${1}" \
+    _chunk \
+    _piece
+  for _chunk \
+    in $(seq \
+           ${_length}); do
+    _msg=(
+      "Downloading chunk"
+      "'${_chunk}' of '${_length}'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _piece="${_tmp_dir}/${_uri_hash}.${_chunk}"
+    _chunks+=(
+      "${_piece}"
+    )
+    _chunk_get \
+      "$(("${_chunk}" - 1))" > \
+      "${_piece}"
+  done
+}
+
 _resource_get() {
   local \
     _chunks=() \
     _length \
-    _chunk \
-    _piece \
     _tmp_dir \
     _check \
     _attempt \
@@ -268,23 +298,8 @@ _resource_get() {
     "$(_resource_length_get)" + 1))"
   _attempt=1
   while (( "${_attempt}" < "${_retries}" )); do
-    for _chunk \
-      in $(seq \
-             ${_length}); do
-      _msg=(
-        "Downloading chunk"
-        "'${_chunk}' of '${_length}'"
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _piece="${_tmp_dir}/${_uri_hash}.${_chunk}"
-      _chunks+=(
-        "${_piece}"
-      )
-      _chunk_get \
-        "$(("${_chunk}" - 1))" > \
-        "${_piece}"
-    done
+    _chunks_get \
+      "${_length}"
     _check="${_tmp_dir}/${_uri_hash}.check"
     txt2bin \
       "${_check}" \
