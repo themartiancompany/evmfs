@@ -29,6 +29,7 @@ _global_variables() {
   target_network=""
   api_key=""
   upload_method=""
+  tasks_parallel=""
   cache_dir=""
   target_file=""
   command_args=()
@@ -342,6 +343,10 @@ _queue_setup() {
       _publish_queue+=(
         "${_chunk_prefix}.${_chunk}"
       )
+      _verify_queue+=(
+        "true"
+      )
+
     done
   fi
   if [[ "${_publish_queue[*]}" == "" ]]; then
@@ -349,9 +354,6 @@ _queue_setup() {
       "error processing file for upload" \
       1
   fi
-  _verify_queue+=(
-    "${_publish_queue[@]}"
-  )
   _msg=(
     "upload queue: ${_publish_queue[*]}"
   )
@@ -361,19 +363,8 @@ _queue_setup() {
 
 _verify_skip() {
   local \
-    _chunk="${1}" \
-    _verify_queue_new=() \
-    _due
-  for _due in "${_verify_queue[@]}"; do
-    if [[ "${_due}" != "${_chunk}" ]]; then
-      _verify_queue_new+=(
-        "${_due}"
-      )
-    fi
-  done
-  _verify_queue=(
-    "${_verify_queue_new[@]}"
-  )
+    _index="${1}"
+  _verify_queue["${_index}"]="false"
 }
 
 _chunks_publish() {
@@ -418,7 +409,7 @@ _chunks_publish() {
       _msg_info \
         "${_msg[*]}"
       _verify_skip \
-        "${_chunk}"
+        "${_index}"
     elif [[ "${_passed_flag}" == "false" ]]; then
       _msg=(
         "publishing chunk '${_chunk}'"
@@ -462,31 +453,41 @@ _chunks_verify() {
     _msg=()
   _index=0
   for _chunk \
-    in "${_verify_queue[@]}"; do
-    _msg=(
-      "verifying chunk '${_chunk}'"
-      "of ${_total_chunks}"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _chunk_verify_opts=(
-      "${_fs_address}"
-      "${_namespace}"
-      "${_sum}"
-      "${_index}"
-      "${_chunk}"
-    )
-    _chunk_verify \
-      "${_chunk_verify_opts[@]}"
-    _msg=(
-      "verified chunk '${_chunk}'"
-      "$(( "${_index}" + 1 ))"
-      "of ${_total_chunks}"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _index="$(( \
-      _index + 1))"
+    in "${_publish_queue[@]}"; do
+      _msg=(
+        "verifying chunk '${_chunk}'"
+        "of ${_total_chunks}"
+      )
+      _msg_info \
+        "${_msg[*]}"
+    if [[ "${_verify_queue["${_index}"]}" == "true" ]]; then
+      _chunk_verify_opts=(
+        "${_fs_address}"
+        "${_namespace}"
+        "${_sum}"
+        "${_index}"
+        "${_chunk}"
+      )
+      _chunk_verify \
+        "${_chunk_verify_opts[@]}"
+      _msg=(
+        "verified chunk '${_chunk}'"
+        "$(( "${_index}" + 1 ))"
+        "of ${_total_chunks}"
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _index="$(( \
+        _index + 1))"
+    elif [[ "${_verify_queue["${_index}"]}" == "false" ]]; then
+      _msg=(
+        "chunk '${_chunk}'"
+        "of ${_total_chunks}"
+        "already verified"
+      )
+      _msg_info \
+        "${_msg[*]}"
+    fi
   done
   _msg=(
     "all '${_total_chunks}' chunks"
@@ -728,8 +729,9 @@ _evmfs_publish() {
     _target_network="${8}" \
     _api_key_path="${9}" \
     _upload_method="${10}" \
-    _cache_dir="${11}" \
-    _target_file="${12}" \
+    _tasks_parallel="${11}" \
+    _cache_dir="${12}" \
+    _target_file="${13}" \
     _command_args=() \
     _cmd \
     _args=() \
@@ -738,7 +740,7 @@ _evmfs_publish() {
     _fs_bytecode \
     _fs_compiler_output
   shift \
-    12
+    13
   _command_args+=(
     "$@"
   )
@@ -862,6 +864,10 @@ _set_overrides() {
     "upload" \
     "method" \
     "standalone"
+  _set_override \
+    "tasks" \
+    "parallel" \
+    "2"
   _contract_version_auto_detect \
     "$(_get \
          "deployments" \
@@ -946,8 +952,11 @@ $(_display_networks \
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
-     -m <upload_method>     It can be 'standalone' or 'simulate'
+     -m <upload_method>     It can be 'standalone' or 'simulate'.
                             Default: $(_get "upload" "method")
+     -l <tasks_parallel>    Tasks to perform in parallel.
+                            Default: $(_get "upload" "method")
+
      -C <cache_dir>         Work directory
                             Default: $(_get "cache" "dir")
 
@@ -1021,6 +1030,7 @@ _show_config() {
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "            Upload method:   $(_get "upload" "method")"
+  _msg_info "           Tasks parallel:   $(_get "tasks" "parallel")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "              Target file:   $(_get "target" "file")"
   _msg_info "       Publishing address:   $(_publishing_address_get)"
@@ -1032,7 +1042,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:ud:N:w:p:s:n:k:m:C:cvh?' \
+    'A:V:ud:N:w:p:s:n:k:m:l:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1047,6 +1057,7 @@ while \
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_upload_method="${OPTARG}" ;;
+    l) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -1128,6 +1139,9 @@ app_opts=(
   "$(_get \
        "upload" \
        "method")"
+  "$(_get \
+       "tasks" \
+       "parallel")"
   "$(_get \
        "cache" \
        "dir")"
