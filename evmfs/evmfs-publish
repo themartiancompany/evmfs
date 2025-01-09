@@ -346,7 +346,6 @@ _queue_setup() {
       _verify_queue+=(
         "true"
       )
-
     done
   fi
   if [[ "${_publish_queue[*]}" == "" ]]; then
