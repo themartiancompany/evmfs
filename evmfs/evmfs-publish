@@ -29,6 +29,7 @@ _global_variables() {
   target_network=""
   api_key=""
   upload_method=""
+  lock_only=""
   tasks_parallel=""
   cache_dir=""
   target_file=""
@@ -199,15 +200,66 @@ _chunk_publish() {
     _namespace="${2}" \
     _sum="${3}" \
     _index="${4}" \
-    _payload="${5}"
-  evm-contract-call \
-    "${_publish_call_opts[@]}" \
-    "${_fs_address}" \
-    "publishChunk" \
-    "${_namespace}" \
-    "${_sum}" \
-    "${_index}" \
-    "${_payload}"
+    _chunk="${5}" \
+    _payload \
+    _passed_flag
+  _msg=(
+    "checking chunk '${_chunk}'"
+    "$(( "${_index}" + 1 ))"
+    "of ${_total_chunks}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _chunk_check_opts=(
+    "${_fs_address}"
+    "${_namespace}"
+    "${_sum}"
+    "${_index}"
+    "${_chunk}"
+  )
+  _chunk_check \
+    "${_chunk_check_opts[@]}"
+  if [[ "${_passed_flag}" == "true" ]]; then
+    _msg=(
+      "chunk '${_chunk}' correctly published"
+      "already at index '${_index}'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _verify_skip \
+      "${_index}"
+  elif [[ "${_passed_flag}" == "false" ]]; then
+    _msg=(
+      "publishing chunk '${_chunk}'"
+      "$(( "${_index}" + 1 ))"
+      "of ${_total_chunks}"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    IFS= \
+    read \
+      -rd \
+        '' \
+      _payload < \
+      <( cat \
+           "${_chunk}" ) || \
+      true
+    evm-contract-call \
+      "${_publish_call_opts[@]}" \
+      "${_fs_address}" \
+      "publishChunk" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_index}" \
+      "${_payload}"
+    _msg=(
+      "published chunk"
+      "$(( ${_index} + 1))"
+      "of ${_total_chunks}"
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
 }
 
 _contract_call_opts_setup() {
@@ -369,71 +421,20 @@ _verify_skip() {
 _chunks_publish() {
   local \
     _chunk \
-    _index \
-    _passed_flag \
-    _payload \
+    _index
     _msg=()
   _index=0
   for _chunk \
     in "${_publish_queue[@]}"; do
-    IFS= \
-    read \
-      -rd \
-        '' \
-      _payload < \
-      <( cat \
-           "${_chunk}") || \
-      true
-    _msg=(
-      "checking chunk '${_chunk}'"
-      "$(( "${_index}" + 1 ))"
-      "of ${_total_chunks}"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _chunk_check_opts=(
+    _chunk_publish_opts=(
       "${_fs_address}"
       "${_namespace}"
       "${_sum}"
       "${_index}"
       "${_chunk}"
     )
-    _chunk_check \
-      "${_chunk_check_opts[@]}"
-    if [[ "${_passed_flag}" == "true" ]]; then
-      _msg=(
-        "chunk '${_chunk}' correctly published"
-        "already at index '${_index}'"
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _verify_skip \
-        "${_index}"
-    elif [[ "${_passed_flag}" == "false" ]]; then
-      _msg=(
-        "publishing chunk '${_chunk}'"
-        "$(( "${_index}" + 1 ))"
-        "of ${_total_chunks}"
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _chunk_publish_opts=(
-        "${_fs_address}"
-        "${_namespace}"
-        "${_sum}"
-        "${_index}"
-        "${_payload}"
-      )
-      _chunk_publish \
-        "${_chunk_publish_opts[@]}"
-      _msg=(
-        "published chunk"
-        "$(( ${_index} + 1))"
-        "of ${_total_chunks}"
-      )
-      _msg_info \
-        "${_msg[*]}"
-    fi
+    _chunk_publish \
+      "${_chunk_publish_opts[@]}"
     _index="$(( \
       _index + 1))"
   done
@@ -640,8 +641,10 @@ _file_upload_standalone() {
   _work_dir_setup
   _file_encode
   _queue_setup
-  _chunks_publish
-  _chunks_verify
+  if [[ "${_lock_only}" == "n" ]]; then
+    _chunks_publish
+    _chunks_verify
+  fi
   _chunks_lock
   _msg=(
     "file '${_file}' uploaded and"
@@ -728,9 +731,10 @@ _evmfs_publish() {
     _target_network="${8}" \
     _api_key_path="${9}" \
     _upload_method="${10}" \
-    _tasks_parallel="${11}" \
-    _cache_dir="${12}" \
-    _target_file="${13}" \
+    _lock_only="${11}" \
+    _tasks_parallel="${12}" \
+    _cache_dir="${13}" \
+    _target_file="${14}" \
     _command_args=() \
     _cmd \
     _args=() \
@@ -739,7 +743,7 @@ _evmfs_publish() {
     _fs_bytecode \
     _fs_compiler_output
   shift \
-    13
+    14
   _command_args+=(
     "$@"
   )
@@ -864,6 +868,10 @@ _set_overrides() {
     "method" \
     "standalone"
   _set_override \
+    "lock" \
+    "only" \
+    "n"
+  _set_override \
     "tasks" \
     "parallel" \
     "2"
@@ -953,8 +961,11 @@ $(_display_networks \
                             Default: $(_get "api" "key")
      -m <upload_method>     It can be 'standalone' or 'simulate'.
                             Default: $(_get "upload" "method")
-     -l <tasks_parallel>    Tasks to perform in parallel.
-                            Default: $(_get "upload" "method")
+     -L                     Skip check and publish and only lock
+                            the file.
+                            Default: $(_get "lock" "only")
+     -P <tasks_parallel>    Tasks to perform in parallel.
+                            Default: $(_get "tasks" "parallel")
 
      -C <cache_dir>         Work directory
                             Default: $(_get "cache" "dir")
@@ -1029,6 +1040,7 @@ _show_config() {
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "            Upload method:   $(_get "upload" "method")"
+  _msg_info "                Lock only:   $(_get "lock" "only")"
   _msg_info "           Tasks parallel:   $(_get "tasks" "parallel")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "              Target file:   $(_get "target" "file")"
@@ -1041,7 +1053,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:ud:N:w:p:s:n:k:m:l:C:cvh?' \
+    'A:V:ud:N:w:p:s:n:k:m:LP:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1056,7 +1068,8 @@ while \
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_upload_method="${OPTARG}" ;;
-    l) override_tasks_parallel="${OPTARG}" ;;
+    L) override_lock_only="y" ;;
+    P) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -1138,6 +1151,9 @@ app_opts=(
   "$(_get \
        "upload" \
        "method")"
+  "$(_get \
+       "lock" \
+       "only")"
   "$(_get \
        "tasks" \
        "parallel")"

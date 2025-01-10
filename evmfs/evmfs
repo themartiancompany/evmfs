@@ -33,6 +33,7 @@ _global_variables() {
   target_key=""
   target_value=""
   upload_method=""
+  lock_only=""
   output_file=""
   cache_dir=""
   command_args=()
@@ -93,17 +94,18 @@ _evmfs() {
     _network="${9}" \
     _api_key_path="${10}" \
     _upload_method="${11}" \
-    _cache_dir="${12}" \
-    _user_level="${13}" \
-    _output_file="${14}" \
-    _target_key="${15}" \
-    _target_value="${16}" \
+    _lock_only="${12}" \
+    _cache_dir="${13}" \
+    _user_level="${14}" \
+    _output_file="${15}" \
+    _target_key="${16}" \
+    _target_value="${17}" \
     _target_uri \
     _target_file \
     _command_args=() \
     _args=()
   shift \
-    16
+    17
   _command_args+=(
     "$@"
   )
@@ -151,6 +153,11 @@ _evmfs() {
       "${_target_uri}"
     )
   elif [[ "${_target_command}" == "publish" ]]; then
+    if [[ "${_lock_only}" == "y" ]]; then
+      _args+=(
+        -L
+      )
+    fi
     _target_file="${_target_key}"
     _args+=(
       -m
@@ -314,6 +321,10 @@ _set_overrides() {
     "upload" \
     "method" \
     "standalone"
+  _set_override \
+    "lock" \
+    "only" \
+    "n"
   _output_file_auto_detect
   _contract_version_auto_detect \
     "$(_get \
@@ -414,6 +425,9 @@ $(_display_networks \
      -m <upload_method>     It can be 'standalone', 'bulk' or
                             'simulate'
                             Default: $(_get "upload" "method")
+     -L                     Skip check and publish and only lock
+                            the file.
+                            Default: $(_get "lock" "only")
      -C <cache_dir>         Work directory
                             Default: $(_get "cache" "dir")
 
@@ -456,6 +470,7 @@ _show_config() {
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "            Upload method:   $(_get "upload" "method")"
+  _msg_info "                Lock only:   $(_get "lock" "only")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "              Output file:   $(_get "output" "file")"
   _msg_info "           Target command:   $(_get "target" "command")"
@@ -473,7 +488,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:o:ud:N:w:p:s:n:k:m:C:cvh?' \
+    'A:V:o:ud:N:w:p:s:n:k:m:LC:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -489,6 +504,7 @@ while \
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_upload_method="${OPTARG}" ;;
+    L) override_lock_only="y" ;;
     C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -589,6 +605,9 @@ app_opts=(
   "$(_get \
        "upload" \
        "method")"
+  "$(_get \
+       "lock" \
+       "only")"
   "$(_get \
        "cache" \
        "dir")"
