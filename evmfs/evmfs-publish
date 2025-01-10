@@ -359,10 +359,12 @@ _file_encode() {
   )
   _msg_info \
     "${_msg[*]}"
-  bin2txt \
-    "${_bin2txt_opts[@]}" \
-    "${_file}" \
-    "${_chunk_prefix}"
+  if [[ "${_lock_only}" == "n" ]]; then
+    bin2txt \
+      "${_bin2txt_opts[@]}" \
+      "${_file}" \
+      "${_chunk_prefix}"
+  fi
 }
 
 _queue_setup() {
@@ -375,30 +377,43 @@ _queue_setup() {
   elif [[ "${_many_chunks}" == "false" ]]; then
     _query="${_chunk_prefix}"
   fi
-  _total_chunks="$( \
-    find \
-      "${_query}"* \
-      -type \
-        "f" \
-      -printf \
-        '.' | \
-      wc \
-        -c)"
-  if [[ "${_total_chunks}" == "1" ]]; then
-    _publish_queue+=(
-      "${_chunk_prefix}"
-    )
-  elif (( 1 < "${_total_chunks}")); then
-    for _chunk \
-      in $(seq \
-             "${_total_chunks}"); do
+  if [[ "${_lock_only}" == "n" ]]; then
+    _total_chunks="$( \
+      find \
+        "${_query}"* \
+        -type \
+          "f" \
+        -printf \
+          '.' | \
+        wc \
+          -c)"
+    if [[ "${_total_chunks}" == "1" ]]; then
       _publish_queue+=(
-        "${_chunk_prefix}.${_chunk}"
+        "${_chunk_prefix}"
       )
-      _verify_queue+=(
-        "true"
-      )
-    done
+    elif (( 1 < "${_total_chunks}")); then
+      for _chunk \
+        in $(seq \
+               "${_total_chunks}"); do
+        _publish_queue+=(
+          "${_chunk_prefix}.${_chunk}"
+        )
+        _verify_queue+=(
+          "true"
+        )
+      done
+    fi
+  elif [[ "${_lock_only}" == "y" ]]; then
+    total_chunks="$( \
+      bin2txt \
+        -L \
+          22000 \
+        -s \
+          "${_file}")"
+    _publish_queue+=(
+      $(seq \
+          "${_total_chunks}")
+    )
   fi
   if [[ "${_publish_queue[*]}" == "" ]]; then
     _msg_error \
