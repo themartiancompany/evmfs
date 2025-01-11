@@ -404,7 +404,7 @@ _queue_setup() {
       done
     fi
   elif [[ "${_lock_only}" == "y" ]]; then
-    total_chunks="$( \
+    _total_chunks="$( \
       bin2txt \
         -L \
           22000 \
