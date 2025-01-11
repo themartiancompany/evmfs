@@ -175,14 +175,50 @@ _chunk_lock() {
     _contract="${1}" \
     _namespace="${2}" \
     _sum="${3}" \
-    _index="${4}"
-  evm-contract-call \
-    "${_lock_call_opts[@]}" \
-    "${_fs_address}" \
-    "lockChunk" \
-    "${_namespace}" \
-    "${_sum}" \
-    "${_index}"
+    _index="${4}" \
+    _msg=() \
+    _locked
+  _locked="$( \
+    evm-contract-call \
+      "${_check_call_opts[@]}" \
+      "${_fs_address}" \
+      "lock" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_index}")"
+  if [[ "${_locked}" == "false" ]]; then
+    evm-contract-call \
+      "${_lock_call_opts[@]}" \
+      "${_fs_address}" \
+      "lockChunk" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_index}"
+    _msg=(
+      "chunk '${_chunk}'"
+      "$(( "${_index}" + 1))"
+      "of ${_chunks_total}"
+      "correctly locked."
+    )
+  elif [[ "${_locked}" == "true" ]]; then
+    _msg=(
+      "chunk '${_chunk}'"
+      "$(( "${_index}" + 1))"
+      "of ${_chunks_total}"
+      "already locked."
+    )
+  elif [[ "${_locked}" == "" ]]; then
+    _msg=(
+      "Error retrieving lock state"
+      "for chunk '${_chunk}'"
+      "$(( "${_index}" + 1))"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _msg_info \
+    "${_msg[*]}"
 }
 
 _file_hash() {
@@ -206,7 +242,7 @@ _chunk_publish() {
   _msg=(
     "checking chunk '${_chunk}'"
     "$(( "${_index}" + 1 ))"
-    "of ${_total_chunks}"
+    "of ${_chunks_total}"
   )
   _msg_info \
     "${_msg[*]}"
@@ -232,7 +268,7 @@ _chunk_publish() {
     _msg=(
       "publishing chunk '${_chunk}'"
       "$(( "${_index}" + 1 ))"
-      "of ${_total_chunks}"
+      "of ${_chunks_total}"
     )
     _msg_info \
       "${_msg[*]}"
@@ -255,7 +291,7 @@ _chunk_publish() {
     _msg=(
       "published chunk"
       "$(( ${_index} + 1))"
-      "of ${_total_chunks}"
+      "of ${_chunks_total}"
     )
     _msg_info \
       "${_msg[*]}"
@@ -378,7 +414,7 @@ _queue_setup() {
     _query="${_chunk_prefix}"
   fi
   if [[ "${_lock_only}" == "n" ]]; then
-    _total_chunks="$( \
+    _chunks_total="$( \
       find \
         "${_query}"* \
         -type \
@@ -387,14 +423,14 @@ _queue_setup() {
           '.' | \
         wc \
           -c)"
-    if [[ "${_total_chunks}" == "1" ]]; then
+    if [[ "${_chunks_total}" == "1" ]]; then
       _publish_queue+=(
         "${_chunk_prefix}"
       )
-    elif (( 1 < "${_total_chunks}")); then
+    elif (( 1 < "${_chunks_total}")); then
       for _chunk \
         in $(seq \
-               "${_total_chunks}"); do
+               "${_chunks_total}"); do
         _publish_queue+=(
           "${_chunk_prefix}.${_chunk}"
         )
@@ -404,7 +440,7 @@ _queue_setup() {
       done
     fi
   elif [[ "${_lock_only}" == "y" ]]; then
-    _total_chunks="$( \
+    _chunks_total="$( \
       bin2txt \
         -L \
           22000 \
@@ -412,7 +448,7 @@ _queue_setup() {
           "${_file}")"
     _publish_queue+=(
       $(seq \
-          "${_total_chunks}")
+          "${_chunks_total}")
     )
   fi
   if [[ "${_publish_queue[*]}" == "" ]]; then
@@ -433,10 +469,66 @@ _verify_skip() {
   _verify_queue["${_index}"]="false"
 }
 
+_chunks_publish_new() {
+  local \
+    _tasks_parallel="${1}" \
+    _chunk \
+    _index \
+    _pendings=() \
+    _msg=()
+  _index=0
+  while \
+    [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
+    [ "${#_pendings}" -le "${_tasks_parallel}" ]; do
+    _chunk="${_publish_queue["${_index}"]}"
+    _chunk_publish_opts=(
+      "${_fs_address}"
+      "${_namespace}"
+      "${_sum}"
+      "${_index}"
+      "${_chunk}"
+    )
+    _run \
+      "publish_chunk_${_index}" \
+      "0" \
+      "async" \
+      _chunk_publish \
+        "${_chunk_publish_opts[@]}" || \
+      true
+    _pendings+=(
+      "$(_get_pid \
+	   "publish_chunk_${_index}")"
+    )
+    _index="$(( \
+      _index + 1 ))"
+    if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
+      wait \
+	-f \
+	-p \
+	  _job \
+        -n \
+        "${_pendings[@]}"
+      _pendings_new=()
+      for _pending in "${_pendings[@]}"; do
+        if [[ "${_pending}" != "${_job}" ]]; then
+          _pendings_new+=(
+            "${_pending}"
+          )
+        fi
+      done
+      _pendings=(
+        "${_pendings_new[@]}"
+      )
+      _job=""
+    fi
+  done
+}
+
 _chunks_publish() {
   local \
+    _tasks_parallel="${1}" \
     _chunk \
-    _index
+    _index \
     _msg=()
   _index=0
   for _chunk \
@@ -454,7 +546,7 @@ _chunks_publish() {
       _index + 1))"
   done
   _msg=(
-    "all '${_total_chunks}' chunks"
+    "all '${_chunks_total}' chunks"
     "correctly published"
   )
   _msg_info \
@@ -471,7 +563,7 @@ _chunks_verify() {
     in "${_publish_queue[@]}"; do
       _msg=(
         "verifying chunk '${_chunk}'"
-        "of ${_total_chunks}"
+        "of ${_chunks_total}"
       )
       _msg_info \
         "${_msg[*]}"
@@ -488,7 +580,7 @@ _chunks_verify() {
       _msg=(
         "verified chunk '${_chunk}'"
         "$(( "${_index}" + 1 ))"
-        "of ${_total_chunks}"
+        "of ${_chunks_total}"
       )
       _msg_info \
         "${_msg[*]}"
@@ -497,7 +589,7 @@ _chunks_verify() {
     elif [[ "${_verify_queue["${_index}"]}" == "false" ]]; then
       _msg=(
         "chunk '${_chunk}'"
-        "of ${_total_chunks}"
+        "of ${_chunks_total}"
         "already verified"
       )
       _msg_info \
@@ -505,8 +597,72 @@ _chunks_verify() {
     fi
   done
   _msg=(
-    "all '${_total_chunks}' chunks"
+    "all '${_chunks_total}' chunks"
     "correctly verified"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_chunks_lock_new() {
+  local \
+    _tasks_parallel="${1}" \
+    _index \
+    _chunk \
+    _pendings=()
+    _msg=()
+  _index=0
+  while \
+    [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
+    [ "${#_pendings}" -le "${_tasks_parallel}" ]; do
+    _chunk="${_publish_queue["${_index}"]}"
+    _msg=(
+      "locking chunk '${_chunk}'"
+      "$(( "${_index}" + 1))"
+      "of ${_chunks_total}"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _run \
+      "lock_chunk_${_index}" \
+      "0" \
+      "async" \
+      _chunk_lock \
+        "${_fs_address}" \
+        "${_namespace}" \
+        "${_sum}" \
+        "${_index}" || \
+      true
+    _pendings+=(
+      "$(_get_pid \
+           "publish_chunk_${_index}")"
+    )
+    if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
+      wait \
+        -f \
+        -p \
+          _job \
+        -n \
+        "${_pendings[@]}"
+      _pendings_new=()
+      for _pending in "${_pendings[@]}"; do
+        if [[ "${_pending}" != "${_job}" ]]; then
+          _pendings_new+=(
+            "${_pending}"
+          )
+        fi
+      done
+      _pendings=(
+        "${_pendings_new[@]}"
+      )
+      _job=""
+    fi
+    _index="$(( \
+      _index + 1))"
+  done
+  _msg=(
+    "all '${_chunks_total}' chunks"
+    "correctly locked."
   )
   _msg_info \
     "${_msg[*]}"
@@ -514,6 +670,7 @@ _chunks_verify() {
 
 _chunks_lock() {
   local \
+    _tasks_parallel="${1}" \
     _index \
     _chunk \
     _locked \
@@ -524,56 +681,20 @@ _chunks_lock() {
     _msg=(
       "locking chunk '${_chunk}'"
       "$(( "${_index}" + 1))"
-      "of ${_total_chunks}"
+      "of ${_chunks_total}"
     )
     _msg_info \
       "${_msg[*]}"
-    _locked="$( \
-      evm-contract-call \
-        "${_check_call_opts[@]}" \
-        "${_fs_address}" \
-        "lock" \
-        "${_namespace}" \
-        "${_sum}" \
-        "${_index}")"
-    if [[ "${_locked}" == "false" ]]; then
-      _chunk_lock \
-        "${_fs_address}" \
-        "${_namespace}" \
-        "${_sum}" \
-        "${_index}"
-      _msg=(
-        "chunk '${_chunk}'"
-        "$(( "${_index}" + 1))"
-        "of ${_total_chunks}"
-        "correctly locked."
-      )
-      _msg_info \
-        "${_msg[*]}"
-    elif [[ "${_locked}" == "true" ]]; then
-      _msg=(
-        "chunk '${_chunk}'"
-        "$(( "${_index}" + 1))"
-        "of ${_total_chunks}"
-        "already locked."
-      )
-      _msg_info \
-        "${_msg[*]}"
-    elif [[ "${_locked}" == "" ]]; then
-      _msg=(
-        "Error retrieving lock state"
-        "for chunk '${_chunk}'"
-        "$(( "${_index}" + 1))"
-      )
-      _msg_error \
-        "${_msg[*]}" \
-        1
-    fi
+    _chunk_lock \
+      "${_fs_address}" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_index}"
     _index="$(( \
       _index + 1))"
   done
   _msg=(
-    "all '${_total_chunks}' chunks"
+    "all '${_chunks_total}' chunks"
     "correctly locked."
   )
   _msg_info \
@@ -626,11 +747,12 @@ _file_upload_standalone() {
     _abi="${5}" \
     _bytecode="${6}" \
     _compiler_output="${7}" \
+    _tasks_parallel="${8}" \
     _msg=() \
     _sum \
     _publish_queue=() \
     _verify_queue=() \
-    _total_chunks \
+    _chunks_total \
     _chunk \
     _payload \
     _chunk_prefix \
@@ -657,10 +779,12 @@ _file_upload_standalone() {
   _file_encode
   _queue_setup
   if [[ "${_lock_only}" == "n" ]]; then
-    _chunks_publish
+    _chunks_publish \
+      "${_tasks_parallel}"
     _chunks_verify
   fi
-  _chunks_lock
+  _chunks_lock \
+    "${_tasks_parallel}"
   _msg=(
     "file '${_file}' uploaded and"
     "available at URI"
@@ -794,6 +918,7 @@ _evmfs_publish() {
       "${_fs_abi}" \
       "${_fs_bytecode}" \
       "${_fs_compiler_output}"
+      "${_tasks_parallel}"
   elif [[ "${_upload_method}" == "simulate" ]]; then
     echo \
       "$(_publishing_address_get)"
