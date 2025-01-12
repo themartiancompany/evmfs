@@ -33,7 +33,7 @@ _global_variables() {
   cache_dir=""
   tasks_parallel=""
   fs_address=""
-  fl_address=""
+  ll_address=""
   fs_version=""
   deployments_dir=""
   user_level=""
@@ -207,7 +207,7 @@ _chunk_get() {
     _index="${1}" \
     _out="${2}"
   evm-contract-call \
-    "${_call_opts[@]}" \
+    "${_get_call_opts[@]}" \
     "${_uri_contract}" \
     "readChunk" \
     "${_uri_namespace}" \
@@ -224,11 +224,28 @@ _resource_length_get() {
     _length
   _length="$( \
     evm-contract-call \
-      "${_call_opts[@]}" \
+      "${_length_call_opts[@]}" \
+      "${_ll_address}"
+      "getLength" \
+      "${_uri_contract}" \
+      "${_uri_namespace}" \
+      "${_uri_hash}" || \
+      true)"
+  echo \
+    "${_length}"
+}
+
+_resource_length_mutable_get() {
+  local \
+    _length
+  _length="$( \
+    evm-contract-call \
+      "${_get_call_opts[@]}" \
       "${_uri_contract}" \
       "getLength" \
       "${_uri_namespace}" \
       "${_uri_hash}")"
+  
   echo \
     "${_length}"
 }
@@ -274,7 +291,6 @@ _chunks_get_new() {
     [ "${_index}" -le "$(("${_length}" - 1))" ] && \
     [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
     _piece="${_tmp_dir}/${_uri_hash}.${_index}"
-    # _chunk="${_publish_queue["${_index}"]}"
     _chunk_get_opts=(
       "${_index}"
       "${_piece}"
@@ -349,6 +365,7 @@ _resource_get() {
     _tasks_parallel="${1}" \
     _chunks=() \
     _length \
+    _file_length \
     _tmp_dir \
     _check \
     _attempt \
@@ -363,8 +380,23 @@ _resource_get() {
       -d \
       -p \
         "${_cache_dir}/${_uri_hash}")"
+  _file_length="$( \
+    resource_length_get)"
+  if [[ "${_file_length}" == "" ]]; then
+    _file_length="$( \
+      resource_length_mutable_get)"
+    _msg=(
+      "the file length is not locked,"
+      "the uploader could break"
+      "the file at a later time, lock"
+      "the length in your namespace to"
+      "avoid it."
+    )
+    _msg_warning \
+      "${_msg[*]}"
+  fi
   _length="$(( \
-    "$(_resource_length_get)" + 1))"
+    _file_length + 1))"
   _attempt=1
   while (( "${_attempt}" < "${_retries}" )); do
     _chunks_get_new \
@@ -389,40 +421,10 @@ _resource_get() {
     "${_msg[*]}"
 }
 
-_abi_get() {
-  local \
-    _deployments="${1}" \
-    _network="${2}" \
-    _name="${3}" \
-    _version="${4}"
-  echo \
-    "${_deployments}/${_name}/${_network}/${_version}/${_name}.abi.json"
-}
-
-_bytecode_get() {
-  local \
-    _deployments="${1}" \
-    _network="${2}" \
-    _name="${3}" \
-    _version="${4}"
-  echo \
-    "${_deployments}/${_name}/${_network}/${_version}/${_name}.bin"
-}
-
-_compiler_output_get() {
-  local \
-    _deployments="${1}" \
-    _network="${2}" \
-    _name="${3}" \
-    _version="${4}"
-  echo \
-    "${_deployments}/${_name}/${_network}/${_version}/${_name}.json"
-}
-
 _evmfs_get() {
   local \
     _fs_address="${1}" \
-    _fl_address="${2}" \
+    _ll_address="${2}" \
     _fs_version="${3}" \
     _deployments_dir="${4}" \
     _wallet_name="${5}" \
@@ -435,10 +437,15 @@ _evmfs_get() {
     _cache_dir="${12}" \
     _target_uri="${13}" \
     _output_file="${14}" \
-    _call_opts=() \
+    _evm_contract_call_opts=() \
+    _length_call_opts=() \
+    _get_call_opts=() \
     _fs_abi \
     _fs_bytecode \
     _fs_compiler_output \
+    _ll_abi \
+    _ll_bytecode \
+    _ll_compiler_output \
     _network_backend \
     _uri_network \
     _uri_network_id \
@@ -446,23 +453,43 @@ _evmfs_get() {
     _uri_namespace \
     _uri_hash
   _fs_abi="$( \
-    _abi_get \
+    _contract_abi_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
   _fs_bytecode="$( \
-    _bytecode_get \
+    _contract_bytecode_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
   _fs_compiler_output="$( \
-    _compiler_output_get \
+    _contract_compiler_output_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
+  if [[ "${_fs_version}" == "1.0" ]]; then
+    _ll_abi="$( \
+      _contract_abi_get \
+        "${_deployments_dir}" \
+        "${_target_network}" \
+        "LengthLock" \
+        "${_fs_version}")"
+    _ll_bytecode="$( \
+      _contract_bytecode_get \
+        "${_deployments_dir}" \
+        "${_target_network}" \
+        "LengthLock" \
+        "${_fs_version}")"
+    _ll_compiler_output="$( \
+      _contract_compiler_output_get \
+        "${_deployments_dir}" \
+        "${_target_network}" \
+        "LengthLock" \
+        "${_fs_version}")"
+  fi
   _uri_network_id="$( \
     _network_id_get \
       "${_target_uri}")"
@@ -483,19 +510,33 @@ _evmfs_get() {
       "${_target_uri}")"
   _hash_check \
     "${_uri_hash}"
-  _call_opts+=(
-    -A
-      "${_fs_abi}"
-    -B
-      "${_fs_bytecode}"
-    -C
-      "${_fs_compiler_output}"
+  _evm_contract_call_opts+=(
     -n
       "${_uri_network}"
     -t
       "static"
     -k
       "${_api_key_path}"
+  )
+  _get_call_opts+=(
+    "${_evm_contract_call_opts[@]}"
+    -A
+      "${_fs_abi}"
+    -B
+      "${_fs_bytecode}"
+    -C
+      "${_fs_compiler_output}"
+  )
+  _length_call_opts+=(
+    "${_evm_contract_call_opts[@]}"
+    -A
+      "${_ll_abi}"
+    -B
+      "${_ll_bytecode}"
+    -C
+      "${_ll_compiler_output}"
+    -r
+      "10"
   )
   _resource_get \
     "${_tasks_parallel}"
@@ -610,24 +651,24 @@ _set_overrides() {
     "$(_get \
          "target" \
          "network")"
-  # if [[ "${fs_version}" == 1.0 ]]; then
-  #   _contract_address_auto_detect \
-  #     "evmfs" \
-  #     "FileLock" \
-  #     "fl" \
-  #     "$(_get \
-  #          "target" \
-  #          "network")" \
-  #     "$(_get \
-  #          "fs" \
-  #          "version")" \
-  #     "$(_get \
-  #          "user" \
-  #          "level")" \
-  #     "$(_get \
-  #          "deployments" \
-  #          "dir")"
-  # fi
+  if [[ "${fs_version}" == 1.0 ]]; then
+    _contract_address_auto_detect \
+      "evmfs" \
+      "LengthLock" \
+      "ll" \
+      "$(_get \
+           "target" \
+           "network")" \
+      "$(_get \
+           "fs" \
+           "version")" \
+      "$(_get \
+           "user" \
+           "level")" \
+      "$(_get \
+           "deployments" \
+           "dir")"
+  fi
   _contract_address_auto_detect \
     "evmfs" \
     "FileSystem" \
@@ -686,6 +727,9 @@ $(_display_networks \
      -A <fs_address>        Address of the EVM file system
                             on the network.
                             Default: $(_get "fs" "address")
+     -B <ll_address>        Address of the Length Lock contract
+                            on the network.
+                            Default: $(_get "ll" "address")
      -V <fs_version>        Version of the target EVM file
                             system.
                             Default: $(_get "fs" "version")
@@ -742,6 +786,7 @@ _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "                 Get date:   $(_get "get" "date")"
   _msg_info "      File system address:   $(_get "fs" "address")"
+  _msg_info "      Length Lock address:   $(_get "ll" "address")"
   _msg_info "      File system version:   $(_get "fs" "version")"
   _msg_info "               User level:   $(_get "user" "level")"
   _msg_info "    Deployments directory:   $(_get "deployments" "dir")"
@@ -767,14 +812,14 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'o:A:V:ud:N:w:p:s:n:k:P:C:cvh?' \
+    'o:A:B:V:ud:N:w:p:s:n:k:P:C:cvh?' \
     arg; do
   case \
     "${arg}" in
     o) override_output_file="${OPTARG}" ;;
     A) override_fs_address="${OPTARG}" ;;
+    B) override_ll_address="${OPTARG}" ;;
     V) override_fs_version="${OPTARG}" ;;
-    L) override_fl_address="${OPTARG}" ;;
     u) override_user_level="y" ;;
     d) override_deployments_dir="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
@@ -826,7 +871,7 @@ app_opts=(
       "address")"
   "$( \
     _get \
-      "fl" \
+      "ll" \
       "address")"
   "$( \
     _get \
