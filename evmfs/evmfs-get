@@ -225,7 +225,7 @@ _resource_length_get() {
   _length="$( \
     evm-contract-call \
       "${_length_call_opts[@]}" \
-      "${_ll_address}"
+      "${_ll_address}" \
       "getLength" \
       "${_uri_contract}" \
       "${_uri_namespace}" \
@@ -381,10 +381,10 @@ _resource_get() {
       -p \
         "${_cache_dir}/${_uri_hash}")"
   _file_length="$( \
-    resource_length_get)"
+    _resource_length_get)"
   if [[ "${_file_length}" == "" ]]; then
     _file_length="$( \
-      resource_length_mutable_get)"
+      _resource_length_mutable_get)"
     _msg=(
       "the file length is not locked,"
       "the uploader could break"

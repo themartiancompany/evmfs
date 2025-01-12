@@ -19,6 +19,7 @@ _global_variables() {
   publish_date=""
   fs_address=""
   fs_version=""
+  ll_address=""
   deployments_dir=""
   user_level=""
   wallet_name=""
@@ -316,30 +317,44 @@ _contract_call_opts_setup() {
       "${_wallet_name}"
     -k
       "${_api_key_path}"
+  )
+  _fs_call_opts+=(
+    "${_evm_contract_call_opts[@]}"
     -A
-      "${_abi}"
+      "${_fs_abi}"
     -B
-      "${_bytecode}"
+      "${_fs_bytecode}"
     -C
-      "${_compiler_output}"
+      "${_fs_compiler_output}"
   )
   _check_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
+    "${_fs_call_opts[@]}"
     -t
       "static"
   )
   _publish_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
+    "${_fs_call_opts[@]}"
     -t
       "dynamic"
   )
   _verify_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
+    "${_fs_call_opts[@]}"
     -t
       "static"
   )
   _lock_call_opts+=(
+    "${_fs_call_opts[@]}"
+    -t
+      "dynamic"
+  )
+  _length_call_opts+=(
     "${_evm_contract_call_opts[@]}"
+    -A
+      "${_ll_abi}"
+    -B
+      "${_ll_bytecode}"
+    -C
+      "${_ll_compiler_output}"
     -t
       "dynamic"
   )
@@ -637,7 +652,7 @@ _chunks_lock_new() {
       true
     _pendings+=(
       "$(_get_pid \
-           "publish_chunk_${_index}")"
+           "lock_chunk_${_index}")"
     )
     if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
       wait \
@@ -662,6 +677,8 @@ _chunks_lock_new() {
     _index="$(( \
       _index + 1))"
   done
+  wait \
+    "${_pendings[@]}"
   _msg=(
     "all '${_chunks_total}' chunks"
     "correctly locked."
@@ -699,6 +716,48 @@ _chunks_lock() {
     "all '${_chunks_total}' chunks"
     "correctly locked."
   )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_chunks_length_lock() {
+  local \
+    _locked \
+    _length
+  _length="$(( \
+    _chunks_total - 1))"
+  _locked="$( \
+    evm-contract-call \
+      "${_length_call_opts[@]}" \
+      "${_ll_address}"
+      "lock" \
+      "${_fs_address}" \
+      "${_namespace}" \
+      "${_sum}")"
+  if [[ "${_locked}" == "false" ]]; then
+    evm-contract-call \
+      "${_length_call_opts[@]}" \
+      "${_ll_address}" \
+      "lockLength"
+      "${_fs_address}" \
+      "${_namespace}" \
+      "${_sum}" \
+      "${_length}"
+    _msg=(
+      "locked length '${_length}'."
+    )
+  elif [[ "${_locked}" == "true" ]]; then
+    _msg=(
+      "length locked already '${_length}'."
+    )
+  elif [[ "${_locked}" == "" ]]; then
+    _msg=(
+      "Error retrieving length lock state"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
   _msg_info \
     "${_msg[*]}"
 }
@@ -746,10 +805,13 @@ _file_upload_standalone() {
     _fs_address="${2}" \
     _namespace="${3}" \
     _file="${4}" \
-    _abi="${5}" \
-    _bytecode="${6}" \
-    _compiler_output="${7}" \
-    _tasks_parallel="${8}" \
+    _fs_abi="${5}" \
+    _fs_bytecode="${6}" \
+    _fs_compiler_output="${7}" \
+    _ll_abi="${8}" \
+    _ll_bytecode="${9}" \
+    _ll_compiler_output="${10}" \
+    _tasks_parallel="${11}" \
     _msg=() \
     _sum \
     _publish_queue=() \
@@ -766,6 +828,7 @@ _file_upload_standalone() {
     _publish_call_opts=() \
     _verify_call_opts=() \
     _lock_call_opts=() \
+    _length_call_opts=() \
     _chunk_publish_opts=()
   _many_chunks="false"
   _contract_call_opts_setup
@@ -787,6 +850,8 @@ _file_upload_standalone() {
   fi
   _chunks_lock \
     "${_tasks_parallel}"
+  _chunks_length_lock \
+    "${_chunks_total}"
   _msg=(
     "file '${_file}' uploaded and"
     "available at URI"
@@ -863,28 +928,32 @@ _compiler_output_get() {
 _evmfs_publish() {
   local \
     _fs_address="${1}" \
-    _fs_version="${2}" \
-    _deployments_dir="${3}" \
-    _wallet_name="${4}" \
-    _wallet_path="${5}" \
-    _wallet_password="${6}" \
-    _wallet_seed="${7}" \
-    _target_network="${8}" \
-    _api_key_path="${9}" \
-    _upload_method="${10}" \
-    _lock_only="${11}" \
-    _tasks_parallel="${12}" \
-    _cache_dir="${13}" \
-    _target_file="${14}" \
+    _ll_address="${2}" \
+    _fs_version="${3}" \
+    _deployments_dir="${4}" \
+    _wallet_name="${5}" \
+    _wallet_path="${6}" \
+    _wallet_password="${7}" \
+    _wallet_seed="${8}" \
+    _target_network="${9}" \
+    _api_key_path="${10}" \
+    _upload_method="${11}" \
+    _lock_only="${12}" \
+    _tasks_parallel="${13}" \
+    _cache_dir="${14}" \
+    _target_file="${15}" \
     _command_args=() \
     _cmd \
     _args=() \
     _namespace \
     _fs_abi \
     _fs_bytecode \
-    _fs_compiler_output
+    _fs_compiler_output \
+    _ll_abi \
+    _ll_bytecode \
+    _ll_compiler_output
   shift \
-    14
+    15
   _command_args+=(
     "$@"
   )
@@ -911,6 +980,24 @@ _evmfs_publish() {
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
+  _ll_abi="$( \
+    _abi_get \
+      "${_deployments_dir}" \
+      "${_target_network}" \
+      "LengthLock" \
+      "${_fs_version}")"
+  _ll_bytecode="$( \
+    _bytecode_get \
+      "${_deployments_dir}" \
+      "${_target_network}" \
+      "LengthLock" \
+      "${_fs_version}")"
+  _ll_compiler_output="$( \
+    _compiler_output_get \
+      "${_deployments_dir}" \
+      "${_target_network}" \
+      "LengthLock" \
+      "${_fs_version}")"
   if [[ "${_upload_method}" == "standalone" ]]; then
     _file_upload_standalone \
       "${_target_network}" \
@@ -920,6 +1007,9 @@ _evmfs_publish() {
       "${_fs_abi}" \
       "${_fs_bytecode}" \
       "${_fs_compiler_output}"
+      "${_ll_abi}" \
+      "${_ll_bytecode}" \
+      "${_ll_compiler_output}"
       "${_tasks_parallel}"
   elif [[ "${_upload_method}" == "simulate" ]]; then
     echo \
@@ -1026,6 +1116,24 @@ _set_overrides() {
     "$(_get \
          "target" \
          "network")"
+  if [[ "${fs_version}" == "1.0" ]]; then
+    _contract_address_auto_detect \
+      "evmfs" \
+      "LengthLock" \
+      "ll" \
+      "$(_get \
+           "target" \
+           "network")" \
+      "$(_get \
+           "fs" \
+           "version")" \
+      "$(_get \
+           "user" \
+           "level")" \
+      "$(_get \
+           "deployments" \
+           "dir")"
+  fi
   _contract_address_auto_detect \
     "evmfs" \
     "FileSystem" \
@@ -1080,6 +1188,9 @@ $(_display_networks \
      -A <fs_address>        Address of the EVM file system
                             on the network.
                             Default: $(_get "fs" "address")
+     -B <ll_address>        Address of the Length Lock contract
+                            on the network.
+                            Default: $(_get "ll" "address")
      -V <fs_version>        Version of the target EVM file
                             system.
                             Default: $(_get "fs" "version")
@@ -1171,6 +1282,7 @@ _show_config() {
   _msg_info "             Publish date:   $(_get "publish" "date")"
   _msg_info "      File system address:   $(_get "fs" "address")"
   _msg_info "      File system version:   $(_get "fs" "version")"
+  _msg_info "       LengthLock address:   $(_get "ll" "address")"
   _msg_info "               User level:   $(_get "user" "level")"
   _msg_info "    Deployments directory:   $(_get "deployments" "dir")"
   _msg_info "                Namespace:   $(_get "wallet" "address")"
@@ -1194,11 +1306,12 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:ud:N:w:p:s:n:k:m:LP:C:cvh?' \
+    'A:B:V:ud:N:w:p:s:n:k:m:LP:C:cvh?' \
     arg; do
   case \
     "${arg}" in
     A) override_fs_address="${OPTARG}" ;;
+    B) override_ll_address="${OPTARG}" ;;
     V) override_fs_version="${OPTARG}" ;;
     u) override_user_level="y" ;;
     d) override_deployments_dir="${OPTARG}" ;;
@@ -1264,6 +1377,9 @@ _show_config
 app_opts=(
   "$(_get \
        "fs" \
+       "address")"
+  "$(_get \
+       "ll" \
        "address")"
   "$(_get \
        "fs" \
