@@ -474,8 +474,10 @@ _chunks_publish_new() {
     _tasks_parallel="${1}" \
     _chunk \
     _index \
+    _pending \
     _pendings=() \
-    _msg=()
+    _msg=() \
+    _job
   _index=0
   while \
     [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
@@ -1106,7 +1108,6 @@ $(_display_networks \
                             Default: $(_get "lock" "only")
      -P <tasks_parallel>    Tasks to perform in parallel.
                             Default: $(_get "tasks" "parallel")
-
      -C <cache_dir>         Work directory
                             Default: $(_get "cache" "dir")
 
