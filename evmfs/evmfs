@@ -135,6 +135,8 @@ _evmfs() {
       "${_network}"
     -k
       "${_api_key_path}"
+    -P
+      "${_tasks_parallel}"
     -C
       "${_cache_dir}"
   )
