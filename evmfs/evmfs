@@ -35,6 +35,7 @@ _global_variables() {
   upload_method=""
   lock_only=""
   output_file=""
+  tasks_parallel=""
   cache_dir=""
   command_args=()
   color=""
@@ -95,17 +96,18 @@ _evmfs() {
     _api_key_path="${10}" \
     _upload_method="${11}" \
     _lock_only="${12}" \
-    _cache_dir="${13}" \
-    _user_level="${14}" \
-    _output_file="${15}" \
-    _target_key="${16}" \
-    _target_value="${17}" \
+    _tasks_parallel="${13}" \
+    _cache_dir="${14}" \
+    _user_level="${15}" \
+    _output_file="${16}" \
+    _target_key="${17}" \
+    _target_value="${18}" \
     _target_uri \
     _target_file \
     _command_args=() \
     _args=()
   shift \
-    17
+    18
   _command_args+=(
     "$@"
   )
@@ -314,6 +316,10 @@ _set_overrides() {
                 "name")" \
            "address")"
   _set_override \
+    "tasks" \
+    "parallel" \
+    "7"
+  _set_override \
     "cache" \
     "dir" \
     "$(_cache_dir_auto_detect)"
@@ -428,6 +434,10 @@ $(_display_networks \
      -L                     Skip check and publish and only lock
                             the file.
                             Default: $(_get "lock" "only")
+     -P <tasks_paralell>    How many calls tasks perform at any
+                            given time
+                            Default: $(_get "tasks" "parallel")
+
      -C <cache_dir>         Work directory
                             Default: $(_get "cache" "dir")
 
@@ -472,6 +482,7 @@ _show_config() {
   _msg_info "            Upload method:   $(_get "upload" "method")"
   _msg_info "                Lock only:   $(_get "lock" "only")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
+  _msg_info "           Parallel tasks:   $(_get "tasks" "parallel")"
   _msg_info "              Output file:   $(_get "output" "file")"
   _msg_info "           Target command:   $(_get "target" "command")"
   _msg_info "               Target key:   $(_get "target" "key")"
@@ -488,7 +499,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:o:ud:N:w:p:s:n:k:m:LC:cvh?' \
+    'A:V:o:ud:N:w:p:s:n:k:m:LP:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -505,6 +516,7 @@ while \
     k) override_api_key="${OPTARG}" ;;
     m) override_upload_method="${OPTARG}" ;;
     L) override_lock_only="y" ;;
+    P) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -608,6 +620,9 @@ app_opts=(
   "$(_get \
        "lock" \
        "only")"
+  "$(_get \
+       "tasks" \
+       "parallel")"
   "$(_get \
        "cache" \
        "dir")"
