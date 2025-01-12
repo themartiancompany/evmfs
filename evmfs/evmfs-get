@@ -14,7 +14,7 @@ _lib="$( \
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
 _libevm="${_lib}/libevm/libevm"
 _sourced \
-  "${_crash_bash}" ||
+  "${_crash_bash}" 2>/dev/null || \
   source \
     "${_crash_bash}"
 _sourced \
@@ -27,6 +27,7 @@ _global_variables() {
   wallet_path=""
   wallet_password=""
   wallet_seed=""
+  wallet_address=""
   target_network=""
   api_key=""
   cache_dir=""
@@ -262,11 +263,12 @@ _chunks_get_new() {
     _chunk \
     _piece \
     _index \
-    _chunk_get_opts=()
+    _chunk_get_opts=() \
+    _pendings=()
   _index=0
   while \
-    [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
-    [ "${#_pendings}" -le "${_tasks_parallel}" ]; do
+    [ "${_index}" -le "$(("${_length}" - 1))" ] && \
+    [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
     _piece="${_tmp_dir}/${_uri_hash}.${_index}"
     # _chunk="${_publish_queue["${_index}"]}"
     _chunk_get_opts=(
@@ -274,19 +276,18 @@ _chunks_get_new() {
       "${_piece}"
     )
     _run \
-      "_chunk_get_${_index}" \
+      "chunk_get_${_index}" \
       "0" \
       "async" \
       _chunk_get \
-        "${_chunk_get_opts[@]}" || \
-      true
+        "${_chunk_get_opts[@]}"
     _pendings+=(
       "$(_get_pid \
-	   "publish_chunk_${_index}")"
+	   "chunk_get_${_index}")"
     )
     _index="$(( \
       _index + 1 ))"
-    if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
+    if [[ "${#_pendings[@]}" == "${_tasks_parallel}" ]]; then 
       wait \
 	-f \
 	-p \
@@ -363,7 +364,7 @@ _resource_get() {
     "$(_resource_length_get)" + 1))"
   _attempt=1
   while (( "${_attempt}" < "${_retries}" )); do
-    _chunks_get \
+    _chunks_get_new \
       "${_length}" \
       "${_tasks_parallel}"
     _check="${_tmp_dir}/${_uri_hash}.check"
@@ -427,7 +428,7 @@ _evmfs_get() {
     _target_network="${8}" \
     _api_key_path="${9}" \
     _tasks_parallel="${10}" \
-    _cache_dir="${111}" \
+    _cache_dir="${11}" \
     _target_uri="${12}" \
     _output_file="${13}" \
     _call_opts=() \
@@ -533,7 +534,7 @@ _set_overrides() {
   _set_override \
     "tasks" \
     "parallel" \
-    "2"
+    "7"
   _set_override \
     "wallet" \
     "name" \
@@ -628,16 +629,17 @@ _set_overrides() {
 _usage() {
   local \
     _fs_deployment \
-    _networks \
+    _networks=() \
     _usage_text
   _fs_deployment="$( \
     _get \
       "deployments" \
       "dir")/FileSystem"
-  _networks="$( \
+  _networks=( $( \
     evm-contract-deployment-networks \
       -A \
-      "${_fs_deployment}")"
+      "${_fs_deployment}")
+  )
   IFS='' \
     read \
       -r \
@@ -653,7 +655,7 @@ Usage:
 
   networks:
 $(_display_networks \
-     "${_networks[*]}")
+     "${_networks[@]}")
 
   options:
      -o <output_file>       Name of the file in which to save
@@ -728,6 +730,7 @@ _show_config() {
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
+  _msg_info "           Parallel tasks:   $(_get "tasks" "parallel")"
   _msg_info "          Target resource:   $(_get "target" "uri")"
   _msg_info "              Output file:   $(_get "output" "file")"
 }
@@ -742,7 +745,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'o:A:V:ud:N:w:p:s:n:k:a:P:C:cvh?' \
+    'o:A:V:ud:N:w:p:s:n:k:P:C:cvh?' \
     arg; do
   case \
     "${arg}" in
