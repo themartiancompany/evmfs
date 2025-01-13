@@ -1006,7 +1006,7 @@ _evmfs_publish() {
       "${_target_file}" \
       "${_fs_abi}" \
       "${_fs_bytecode}" \
-      "${_fs_compiler_output}"
+      "${_fs_compiler_output}" \
       "${_ll_abi}" \
       "${_ll_bytecode}" \
       "${_ll_compiler_output}" \
