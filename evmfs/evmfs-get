@@ -334,6 +334,7 @@ _chunk_get_bulk() {
   _cmd="$( \
     _get_lib)/evmfs/get"
   _cmd_args+=(
+    "${quiet}"
     "${_wallet_seed}"
     "${_api_key_path}"
     "${_target_network}"
@@ -351,7 +352,7 @@ _chunk_get_bulk() {
     "${_cmd_args[@]}"
 }
 
-_chunk_get_async_bulk() {
+_chunks_get_async_bulk() {
   local \
     _length="${1}" \
     _tasks_parallel="${2}" \
@@ -359,23 +360,35 @@ _chunk_get_async_bulk() {
     _piece \
     _index \
     _index_start \
-    _index_end
+    _index_end \
     _chunk_get_opts=() \
     _pendings=() \
-    _bulk_index_amount
-    _bulk_payload
+    _bulk_index_amount \
+    _bulk_payload \
+    _msg=()
   _index=0
+  _index_start="${_index}"
   _bulk_payload=()
   _bulk_indexes_amount="$(( \
     _length / _tasks_parallel + 1))"
+  _msg_info \
+    "bulk async downloading"
   while \
     [ "${_index}" -le "$(("${_length}" - 1))" ] && \
     [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
     if [[ "${_bulk_payload[*]}" == "" ]]; then
+      _msg_info \
+        "setting index start '${_index_start}'"
       _index_start="${_index}"
     fi
     _piece="${_tmp_dir}/${_uri_hash}.${_index}"
-    if (( "${#_bulk_payload[@]}" <= "${_bulk_indexes_amount}" )); then
+    if (( "${#_bulk_payload[@]}" < "${_bulk_indexes_amount}" )); then
+      _msg=(
+        "adding chunk ${_piece} with index '${_index}'"
+        "to bulk payload"
+      )
+      _msg_info \
+        "${_msg[*]}"
       _bulk_payload+=(
         "${_piece}"
       )
@@ -389,6 +402,12 @@ _chunk_get_async_bulk() {
         "${_index_end}"
         "${_bulk_payload[@]}"
       )
+      _msg=(
+        "running _chunk_get_bulk with"
+        "parameters '${_chunk_get_opts[*]}'"
+      )
+      _msg_info \
+        "${_msg[*]}"
       _run \
         "chunk_get_bulk_${_index_start}_${_index_end}" \
         "0" \
@@ -397,8 +416,9 @@ _chunk_get_async_bulk() {
           "${_chunk_get_opts[@]}"
       _pendings+=(
         "$(_get_pid \
-             "chunk_get_${_index}")"
+             "chunk_get_bulk_${_index_start}_${_index_end}")"
       )
+      _bulk_payload=()
     fi
     _chunks+=(
       "${_piece}"
@@ -406,6 +426,8 @@ _chunk_get_async_bulk() {
     _index="$(( \
       _index + 1 ))"
     if [[ "${#_pendings[@]}" == "${_tasks_parallel}" ]]; then 
+      _msg_info \
+        "waiting for a task to complete"
       wait \
 	-f \
 	-p \

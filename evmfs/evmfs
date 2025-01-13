@@ -32,7 +32,7 @@ _global_variables() {
   wallet_name=""
   target_key=""
   target_value=""
-  upload_method=""
+  call_method=""
   lock_only=""
   output_file=""
   tasks_parallel=""
@@ -94,7 +94,7 @@ _evmfs() {
     _wallet_seed="${8}" \
     _network="${9}" \
     _api_key_path="${10}" \
-    _upload_method="${11}" \
+    _call_method="${11}" \
     _lock_only="${12}" \
     _tasks_parallel="${13}" \
     _cache_dir="${14}" \
@@ -165,7 +165,7 @@ _evmfs() {
     _target_file="${_target_key}"
     _args+=(
       -m
-        "${_upload_method}"
+        "${_call_method}"
       "${_target_file}"
     )
   else
@@ -237,6 +237,44 @@ _output_file_auto_detect() {
     "output" \
     "file" \
     "${_output_file}"
+}
+
+_call_method_auto_detect() {
+  local \
+    _target_command \
+    _call_method
+  _target_command="$( \
+    _get \
+      "target" \
+      "command")"
+  if [[ "${_target_command}" == "get" ]]; then
+    _call_method="bulk"
+  elif [[ "${_target_command}" == "publish" ]]; then
+    _call_method="standalone"
+  fi
+  _set_override \
+    "call" \
+    "method" \
+    "${_call_method}"
+}
+
+_tasks_parallel_auto_detect() {
+  local \
+    _call_method \
+    _tasks_parallel
+  _call_method="$( \
+    _get \
+      "call" \
+      "method")"
+  if [[ "${_call_method}" == "standalone" ]]; then
+    _tasks_parallel=200
+  elif [[ "${_call_method}" == "bulk" ]]; then
+    _tasks_parallel=10
+  fi
+  _set_override \
+    "tasks" \
+    "parallel" \
+    "${_tasks_parallel}"
 }
 
 _set_overrides() {
@@ -318,17 +356,11 @@ _set_overrides() {
                 "name")" \
            "address")"
   _set_override \
-    "tasks" \
-    "parallel" \
-    "200"
-  _set_override \
     "cache" \
     "dir" \
     "$(_cache_dir_auto_detect)"
-  _set_override \
-    "upload" \
-    "method" \
-    "standalone"
+  _call_method_auto_detect
+  _tasks_parallel_auto_detect
   _set_override \
     "lock" \
     "only" \
@@ -430,9 +462,9 @@ $(_display_networks \
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
-     -m <upload_method>     It can be 'standalone', 'bulk' or
+     -m <call_method>       It can be 'standalone', 'bulk' or
                             'simulate'
-                            Default: $(_get "upload" "method")
+                            Default: $(_get "call" "method")
      -L                     Skip check and publish and only lock
                             the file.
                             Default: $(_get "lock" "only")
@@ -481,7 +513,7 @@ _show_config() {
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
-  _msg_info "            Upload method:   $(_get "upload" "method")"
+  _msg_info "              Call method:   $(_get "call" "method")"
   _msg_info "                Lock only:   $(_get "lock" "only")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "           Parallel tasks:   $(_get "tasks" "parallel")"
@@ -516,7 +548,7 @@ while \
     s) override_wallet_seed="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
-    m) override_upload_method="${OPTARG}" ;;
+    m) override_call_method="${OPTARG}" ;;
     L) override_lock_only="y" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
@@ -617,7 +649,7 @@ app_opts=(
       "api" \
       "key")"
   "$(_get \
-       "upload" \
+       "call" \
        "method")"
   "$(_get \
        "lock" \
