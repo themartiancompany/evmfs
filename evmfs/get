@@ -219,7 +219,7 @@ async function
       _progress,
       _chunks_total);
     _file_write(
-      file_chunk_path,
+      _file_chunk_path,
       _value);
     _progress =
       _progress + 1;
