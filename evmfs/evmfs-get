@@ -456,7 +456,7 @@ _chunks_get_async_bulk() {
   _msg_info \
     "bulk async downloading"
   while \
-    [ "${_index}" -le "$(("${_length}" - 1))" ] && \
+    [ "${_index}" -le "$((_length - 1))" ] && \
     [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
     if [[ "${_bulk_payload[*]}" == "" ]]; then
       _msg_info \
@@ -468,7 +468,8 @@ _chunks_get_async_bulk() {
       _bulk_payload+=(
         "${_piece}"
       )
-    elif (( "${#_bulk_payload[@]}" == "${_bulk_indexes_amount}" )); then
+    elif [[ "${#_bulk_payload[@]}" == "${_bulk_indexes_amount}" || 
+            "${_index}" == "$((_length - 1))" ]]; then
       _index_end="$((${_index} - 1))"
       _chunk_get_opts=(
         "${_uri_contract}"
@@ -488,7 +489,11 @@ _chunks_get_async_bulk() {
         "$(_get_pid \
              "chunk_get_bulk_${_index_start}_${_index_end}")"
       )
-      _bulk_payload=()
+      _bulk_payload=(
+        "${_piece}"
+      )
+      _index_start="$(( \
+        _index + 1))"
     fi
     _chunks+=(
       "${_piece}"
