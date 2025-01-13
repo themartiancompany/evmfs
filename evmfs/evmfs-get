@@ -33,6 +33,7 @@ _global_variables() {
   cache_dir=""
   tasks_parallel=""
   call_method=""
+  retries_max=""
   fs_address=""
   ll_address=""
   fs_version=""
@@ -305,26 +306,31 @@ _node_run() {
   _node_path="${_lib}/node_modules" 
   export \
     NODE_PATH="${_node_path}"
-  for _retry \
-    in $(seq "${_retries_max}"); do
-    if NODE_PATH="${_node_path}" \
-       node \
-         "${_cmd}" \
-         "${_args[@]}"; then
-      return
-    else
-      _msg=(
-        "contract calling error,"
-        "retry '${_retry}' out of"
-        "'${_retries_max}'"
-      )
-      _msg_error \
-        "${_msg[*]}" \
-        "0"
-    fi
-  done
-  return \
-    1
+  NODE_PATH="${_node_path}" \
+     node \
+       "${_cmd}" \
+       "${_args[@]}"
+  return
+  # for _retry \
+  #   in $(seq "${_retries_max}"); do
+  #   if NODE_PATH="${_node_path}" \
+  #      node \
+  #        "${_cmd}" \
+  #        "${_args[@]}" 2>/dev/null; then
+  #     return
+  #   else
+  #     _msg=(
+  #       "contract calling error,"
+  #       "retry '${_retry}' out of"
+  #       "'${_retries_max}'"
+  #     )
+  #     _msg_error \
+  #       "${_msg[*]}" \
+  #       "0"
+  #   fi
+  # done
+  # return \
+  #   1
 }
 
 _node_network_setup() {
@@ -409,6 +415,7 @@ _chunk_get_bulk() {
     _get_lib)/evmfs/get"
   _cmd_args+=(
     "${quiet}"
+    "${_retries_max}"
     "${_api_key_path}"
     "${_backend}"
     "${_uri_contract}"
@@ -422,7 +429,7 @@ _chunk_get_bulk() {
     "${_chunks[@]}"
   )
   _node_run \
-    "${_retries}" \
+    "${_retries_max}" \
     "${_cmd}" \
     "${_cmd_args[@]}"
 }
@@ -462,7 +469,7 @@ _chunks_get_async_bulk() {
         "${_piece}"
       )
     elif (( "${#_bulk_payload[@]}" == "${_bulk_indexes_amount}" )); then
-      _index_end="${_index}"
+      _index_end="$((${_index} - 1))"
       _chunk_get_opts=(
         "${_uri_contract}"
         "${_uri_namespace}"
@@ -695,10 +702,11 @@ _evmfs_get() {
     _target_network="${9}" \
     _api_key_path="${10}" \
     _call_method="${11}" \
-    _tasks_parallel="${12}" \
-    _cache_dir="${13}" \
-    _target_uri="${14}" \
-    _output_file="${15}" \
+    _retries_max="${12}" \
+    _tasks_parallel="${13}" \
+    _cache_dir="${14}" \
+    _target_uri="${15}" \
+    _output_file="${16}" \
     _evm_contract_call_opts=() \
     _length_call_opts=() \
     _get_call_opts=() \
@@ -863,6 +871,10 @@ _set_overrides() {
     "method" \
     "bulk"
   _tasks_parallel_auto_detect
+  _set_override \
+    "retries" \
+    "max" \
+    "300"
   _set_override \
     "wallet" \
     "name" \
@@ -1036,6 +1048,9 @@ $(_display_networks \
                             Default: $(_get "api" "key")
      -m <call_method>       Can be standalone or 'bulk'.
                             Default: $(_get "call" "method")
+     -r <retries_max>       Maximum number of retries before
+                            failing.
+                            Default: $(_get "retries" "max")
      -P <tasks_parallel>    Tasks to perform in parallel.
                             Default: $(_get "tasks" "parallel")
      -C <cache_dir>         Location where to temporary store
@@ -1083,6 +1098,7 @@ _show_config() {
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
   _msg_info "              Call method:   $(_get "call" "method")"
+  _msg_info "          Maximum retries:   $(_get "retries" "max")"
   _msg_info "           Parallel tasks:   $(_get "tasks" "parallel")"
   _msg_info "          Target resource:   $(_get "target" "uri")"
   _msg_info "              Output file:   $(_get "output" "file")"
@@ -1098,7 +1114,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'o:A:B:V:ud:N:w:p:s:n:k:m:P:C:cvh?' \
+    'o:A:B:V:ud:N:w:p:s:n:k:m:r:P:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1115,6 +1131,7 @@ while \
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_call_method="${OPTARG}" ;;
+    r) override_retries_max="${OPTARG}" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
@@ -1195,6 +1212,10 @@ app_opts=(
     _get \
       "call" \
       "method")"
+  "$( \
+    _get \
+      "retries" \
+      "max")"
   "$( \
     _get \
       "tasks" \

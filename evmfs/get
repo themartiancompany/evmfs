@@ -23,6 +23,10 @@ _msg_error =
 
 function
   _global_variables() {
+  app_name =
+    "get";
+  retries_max =
+    '';
   api_key_path =
     "";
   target_network =
@@ -101,22 +105,80 @@ function
     _msg);
 }
 
+function
+  _error_handle(
+    error) {
+  let
+    _message;
+  if ( 'error' in error && 
+       error['error'] != undefined &&
+       'message' in error['error'] ) {
+    _message =
+      error['error']['message'];
+  }
+  else if ( 'shortMessage' in error ) {
+    _message =
+      error['shortMessage'];
+  }
+  _msg_error(
+    _message,
+    0);
+}
+
 async function
   _chunk_get(
+    _index,
     _contract_call_static_opts) {
   let
+    _passed,
+    _retry,
     _value;
-  try {
-    _value = 
-      await _contract_call_static.apply(
-        null,
-        _contract_call_static_opts);
-  } catch(e) {
-    _msg_error(
-      e,
-      1);
-  }
+  _value = 
+    await _contract_call_static.apply(
+      null,
+      _contract_call_static_opts);
   return _value.toString();
+  // _retry =
+  //   1;
+  // _passed = 
+  //   false;
+  // while ( _retry <= _retries &&
+  //         _passed == false ) {
+  //   try {
+  //     _value = 
+  //       await _contract_call_static.apply(
+  //         null,
+  //         _contract_call_static_opts);
+  //     _passed =
+  //       true;
+  //   } catch(e) {
+  //     _msg = "error while processing index {_index}".replaceAll(
+  //       '{_index}',
+  //       _index);
+  //     _msg_error(
+  //       _msg,
+  //       0);
+  //     _error_handle(
+  //       e);
+  //     _retry =
+  //       _retry + 1;
+  //     _msg_error(
+  //       "increasing retry",
+  //       0);
+  //   }
+  // }
+  // if ( _retry > _retries ) {
+  //   _msg_error(
+  //     "maximum number of retries reached",
+  //     1)
+  // }
+  // if ( _value == undefined ) {
+  //   _msg_error(
+  //     "static call error",
+  //     1
+  //   );
+  // }
+  // return _value.toString();
 }
 
 function
@@ -142,6 +204,7 @@ function
 
 async function
   _get(
+    _retries_max,
     _api_key_path,
     _target_network,
     _contract_address,
@@ -155,9 +218,10 @@ async function
     _file_chunks
   ) {
   let
+    _chunks_total,
     _contract_call_static_base_opts,
     _contract_call_static_opts,
-    _chunks_total,
+    _cursor,
     _file_chunk,
     _file_chunk_path,
     _method_base_args,
@@ -169,6 +233,7 @@ async function
   _wallet_password =
     "";
   _contract_call_static_base_opts = [
+    _retries_max,
     _api_key_path,
     _target_network,
     _contract_abi_path,
@@ -194,7 +259,9 @@ async function
     _index_end);
   _progress =
     1;
-  for ( var _index =_index_start;
+  _cursor =
+    0;
+  for ( var _index = _index_start;
 	_index <= _index_end;
 	_index++ ) {
     _msg_info_chunk_get(
@@ -202,17 +269,27 @@ async function
       _progress,
       _chunks_total);
     _file_chunk_path =
-      _file_chunks[_index];
-    _contract_call_static_opts =
-      _contract_call_static_base_opts;
+      _file_chunks[_cursor];
+    if ( _file_chunk_path == undefined ) {
+      console.error(
+        "error with index",
+        _index,
+        "and cursor",
+        _cursor,
+        "file_chunk",
+        _file_chunks[_cursor]);
+      process.exit(1);
+    }
     _method_args =
-      _method_base_args;
-    _method_args.push(
-      _index.toString());
-    _contract_call_static_opts.push(
-      _method_args);
+      _method_base_args.concat(
+        [_index.toString()]
+      );
+    _contract_call_static_opts =
+      _contract_call_static_base_opts.concat(
+        [_method_args]);
     _value = await
       _chunk_get(
+	_index,
         _contract_call_static_opts);
     _msg_info_chunk_got(
       _index,
@@ -223,6 +300,8 @@ async function
       _value);
     _progress =
       _progress + 1;
+    _cursor =
+      _cursor + 1;
   }
 }
 
@@ -234,6 +313,10 @@ function
     _text;
   _text = 
     [];
+  _text.push(
+    "          Maximum retries: {retries_max}".replace(
+      "{retries_max}",
+      retries_max));
   _text.push(
     "                  API Key: {api_key_path}".replace(
       "{api_key_path}",
@@ -299,6 +382,7 @@ function
     "Usage:",
     "  get",
     "    <quiet>",
+    "    <retries_max>",
     "    <api_key_path>",
     "    <target_network>",
     "    <contract_address>",
@@ -315,6 +399,8 @@ function
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
     "                                   Default: y",
+    "  <retries_max>                    Maximum number of retries before",
+    "                                   failing.",
     "  <api_key_path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
     "  <target_network>                 Network on which the contract",
@@ -354,53 +440,57 @@ function
           _value;
       }
       if ( _index == 3 ) {
-        api_key_path =
+        retries_max =
           _value;
       }
       if ( _index == 4 ) {
-        target_network =
+        api_key_path =
           _value;
       }
       if ( _index == 5 ) {
-        contract_address =
+        target_network =
           _value;
       }
       if ( _index == 6 ) {
-        contract_abi_path =
+        contract_address =
           _value;
       }
       if ( _index == 7 ) {
-        contract_bytecode_path =
+        contract_abi_path =
           _value;
       }
       if ( _index == 8 ) {
-        contract_compiler_output_path =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 9 ) {
-        publication_namespace =
+        contract_compiler_output_path =
           _value;
       }
       if ( _index == 10 ) {
-        file_hash =
+        publication_namespace =
           _value;
       }
       if ( _index == 11 ) {
-        index_start =
+        file_hash =
           _value;
       }
       if ( _index == 12 ) {
+        index_start =
+          _value;
+      }
+      if ( _index == 13 ) {
         index_end =
           _value;
       }
-      if ( 12 < _index ) {
+      if ( 13 < _index ) {
 	file_chunks.push(
           _value);
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
         _usage(
-	  1);
+	  0);
       }
   });
   if ( file_hash == "" ||
@@ -417,6 +507,7 @@ if ( require.main == module ) {
   _cmdline_parse();
   _config_show();
   app_opts = [
+    retries_max,
     api_key_path,
     target_network,
     contract_address,
