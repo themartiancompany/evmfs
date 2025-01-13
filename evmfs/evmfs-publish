@@ -738,7 +738,7 @@ _chunks_length_lock() {
     evm-contract-call \
       "${_length_call_opts[@]}" \
       "${_ll_address}" \
-      "lockLength"
+      "lockLength" \
       "${_fs_address}" \
       "${_namespace}" \
       "${_sum}" \
@@ -1009,7 +1009,7 @@ _evmfs_publish() {
       "${_fs_compiler_output}"
       "${_ll_abi}" \
       "${_ll_bytecode}" \
-      "${_ll_compiler_output}"
+      "${_ll_compiler_output}" \
       "${_tasks_parallel}"
   elif [[ "${_upload_method}" == "simulate" ]]; then
     echo \

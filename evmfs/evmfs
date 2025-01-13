@@ -269,7 +269,7 @@ _tasks_parallel_auto_detect() {
   if [[ "${_call_method}" == "standalone" ]]; then
     _tasks_parallel=200
   elif [[ "${_call_method}" == "bulk" ]]; then
-    _tasks_parallel=20
+    _tasks_parallel=1
   fi
   _set_override \
     "tasks" \

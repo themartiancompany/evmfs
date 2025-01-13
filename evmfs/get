@@ -200,6 +200,8 @@ function
       "more downloads than files to save into",
       1);
   }
+  _msg_info(
+    "input data checked");
 }
 
 async function
