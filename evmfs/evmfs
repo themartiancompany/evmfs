@@ -320,7 +320,7 @@ _set_overrides() {
   _set_override \
     "tasks" \
     "parallel" \
-    "100"
+    "200"
   _set_override \
     "cache" \
     "dir" \

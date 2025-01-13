@@ -35,9 +35,13 @@ function
     "";
   contract_bytecode_path =
     "";
+  publication_namespace =
+    "";
   file_hash =
     "";
-  publication_namespace =
+  index_start =
+    "";
+  index_end =
     "";
   file_chunks =
     [];
@@ -46,18 +50,23 @@ function
 }
 
 function
-  _msg_info_chunk_publish(
-    _chunk,
+  _msg_info_chunk_get(
+    _index,
+    _progress,
     _total) {
   let
     _msg,
     _template;
   _template =
-    "publishing chunk '{_chunk}' of '{_total}'";
+    "getting chunk '{_index}' ('{_progress}'of '{_total}')";
   _msg =
     _template.replaceAll(
-      "{_chunk}",
-      _chunk);
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
   _msg =
     _msg.replaceAll(
       "{_total}",
@@ -67,18 +76,23 @@ function
 }
 
 function
-  _msg_info_chunk_published(
-    _chunk,
+  _msg_info_chunk_got(
+    _index,
+    _progress,
     _total) {
   let
     _msg,
     _template;
   _template =
-    "published chunk '{_chunk}' of '{_total}'";
+    "got chunk '{_index}' ('{_progress}'of '{_total}')";
   _msg =
     _template.replaceAll(
-      "{_chunk}",
-      _chunk);
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
   _msg =
     _msg.replaceAll(
       "{_total}",
@@ -88,12 +102,13 @@ function
 }
 
 async function
-  _chunk_publish(
+  _chunk_get(
     _contract_run_opts) {
-  let _tx;
+  let \
+    _value;
   try {
-    _tx = await
-      _contract_run.apply(
+    _value = 
+      await _contract_call_static.apply(
         null,
         _contract_run_opts);
   } catch(e) {
@@ -101,11 +116,32 @@ async function
       e,
       1);
   }
-  return _tx;
+  return _value.toString();
+}
+
+function
+  _input_data_check(
+    _index_start,
+    _index_end,
+    _total_files) {
+  let
+    _total_indexes;
+  _total_indexes =
+    _index_end - _index_start + 1;
+  if ( _total_files > _total_indexes ) {
+    _msg_error(
+      "more files to save into than downloads",
+      1);
+  }
+  if ( _total_files < _total_indexes ) {
+    _msg_error(
+      "more downloads than files to save into",
+      1);
+  }
 }
 
 async function
-  _publish(
+  _get(
     _wallet_seed_path,
     _api_key_path,
     _target_network,
@@ -114,18 +150,22 @@ async function
     _contract_bytecode_path,
     _publication_namespace,
     _file_hash,
+    _index_start,
+    _index_end,
     _file_chunks
   ) {
   let
     _contract_run_base_opts,
     _contract_run_opts,
-    _chunk,
+    _index,
+    _chunks_total,
     _file_chunk,
     _file_chunk_path,
+    _method_base_args,
     _method_args,
     _msg,
-    _total_chunks,
-    _tx,
+    _progress,
+    _value,
     _wallet_password;
   _wallet_password =
     "";
@@ -137,39 +177,46 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
-    "publishChunk",
+    "readChunk",
   ];
   _method_base_args = [
     _publication_namespace,
     _file_hash
   ];
-  _total_chunks =
+  _chunks_total =
     _file_chunks.length;
-  for ( _chunk in _file_chunks ) {
-    _msg_info_chunk_publish(
-      _chunk,
-      _total_chunks);
+  _input_data_check(
+    _file_chunks,
+    _index_start,
+    _index_end);
+  _progress =
+    1;
+  for ( var _index =_index_start;
+	_index <= _index_end;
+	_index++ ) {
+    _msg_info_chunk_get(
+      _index,
+      _progress,
+      _chunks_total);
     _file_chunk_path =
       _file_chunks[_chunk];
-    _file_chunk =
-      _file_read(
-        _file_chunk_path);
     _contract_run_opts =
       _contract_run_base_opts;
     _method_args =
       _method_base_args;
     _method_args.push(
-      _chunk);
-    _method_args.push(
-      _file_chunk);
+      _index);
     _contract_run_opts.push(
       _method_args);
-    _tx = await
-      _chunk_publish(
+    _value = await
+      _chunk_get(
         _contract_run_opts);
     _msg_info_chunk_published(
       _chunk,
       _total_chunks);
+    _file_write(
+      file_chunk_path,
+      _value);
   }
 }
 
@@ -206,13 +253,21 @@ function
       "{contract_bytecode_path}",
       contract_bytecode_path));
   _text.push(
+    "Publication namespace: {file_hash}".replace(
+      "{file_hash}",
+      file_hash));
+  _text.push(
     "            File hash: {file_hash}".replace(
       "{file_hash}",
       file_hash));
   _text.push(
-    "Publication namespace: {file_hash}".replace(
-      "{file_hash}",
-      file_hash));
+    "          Index start: {index_start}".replace(
+      "{index_start}",
+      index_start));
+  _text.push(
+    "            Index end: {index_end}".replace(
+      "{index_end}",
+      index_end));
   _file_chunks =
     file_chunks.join(
     " ");
@@ -227,13 +282,16 @@ function
 }
 
 function
-  _usage() {
+  _usage(
+    _exit) {
   let
     _line,
     _text;
   _text = [
+    "Downloads chunks of an EVMFS file.",
+    "",
     "Usage:",
-    "  publish",
+    "  get",
     "    <quiet>",
     "    <wallet_seed_path>",
     "    <api_key_path>",
@@ -241,32 +299,37 @@ function
     "    <contract_address>",
     "    <contract_abi_path>",
     "    <contract_bytecode_path>",
-    "    <publication_namespace>",
+    "    <contract_compiler_output_path>",
     "    <file_hash>",
     "    [file_chunk]",
     "",
     "Args:",
-    "  <quiet>                   Can be 'y' or 'n'",
-    "                            Default: y",
-    "  <wallet_seed_path>        Path of the file containing",
-    "                            the seed phrase.",
-    "  <api_key_path>            Path of the API key for the",
-    "                            contract ABI provider service.",
-    "  <target_network>          Network on which the contract",
-    "                            resides.",
-    "  <contract_address>        Address of the contract.",
-    "  <contract_abi_path>       Contract ABI path.",
-    "  <contract_bytecode_path>  Path for the contract bytecode.",
-    "  <publication_namespace>   Namespace in which the file will be",
-    "                            published.",
-    "  <file_hash>               Hash of the file to publish.",
-    "  [file_chunks]             File chunks to publish.",
+    "  <quiet>                          Can be 'y' or 'n'",
+    "                                   Default: y",
+    "  <wallet_seed_path>               Path of the file containing",
+    "                                   the seed phrase.",
+    "  <api_key_path>                   Path of the API key for the",
+    "                                   contract ABI provider service.",
+    "  <target_network>                 Network on which the contract",
+    "                                   resides.",
+    "  <contract_address>               Address of the contract.",
+    "  <contract_abi_path>              Contract ABI path.",
+    "  <contract_bytecode_path>         Path for the contract bytecode.",
+    "  <contract_compiler_output_path>  Path for the contract compiler",
+    "                                   output path (the hardhat artifact).",
+    "  <publication_namespace>          Namespace in which the file will be",
+    "                                   published.",
+    "  <file_hash>                      Hash of the file to publish.",
+    "  <index_start>                    Chunk index from where to start.",
+    "  <index_end>                      Final chunk index to download.",
+    "  [file_chunks]                    Files in which to write the chunks.",
   ];
   for ( _line of _text ) {
     _msg_info(
       _line);
   }
-  process.exit();
+  process.exit(
+    _exit);
 }
 
 
@@ -308,28 +371,42 @@ function
           _value;
       }
       if ( _index == 9 ) {
-        publication_namespace =
+        contract_compiler_output_path =
           _value;
       }
       if ( _index == 10 ) {
+        publication_namespace =
+          _value;
+      }
+      if ( _index == 11 ) {
         file_hash =
           _value;
       }
-      if ( 10 < _index ) {
+      if ( _index == 12 ) {
+        index_start =
+          _value;
+      }
+      if ( _index == 13 ) {
+        index_end =
+          _value;
+      }
+      if ( 13 < _index ) {
 	file_chunks.push(
           _value);
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
-        _usage();
+        _usage(
+	  0);
       }
   });
   if ( file_hash == "" ||
-       publication_namespace  == "" ||
-       file_chunks == [] ) {
-    _usage();
+       publication_namespace) {
+    _usage(
+      1);
   }
 }
+
 
 _global_variables();
 
@@ -345,14 +422,16 @@ if ( require.main == module ) {
     contract_bytecode_path,
     publication_namespace,
     file_hash,
+    index_start,
+    index_end,
     file_chunks,
   ];
-  _publish.apply(
+  _get.apply(
     null,
     app_opts);
 }
 
 module.exports = {
-  _publish:
-    _publish
+  _get:
+    _get
 };

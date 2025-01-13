@@ -32,6 +32,7 @@ _global_variables() {
   api_key=""
   cache_dir=""
   tasks_parallel=""
+  call_method=""
   fs_address=""
   ll_address=""
   fs_version=""
@@ -214,9 +215,6 @@ _chunk_get() {
     "${_uri_hash}" \
     "${_index}" > \
     "${_out}"
-  _chunks+=(
-    "${_out}"
-  )
 }
 
 _resource_length_get() {
@@ -245,7 +243,6 @@ _resource_length_mutable_get() {
       "getLength" \
       "${_uri_namespace}" \
       "${_uri_hash}")"
-  
   echo \
     "${_length}"
 }
@@ -277,33 +274,134 @@ _resource_validate() {
   fi
 }
 
-_chunks_get_new() {
+_node_run() {
+  local \
+    _retries_max="${1}" \
+    _cmd="${2}" \
+    _args=() \
+    _node_path \
+    _lib \
+    _retry \
+    _msg=()
+  shift \
+    2
+  _args=(
+    "$@"
+  )
+  _retry=
+  _lib="$( \
+    _get_lib)"
+  _node_path="${_lib}/node_modules" 
+  export \
+    NODE_PATH="${_node_path}"
+  for _retry \
+    in $(seq "${_retries_max}"); do
+    if NODE_PATH="${_node_path}" \
+       node \
+         "${_cmd}" \
+         "${_args[@]}"; then
+      return
+    else
+      _msg=(
+        "contract calling error,"
+        "retry '${_retry}' out of"
+        "'${_retries_max}'"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        "0"
+    fi
+  done
+  return \
+    1
+}
+
+_chunk_get_bulk() {
+  local \
+    _fs_address="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index_start="${4}" \
+    _index_end="${5}" \
+    _chunks=() \
+    _cmd \
+    _cmd_args=()
+  shift \
+    5
+  _chunks=(
+    "$@"
+  )
+  _cmd="$( \
+    _get_lib)/evmfs/get"
+  _cmd_args+=(
+    "${_wallet_seed}"
+    "${_api_key_path}"
+    "${_target_network}"
+    "${_uri_contract}"
+    "${fs_abi}"
+    "${fs_bytecode}"
+    "${_uri_namespace}"
+    "${_uri_hash}"
+    "${_index_start}"
+    "${_index_end}"
+    "${_chunks[@]}"
+  )
+  _node_run \
+    "${_cmd}" \
+    "${_cmd_args[@]}"
+}
+
+_chunk_get_async_bulk() {
   local \
     _length="${1}" \
     _tasks_parallel="${2}" \
     _chunk \
     _piece \
     _index \
+    _index_start \
+    _index_end
     _chunk_get_opts=() \
-    _pendings=()
+    _pendings=() \
+    _bulk_index_amount
+    _bulk_payload
   _index=0
+  _bulk_payload=()
+  _bulk_indexes_amount="$(( \
+    _length / _tasks_parallel + 1))"
   while \
     [ "${_index}" -le "$(("${_length}" - 1))" ] && \
     [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
+    if [[ "${_bulk_payload[*]}" == "" ]]; then
+      _index_start="${_index}"
+    fi
     _piece="${_tmp_dir}/${_uri_hash}.${_index}"
-    _chunk_get_opts=(
-      "${_index}"
+    if (( "${#_bulk_payload[@]}" <= "${_bulk_indexes_amount}" )); then
+      _bulk_payload+=(
+        "${_piece}"
+      )
+    elif (( "${#_bulk_payload[@]}" == "${_bulk_indexes_amount}" )); then
+      _index_end="${_index}"
+      _chunk_get_opts=(
+        "${_uri_contract}"
+        "${_uri_namespace}"
+        "${_uri_hash}"
+        "${_index_start}"
+        "${_index_end}"
+        "${_bulk_payload[@]}"
+      )
+      _run \
+        "chunk_get_bulk_${_index_start}_${_index_end}" \
+        "0" \
+        "async" \
+        _chunk_get_bulk \
+          "${_chunk_get_opts[@]}"
+      _pendings+=(
+        "$(_get_pid \
+             "chunk_get_${_index}")"
+      )
+    fi
+    _chunks+=(
       "${_piece}"
-    )
-    _run \
-      "chunk_get_${_index}" \
-      "0" \
-      "async" \
-      _chunk_get \
-        "${_chunk_get_opts[@]}"
-    _pendings+=(
-      "$(_get_pid \
-	   "chunk_get_${_index}")"
     )
     _index="$(( \
       _index + 1 ))"
@@ -332,7 +430,65 @@ _chunks_get_new() {
     "${_pendings[@]}"
 }
 
-_chunks_get() {
+_chunks_get_async_standalone() {
+  local \
+    _length="${1}" \
+    _tasks_parallel="${2}" \
+    _chunk \
+    _piece \
+    _index \
+    _chunk_get_opts=() \
+    _pendings=()
+  _index=0
+  while \
+    [ "${_index}" -le "$(("${_length}" - 1))" ] && \
+    [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
+    _piece="${_tmp_dir}/${_uri_hash}.${_index}"
+    _chunk_get_opts=(
+      "${_index}"
+      "${_piece}"
+    )
+    _run \
+      "chunk_get_${_index}" \
+      "0" \
+      "async" \
+      _chunk_get \
+        "${_chunk_get_opts[@]}"
+    _pendings+=(
+      "$(_get_pid \
+	   "chunk_get_${_index}")"
+    )
+    _chunks+=(
+      "${_piece}"
+    )
+    _index="$(( \
+      _index + 1 ))"
+    if [[ "${#_pendings[@]}" == "${_tasks_parallel}" ]]; then 
+      wait \
+	-f \
+	-p \
+	  _job \
+        -n \
+        "${_pendings[@]}"
+      _pendings_new=()
+      for _pending in "${_pendings[@]}"; do
+        if [[ "${_pending}" != "${_job}" ]]; then
+          _pendings_new+=(
+            "${_pending}"
+          )
+        fi
+      done
+      _pendings=(
+        "${_pendings_new[@]}"
+      )
+      _job=""
+    fi
+  done
+  wait \
+    "${_pendings[@]}"
+}
+
+_chunks_get_sync() {
   local \
     _length="${1}" \
     _tasks_parallel="${2}" \
@@ -357,12 +513,16 @@ _chunks_get() {
     )
     _chunk_get \
       "${_chunk_get_opts[@]}"
+    _chunks+=(
+      "${_piece}"
+    )
   done
 }
 
 _resource_get() {
   local \
-    _tasks_parallel="${1}" \
+    _call_method="${1}" \
+    _tasks_parallel="${2}" \
     _chunks=() \
     _length \
     _file_length \
@@ -399,10 +559,26 @@ _resource_get() {
     _file_length + 1))"
   _attempt=1
   while (( "${_attempt}" < "${_retries}" )); do
-    _chunks_get_new \
-      "${_length}" \
-      "${_tasks_parallel}"
+    if (( 1 < "${_tasks_parallel}" )); then
+      "_chunks_get_async_${_call_method}" \
+        "${_length}" \
+        "${_tasks_parallel}"
+    elif [[ 1 == "${_tasks_parallel}" ]]; then
+      _chunks_get_sync \
+        "${_length}" \
+        "${_tasks_parallel}"
+    else
+      _msg=(
+        "invalid value for parallel"
+        "tasks ('${_tasks_parallel}')"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
     _check="${_tmp_dir}/${_uri_hash}.check"
+    _msg_info \
+      "got '${#_chunks[@]}' chunks."
     txt2bin \
       "${_check}" \
       "${_chunks[@]}"
@@ -433,10 +609,11 @@ _evmfs_get() {
     _wallet_seed="${8}" \
     _target_network="${9}" \
     _api_key_path="${10}" \
-    _tasks_parallel="${11}" \
-    _cache_dir="${12}" \
-    _target_uri="${13}" \
-    _output_file="${14}" \
+    _call_method="${11}" \
+    _tasks_parallel="${12}" \
+    _cache_dir="${13}" \
+    _target_uri="${14}" \
+    _output_file="${15}" \
     _evm_contract_call_opts=() \
     _length_call_opts=() \
     _get_call_opts=() \
@@ -539,6 +716,7 @@ _evmfs_get() {
       "10"
   )
   _resource_get \
+    "${_call_method}" \
     "${_tasks_parallel}"
 }
 
@@ -560,6 +738,25 @@ _cache_dir_auto_detect() {
     "${HOME}/.cache/evmfs"
 }
 
+_tasks_parallel_auto_detect() {
+  local \
+    _call_method \
+    _tasks_parallel
+  _call_method="$( \
+    _get \
+      "call" \
+      "method")"
+  if [[ "${_call_method}" == "standalone" ]]; then
+    _tasks_parallel=200
+  elif [[ "${_call_method}" == "bulk" ]]; then
+    _tasks_parallel=10
+  fi
+  _set_override \
+    "tasks" \
+    "parallel" \
+    "${_tasks_parallel}"
+}
+
 _set_overrides() {
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -577,9 +774,10 @@ _set_overrides() {
     "$(_get_date_human)"
   _cache_dir_auto_detect
   _set_override \
-    "tasks" \
-    "parallel" \
-    "100"
+    "call" \
+    "method" \
+    "bulk"
+  _tasks_parallel_auto_detect
   _set_override \
     "wallet" \
     "name" \
@@ -751,6 +949,8 @@ $(_display_networks \
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
+     -m <call_method>       Can be standalone or 'bulk'.
+                            Default: $(_get "call" "method")
      -P <tasks_parallel>    Tasks to perform in parallel.
                             Default: $(_get "tasks" "parallel")
      -C <cache_dir>         Location where to temporary store
@@ -797,6 +997,7 @@ _show_config() {
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "          Cache directory:   $(_get "cache" "dir")"
+  _msg_info "              Call method:   $(_get "call" "method")"
   _msg_info "           Parallel tasks:   $(_get "tasks" "parallel")"
   _msg_info "          Target resource:   $(_get "target" "uri")"
   _msg_info "              Output file:   $(_get "output" "file")"
@@ -812,7 +1013,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'o:A:B:V:ud:N:w:p:s:n:k:P:C:cvh?' \
+    'o:A:B:V:ud:N:w:p:s:n:k:m:P:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -828,6 +1029,7 @@ while \
     s) override_wallet_seed="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
+    m) override_call_method="${OPTARG}" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
@@ -904,6 +1106,10 @@ app_opts=(
     _get \
       "api" \
       "key")"
+  "$( \
+    _get \
+      "call" \
+      "method")"
   "$( \
     _get \
       "tasks" \
