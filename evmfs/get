@@ -6,15 +6,15 @@ const
     '../libcrash-js/crash-js');
 _dirname =
   _libcrash._dirname;
-_file_read =
-  _libcrash._file_read;
+_file_write =
+  _libcrash._file_write;
 _path_join =
   _libcrash._path_join;
 const
   _evm_contract_call =
   require(
     '../evm-contracts-tools/evm-contract-call-static');
-_contract_run =
+_contract_call_static =
   _evm_contract_call._contract_call_static
 _msg_info =
   _libcrash._msg_info;
@@ -202,24 +202,27 @@ async function
       _progress,
       _chunks_total);
     _file_chunk_path =
-      _file_chunks[_chunk];
-    _contract_run_opts =
-      _contract_run_base_opts;
+      _file_chunks[_index];
+    _contract_call_static_opts =
+      _contract_call_static_base_opts;
     _method_args =
       _method_base_args;
     _method_args.push(
       _index.toString());
-    _contract_run_opts.push(
+    _contract_call_static_opts.push(
       _method_args);
     _value = await
       _chunk_get(
-        _contract_run_opts);
-    _msg_info_chunk_published(
-      _chunk,
-      _total_chunks);
+        _contract_call_static_opts);
+    _msg_info_chunk_got(
+      _index,
+      _progress,
+      _chunks_total);
     _file_write(
       file_chunk_path,
       _value);
+    _progress =
+      _progress + 1;
   }
 }
 
