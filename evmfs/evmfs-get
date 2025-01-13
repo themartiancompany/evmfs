@@ -219,16 +219,27 @@ _chunk_get() {
 
 _resource_length_get() {
   local \
-    _length
-  _length="$( \
+    _length \
+    _locked
+  _length=""
+  _locked="$( \
     evm-contract-call \
       "${_length_call_opts[@]}" \
       "${_ll_address}" \
-      "getLength" \
+      "lock" \
       "${_uri_contract}" \
       "${_uri_namespace}" \
-      "${_uri_hash}" || \
-      true)"
+      "${_uri_hash}")"
+  if [[ "${_locked}" == "true" ]]; then
+    _length="$( \
+      evm-contract-call \
+        "${_length_call_opts[@]}" \
+        "${_ll_address}" \
+        "getLength" \
+        "${_uri_contract}" \
+        "${_uri_namespace}" \
+        "${_uri_hash}")"
+  fi
   echo \
     "${_length}"
 }
@@ -335,12 +346,12 @@ _chunk_get_bulk() {
     _get_lib)/evmfs/get"
   _cmd_args+=(
     "${quiet}"
-    "${_wallet_seed}"
     "${_api_key_path}"
     "${_target_network}"
     "${_uri_contract}"
-    "${fs_abi}"
-    "${fs_bytecode}"
+    "${_fs_abi}"
+    "${_fs_bytecode}"
+    "${_fs_compiler_output}"
     "${_uri_namespace}"
     "${_uri_hash}"
     "${_index_start}"
@@ -348,6 +359,7 @@ _chunk_get_bulk() {
     "${_chunks[@]}"
   )
   _node_run \
+    "${_retries}" \
     "${_cmd}" \
     "${_cmd_args[@]}"
 }
@@ -383,12 +395,6 @@ _chunks_get_async_bulk() {
     fi
     _piece="${_tmp_dir}/${_uri_hash}.${_index}"
     if (( "${#_bulk_payload[@]}" < "${_bulk_indexes_amount}" )); then
-      _msg=(
-        "adding chunk ${_piece} with index '${_index}'"
-        "to bulk payload"
-      )
-      _msg_info \
-        "${_msg[*]}"
       _bulk_payload+=(
         "${_piece}"
       )
@@ -402,12 +408,6 @@ _chunks_get_async_bulk() {
         "${_index_end}"
         "${_bulk_payload[@]}"
       )
-      _msg=(
-        "running _chunk_get_bulk with"
-        "parameters '${_chunk_get_opts[*]}'"
-      )
-      _msg_info \
-        "${_msg[*]}"
       _run \
         "chunk_get_bulk_${_index_start}_${_index_end}" \
         "0" \
