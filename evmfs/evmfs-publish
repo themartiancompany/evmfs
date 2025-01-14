@@ -356,6 +356,17 @@ _contract_call_opts_setup() {
     -C
       "${_ll_compiler_output}"
     -t
+      "static"
+  )
+  _length_lock_call_opts+=(
+    "${_evm_contract_call_opts[@]}"
+    -A
+      "${_ll_abi}"
+    -B
+      "${_ll_bytecode}"
+    -C
+      "${_ll_compiler_output}"
+    -t
       "dynamic"
   )
   _msg=(
@@ -729,14 +740,14 @@ _chunks_length_lock() {
   _locked="$( \
     evm-contract-call \
       "${_length_call_opts[@]}" \
-      "${_ll_address}"
+      "${_ll_address}" \
       "lock" \
       "${_fs_address}" \
       "${_namespace}" \
       "${_sum}")"
   if [[ "${_locked}" == "false" ]]; then
     evm-contract-call \
-      "${_length_call_opts[@]}" \
+      "${_length_lock_call_opts[@]}" \
       "${_ll_address}" \
       "lockLength" \
       "${_fs_address}" \
@@ -829,6 +840,7 @@ _file_upload_standalone() {
     _verify_call_opts=() \
     _lock_call_opts=() \
     _length_call_opts=() \
+    _length_lock_call_opts=() \
     _chunk_publish_opts=()
   _many_chunks="false"
   _contract_call_opts_setup

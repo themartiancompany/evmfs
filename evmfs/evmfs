@@ -251,6 +251,8 @@ _call_method_auto_detect() {
     _call_method="bulk"
   elif [[ "${_target_command}" == "publish" ]]; then
     _call_method="standalone"
+  else
+    _call_method="standalone"
   fi
   _set_override \
     "call" \
@@ -269,6 +271,8 @@ _tasks_parallel_auto_detect() {
   if [[ "${_call_method}" == "standalone" ]]; then
     _tasks_parallel=200
   elif [[ "${_call_method}" == "bulk" ]]; then
+    _tasks_parallel=1
+  else
     _tasks_parallel=1
   fi
   _set_override \
