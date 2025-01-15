@@ -12,7 +12,8 @@ BUILD_DIR=build
 
 DOC_FILES=\
   $(wildcard *.rst) \
-  $(wildcard *.md)
+  $(wildcard *.md) \
+  $(wildcard docs/*.md)
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -Dm644
