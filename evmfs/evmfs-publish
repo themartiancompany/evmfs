@@ -453,6 +453,9 @@ _queue_setup() {
       _publish_queue+=(
         "${_chunk_prefix}"
       )
+      _verify_queue+=(
+        "true"
+      )
     elif (( 1 < "${_chunks_total}")); then
       for _chunk \
         in $(seq \
@@ -589,12 +592,12 @@ _chunks_verify() {
   _index=0
   for _chunk \
     in "${_publish_queue[@]}"; do
-      _msg=(
-        "verifying chunk '${_chunk}'"
-        "of ${_chunks_total}"
-      )
-      _msg_info \
-        "${_msg[*]}"
+    _msg=(
+      "verifying chunk '${_chunk}'"
+      "of ${_chunks_total}"
+    )
+    _msg_info \
+      "${_msg[*]}"
     if [[ "${_verify_queue["${_index}"]}" == "true" ]]; then
       _chunk_verify_opts=(
         "${_fs_address}"
@@ -734,9 +737,15 @@ _chunks_lock() {
 _chunks_length_lock() {
   local \
     _locked \
-    _length
+    _length \
+    _msg=()
   _length="$(( \
     _chunks_total - 1))"
+  _msg=(
+    "check length lock"
+  )
+  _msg_info \
+    "${_msg[*]}"
   _locked="$( \
     evm-contract-call \
       "${_length_call_opts[@]}" \
@@ -746,10 +755,15 @@ _chunks_length_lock() {
       "${_namespace}" \
       "${_sum}")"
   if [[ "${_locked}" == "false" ]]; then
+    _msg=(
+      "length unlocked, locking at '${_length}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
     evm-contract-call \
       "${_length_lock_call_opts[@]}" \
       "${_ll_address}" \
-      "lockLength" \
+      "setLength" \
       "${_fs_address}" \
       "${_namespace}" \
       "${_sum}" \
