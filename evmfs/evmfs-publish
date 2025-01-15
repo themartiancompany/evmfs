@@ -8,11 +8,17 @@ _bin="$( \
       command \
         -v \
 	  "env")")"
-_lib="${_bin}/../lib"
-source \
-  "${_lib}/libcrash-bash/crash-bash"
-source \
-  "${_lib}/libevm/libevm"
+_lib="$( \
+  realpath \
+    "${_bin}/../lib")"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_libevm="${_lib}/libevm/libevm"
+_sourced \
+  "${_crash_bash}" 2>/dev/null || \
+  source \
+    "${_crash_bash}"
+_sourced \
+  "${_libevm}"
 
 # shellcheck disable=SC2034
 _global_variables() {
@@ -302,6 +308,7 @@ _chunk_publish() {
 _contract_call_opts_setup() {
   local \
     _evm_contract_call_opts=() \
+    _fs_call_opts=() \
     _msg=()
   if [[ "${quiet}" == "n" ]]; then
     _publish_call_opts+=(
@@ -921,36 +928,6 @@ _bulk_chunk_publish() {
     "${_publish_args[@]}"
 }
 
-_abi_get() {
-  local \
-    _deployments="${1}" \
-    _network="${2}" \
-    _name="${3}" \
-    _version="${4}"
-  echo \
-    "${_deployments}/${_name}/${_network}/${_version}/${_name}.abi.json"
-}
-
-_bytecode_get() {
-  local \
-    _deployments="${1}" \
-    _network="${2}" \
-    _name="${3}" \
-    _version="${4}"
-  echo \
-    "${_deployments}/${_name}/${_network}/${_version}/${_name}.bin"
-}
-
-_compiler_output_get() {
-  local \
-    _deployments="${1}" \
-    _network="${2}" \
-    _name="${3}" \
-    _version="${4}"
-  echo \
-    "${_deployments}/${_name}/${_network}/${_version}/${_name}.json"
-}
-
 _evmfs_publish() {
   local \
     _fs_address="${1}" \
@@ -989,37 +966,37 @@ _evmfs_publish() {
        "${_wallet_name}" \
        "address")"
   _fs_abi="$( \
-    _abi_get \
+    _contract_abi_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
   _fs_bytecode="$( \
-    _bytecode_get \
+    _contract_bytecode_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
   _fs_compiler_output="$( \
-    _compiler_output_get \
+    _contract_compiler_output_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "FileSystem" \
       "${_fs_version}")"
   _ll_abi="$( \
-    _abi_get \
+    _contract_abi_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "LengthLock" \
       "${_fs_version}")"
   _ll_bytecode="$( \
-    _bytecode_get \
+    _contract_bytecode_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "LengthLock" \
       "${_fs_version}")"
   _ll_compiler_output="$( \
-    _compiler_output_get \
+    _contract_compiler_output_get \
       "${_deployments_dir}" \
       "${_target_network}" \
       "LengthLock" \

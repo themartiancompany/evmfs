@@ -1056,7 +1056,7 @@ $(_display_networks \
                             Default: $(_get "wallet" "password")
      -s <wallet_seed>       Wallet seed path.
                             Default: $(_get "wallet" "seed")
-     -n <network>           EVM network name ('mainnet', 'gnosis').
+     -n <network>           EVM network name (${_networks[*]}).
                             Default: $(_get "target" "network")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
