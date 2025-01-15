@@ -301,6 +301,7 @@ _chunk_publish() {
 
 _contract_call_opts_setup() {
   local \
+    _evm_contract_call_opts=() \
     _msg=()
   if [[ "${quiet}" == "n" ]]; then
     _publish_call_opts+=(
@@ -848,7 +849,6 @@ _file_upload_standalone() {
     _many_chunks \
     _tmp_dir \
     _bin2txt_opts=() \
-    _evm_contract_call_opts=() \
     _check_call_opts=() \
     _publish_call_opts=() \
     _verify_call_opts=() \
