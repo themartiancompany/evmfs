@@ -231,10 +231,11 @@ async function
     _msg,
     _progress,
     _value,
-    _wallet_password;
-  _wallet_password =
-    "";
+    _wallet_seed;
+  _wallet_seed =
+    '';
   _contract_call_static_base_opts = [
+    _wallet_seed,
     _retries_max,
     _api_key_path,
     _target_network,
