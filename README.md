@@ -1,6 +1,6 @@
-# EVM File System
+# Ethereum Virtual Machine File System
 
-Ethereum Virtual Machine network file system.
+Reference implementation for the Ethereum Virtual Machine File System.
 
 ```bash
   evmfs \
