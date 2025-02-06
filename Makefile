@@ -157,6 +157,9 @@ install-scripts:
 	  "$(_PROJECT)/publish" \
 	  "$(LIB_DIR)/publish"
 	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/get" \
+	  "$(LIB_DIR)/get"
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/$(_PROJECT)-get" \
 	  "$(BIN_DIR)/$(_PROJECT)-get"
 	$(_INSTALL_EXE) \
