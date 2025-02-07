@@ -178,6 +178,8 @@ _evmfs() {
   fi
   "evmfs-${_target_command}" \
     "${_args[@]}"
+  return \
+    0
 }
 
 _address_section_get() {

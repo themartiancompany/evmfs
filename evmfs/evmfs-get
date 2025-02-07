@@ -825,6 +825,8 @@ _evmfs_get() {
   _resource_get \
     "${_call_method}" \
     "${_tasks_parallel}"
+  return \
+    0
 }
 
 _cache_dir_auto_detect() {
