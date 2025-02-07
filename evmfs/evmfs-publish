@@ -965,42 +965,18 @@ _evmfs_publish() {
      get \
        "${_wallet_name}" \
        "address")"
-  _fs_abi="$( \
-    _contract_abi_get \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "FileSystem" \
-      "${_fs_version}")"
-  _fs_bytecode="$( \
-    _contract_bytecode_get \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "FileSystem" \
-      "${_fs_version}")"
-  _fs_compiler_output="$( \
-    _contract_compiler_output_get \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "FileSystem" \
-      "${_fs_version}")"
-  _ll_abi="$( \
-    _contract_abi_get \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "LengthLock" \
-      "${_fs_version}")"
-  _ll_bytecode="$( \
-    _contract_bytecode_get \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "LengthLock" \
-      "${_fs_version}")"
-  _ll_compiler_output="$( \
-    _contract_compiler_output_get \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "LengthLock" \
-      "${_fs_version}")"
+  _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_target_network}" \
+    "FileSystem" \
+    "_fs" \
+    "${_fs_version}"
+  _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_target_network}" \
+    "LengthLock" \
+    "_ll" \
+    "${_fs_version}"
   if [[ "${_upload_method}" == "standalone" ]]; then
     _file_upload_standalone \
       "${_target_network}" \
