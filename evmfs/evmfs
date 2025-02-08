@@ -612,7 +612,7 @@ app_opts=(
   "${cache_dir}"
   "${user_level}"
   "${output_file}"
-  "${_target_key}"
+  "${target_key}"
   "${target_value}"
 )
 _evmfs \
