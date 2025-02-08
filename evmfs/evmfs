@@ -524,7 +524,6 @@ _show_config() {
   _msg_info "              Call method:   ${call_method}"
   _msg_info "                Lock only:   ${lock_only}"
   _msg_info "           Parallel tasks:   ${tasks_parallel}"
-  _msg_info "          Target resource:   ${target_uri}"
   _msg_info "              Output file:   ${output_file}"
   _msg_info "           Target command:   ${target_command}"
   _msg_info "               Target key:   ${target_key}"
