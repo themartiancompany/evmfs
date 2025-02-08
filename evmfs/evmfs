@@ -315,51 +315,35 @@ _set_overrides() {
     "n"
   _deployments_dir_auto_detect \
     "evmfs" \
-    "$(_get \
-         "user" \
-         "level")"
+    "${user_level}"
   _network_auto_detect \
     "FileSystem" \
-    "$(_get \
-         "deployments" \
-         "dir")" \
-    "$(_get \
-         "user" \
-         "level")"
+    "${deployments_dir}" \
+    "${user_level}"
   _api_key_auto_detect \
-    "$(_get \
-         "target" \
-         "network")"
+    "${target_network}"
   _set_override \
     "wallet" \
     "path" \
     "$(_wallet_path_get \
          "evm-wallet" \
-         "$(_get \
-              "wallet" \
-              "name")")"
+         "${wallet_name}")"
   _secret_auto_detect \
     "seed" \
     "seed" \
     "evm-wallet" \
-    "$(_get \
-         "wallet" \
-         "name")"
+    "${wallet_name}"
   _secret_auto_detect \
     "password" \
     "plain" \
     "evm-wallet" \
-    "$(_get \
-         "wallet" \
-         "name")"
+    "${wallet_name}"
   _set_override \
     "wallet" \
     "address" \
     "$(evm-wallet \
          get \
-           "$(_get \
-                "wallet" \
-                "name")" \
+           "${wallet_name}" \
            "address")"
   _set_override \
     "cache" \
@@ -373,30 +357,18 @@ _set_overrides() {
     "n"
   _output_file_auto_detect
   _contract_version_auto_detect \
-    "$(_get \
-         "deployments" \
-         "dir")" \
+    "${deployments_dir}" \
     "FileSystem" \
     "fs" \
-    "$(_get \
-         "target" \
-         "network")"
+    "${target_network}"
   _contract_address_auto_detect \
     "evmfs" \
     "FileSystem" \
     "fs" \
-    "$(_get \
-         "target" \
-         "network")" \
-    "$(_get \
-         "fs" \
-         "version")" \
-    "$(_get \
-         "user" \
-         "level")" \
-    "$(_get \
-         "deployments" \
-         "dir")"
+    "${target_network}" \
+    "${fs_version}" \
+    "${user_level}" \
+    "${deployments_dir}"
 }
 
 # Show help usage, with an exit status.
@@ -442,44 +414,43 @@ $(_display_networks \
   options:
      -A <fs_address>        Address of the EVM file system
                             on the network.
-                            Default: $(_get "fs" "address")
+                            Default: ${fs_address}
      -V <fs_version>        Version of the target EVM file
                             system.
-                            Default: $(_get "fs" "version")
+                            Default: ${fs_version}
      -o <output_file>       Name of the file in which to save
                             the downloaded resource.
-                            Default: $(_get "output" "file")
+                            Default: ${output_file}
      -u                     Whether to retrieve file system
                             address from user directory or custom
                             deployment.
-                            Default: $(_get "user" "level")
+                            Default: ${user_level}
      -d <deployments_dir>   Contracts deployments directory.
-                            Default: $(_get "deployments" "dir")
+                            Default: ${deployments_dir}
      -N <wallet_name>       Wallet name.
-                            Default: $(_get "wallet" "name")
+                            Default: ${wallet_name}
      -w <wallet_path>       Wallet path.
-                            Default: $(_get "wallet" "path")
+                            Default: ${wallet_path}
      -p <wallet_password>   Wallet password.
-                            Default: $(_get "wallet" "password")
+                            Default: ${wallet_password}
      -s <wallet_seed>       Wallet seed path.
-                            Default: $(_get "wallet" "seed")
+                            Default: ${wallet_seed}
      -n <network>           EVM network name. Use either name
                             or ID.
-                            Default: $(_get "target" "network")
+                            Default: ${target_network}
      -k <api_key>           Etherscan-like service key.
-                            Default: $(_get "api" "key")
+                            Default: ${api_key}
      -m <call_method>       It can be 'standalone', 'bulk' or
                             'simulate'
-                            Default: $(_get "call" "method")
+                            Default: ${call_method}
      -L                     Skip check and publish and only lock
                             the file.
-                            Default: $(_get "lock" "only")
+                            Default: ${lock_only}
      -P <tasks_paralell>    How many calls tasks perform at any
                             given time
-                            Default: $(_get "tasks" "parallel")
-
+                            Default: ${tasks_parallel}
      -C <cache_dir>         Work directory
-                            Default: $(_get "cache" "dir")
+                            Default: ${cache_dir}
 
      -h                     This message.
      -c                     Enable color output
@@ -509,7 +480,7 @@ _display_flags() {
 _show_config() {
   TZ=UTC \
   _msg_info "${app_name} configuration"
-  _msg_info "                Call date:   $(_get "call" "date")"
+  _msg_info "                Call date:   ${call_date}"
   _msg_info "      File system address:   ${fs_address}"
   _msg_info "      File system version:   ${fs_version}"
   _msg_info "               User level:   ${user_level}"
@@ -625,62 +596,24 @@ _config_user_init \
       "name")"
 _show_config
 app_opts=(
-  "$(_get \
-      "target" \
-      "command")"
-  "$(_get \
-       "fs" \
-       "address")"
-  "$(_get \
-       "fs" \
-       "version")"
-  "$(_get \
-       "deployments" \
-       "dir")"
-  "$(_get \
-       "wallet" \
-       "name")"
-  "$(_get \
-      "wallet" \
-      "path")"
-  "$(_get \
-      "wallet" \
-      "password")"
-  "$(_get \
-      "wallet" \
-      "seed")"
-  "$(_get \
-      "target" \
-      "network")"
-  "$(_get \
-      "api" \
-      "key")"
-  "$(_get \
-       "call" \
-       "method")"
-  "$(_get \
-       "lock" \
-       "only")"
-  "$(_get \
-       "tasks" \
-       "parallel")"
-  "$(_get \
-       "cache" \
-       "dir")"
-  "$(_get \
-       "user" \
-       "level")"
-  "$(_get \
-       "output" \
-       "file")"
-  "$( \
-    _get \
-      "target" \
-      "key")"
-  "$( \
-    _get \
-      "target" \
-      "value")"
+  "${target_command}"
+  "${fs_address}"
+  "${fs_version}"
+  "${deployments_dir}"
+  "${wallet_name}"
+  "${wallet_path}"
+  "${wallet_password}"
+  "${wallet_seed}"
+  "${target_network}"
+  "${api_key}"
+  "${call_method}"
+  "${lock_only}"
+  "${tasks_parallel}"
+  "${cache_dir}"
+  "${user_level}"
+  "${output_file}"
+  "${_target_key}"
+  "${target_value}"
 )
 _evmfs \
   "${app_opts[@]}"
