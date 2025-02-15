@@ -1024,51 +1024,35 @@ _set_overrides() {
     "n"
   _deployments_dir_auto_detect \
     "evmfs" \
-    "$(_get \
-         "user" \
-         "level")"
+    "${user_level}"
   _network_auto_detect \
     "FileSystem" \
-    "$(_get \
-         "deployments" \
-         "dir")" \
-    "$(_get \
-         "user" \
-         "level")"
+    "${deployments_dir}" \
+    "${user_level}"
   _api_key_auto_detect \
-    "$(_get \
-         "target" \
-         "network")"
+    "${target_network}"
   _set_override \
     "wallet" \
     "path" \
     "$(_wallet_path_get \
          "evm-wallet" \
-         "$(_get \
-              "wallet" \
-              "name")")"
+         "${wallet_name}")"
   _secret_auto_detect \
     "seed" \
     "seed" \
     "evm-wallet" \
-    "$(_get \
-         "wallet" \
-         "name")"
+    "${wallet_name}"
   _secret_auto_detect \
     "password" \
     "plain" \
     "evm-wallet" \
-    "$(_get \
-         "wallet" \
-         "name")"
+    "${wallet_name}"
   _set_override \
     "wallet" \
     "address" \
     "$(evm-wallet \
          get \
-           "$(_get \
-                "wallet" \
-                "name")" \
+           "${wallet_name}" \
            "address")"
   _set_override \
     "cache" \
@@ -1087,48 +1071,28 @@ _set_overrides() {
     "parallel" \
     "2"
   _contract_version_auto_detect \
-    "$(_get \
-         "deployments" \
-         "dir")" \
+    "${deployments_dir}" \
     "FileSystem" \
     "fs" \
-    "$(_get \
-         "target" \
-         "network")"
+    "${target_network}"
   if [[ "${fs_version}" == "1.0" ]]; then
     _contract_address_auto_detect \
       "evmfs" \
       "LengthLock" \
       "ll" \
-      "$(_get \
-           "target" \
-           "network")" \
-      "$(_get \
-           "fs" \
-           "version")" \
-      "$(_get \
-           "user" \
-           "level")" \
-      "$(_get \
-           "deployments" \
-           "dir")"
+      "${target_network}" \
+      "${fs_version}" \
+      "${user_level}" \
+      "${deployments_dir}"
   fi
   _contract_address_auto_detect \
     "evmfs" \
     "FileSystem" \
     "fs" \
-    "$(_get \
-         "target" \
-         "network")" \
-    "$(_get \
-         "fs" \
-         "version")" \
-    "$(_get \
-         "user" \
-         "level")" \
-    "$(_get \
-         "deployments" \
-         "dir")"
+    "${target_network}" \
+    "${fs_version}" \
+    "${user_level}" \
+    "${deployments_dir}"
 }
 
 # Show help usage, with an exit status.
@@ -1166,40 +1130,40 @@ $(_display_networks \
   options:
      -A <fs_address>        Address of the EVM file system
                             on the network.
-                            Default: $(_get "fs" "address")
+                            Default: ${fs_address}
      -B <ll_address>        Address of the Length Lock contract
                             on the network.
-                            Default: $(_get "ll" "address")
+                            Default: ${ll_address}
      -V <fs_version>        Version of the target EVM file
                             system.
-                            Default: $(_get "fs" "version")
+                            Default: ${fs_version}
      -u                     Whether to retrieve file system
                             address from user directory or custom
                             deployment.
-                            Default: $(_get "user" "level")
+                            Default: ${user_level}
      -d <deployments_dir>   Contracts deployments directory.
-                            Default: $(_get "deployments" "dir")
+                            Default: ${deployments_dir}
      -N <wallet_name>       Wallet name.
-                            Default: $(_get "wallet" "name")
+                            Default: ${wallet_name}
      -w <wallet_path>       Wallet path.
-                            Default: $(_get "wallet" "path")
+                            Default: ${wallet_path}
      -p <wallet_password>   Wallet password.
-                            Default: $(_get "wallet" "password")
+                            Default: ${wallet_password}
      -s <wallet_seed>       Wallet seed path.
-                            Default: $(_get "wallet" "seed")
+                            Default: ${wallet_seed}
      -n <network>           EVM network name (${_networks[*]}).
-                            Default: $(_get "target" "network")
+                            Default: ${target_network}
      -k <api_key>           Etherscan-like service key.
-                            Default: $(_get "api" "key")
+                            Default: ${api_key}
      -m <upload_method>     It can be 'standalone' or 'simulate'.
-                            Default: $(_get "upload" "method")
+                            Default: ${upload_method}
      -L                     Skip check and publish and only lock
                             the file.
-                            Default: $(_get "lock" "only")
+                            Default: ${lock_only}
      -P <tasks_parallel>    Tasks to perform in parallel.
-                            Default: $(_get "tasks" "parallel")
+                            Default: ${tasks_parallel}
      -C <cache_dir>         Work directory
-                            Default: $(_get "cache" "dir")
+                            Default: ${cache_dir}
 
      -h                     This message.
      -c                     Enable color output
@@ -1258,24 +1222,24 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Publish date:   $(_get "publish" "date")"
-  _msg_info "      File system address:   $(_get "fs" "address")"
-  _msg_info "      File system version:   $(_get "fs" "version")"
-  _msg_info "       LengthLock address:   $(_get "ll" "address")"
-  _msg_info "               User level:   $(_get "user" "level")"
-  _msg_info "    Deployments directory:   $(_get "deployments" "dir")"
-  _msg_info "                Namespace:   $(_get "wallet" "address")"
-  _msg_info "              Wallet name:   $(_get "wallet" "name")"
-  _msg_info "              Wallet path:   $(_get "wallet" "path")"
-  _msg_info "          Wallet password:   $(_get "wallet" "password")"
-  _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
-  _msg_info "           Target network:   $(_get "target" "network")"
-  _msg_info "                  API key:   $(_get "api" "key")"
-  _msg_info "            Upload method:   $(_get "upload" "method")"
-  _msg_info "                Lock only:   $(_get "lock" "only")"
-  _msg_info "           Tasks parallel:   $(_get "tasks" "parallel")"
-  _msg_info "          Cache directory:   $(_get "cache" "dir")"
-  _msg_info "              Target file:   $(_get "target" "file")"
+  _msg_info "             Publish date:   ${publish_date}"
+  _msg_info "      File system address:   ${fs_address}"
+  _msg_info "      File system version:   ${fs_version}"
+  _msg_info "       LengthLock address:   ${ll_address}"
+  _msg_info "               User level:   ${user_level}"
+  _msg_info "    Deployments directory:   ${deployments_dir}"
+  _msg_info "                Namespace:   ${wallet_address}"
+  _msg_info "              Wallet name:   ${wallet_name}"
+  _msg_info "              Wallet path:   ${wallet_path}"
+  _msg_info "          Wallet password:   ${wallet_password}"
+  _msg_info "              Wallet seed:   ${wallet_seed}"
+  _msg_info "           Target network:   ${target_network}"
+  _msg_info "                  API key:   ${api_key}"
+  _msg_info "            Upload method:   ${upload_method}"
+  _msg_info "                Lock only:   ${lock_only}"
+  _msg_info "           Tasks parallel:   ${tasks_parallel}"
+  _msg_info "          Cache directory:   ${cache_dir}"
+  _msg_info "              Target file:   ${target_file}"
   _msg_info "       Publishing address:   $(_publishing_address_get)"
 }
 
@@ -1354,51 +1318,21 @@ command_args+=(
 _set_overrides
 _show_config
 app_opts=(
-  "$(_get \
-       "fs" \
-       "address")"
-  "$(_get \
-       "ll" \
-       "address")"
-  "$(_get \
-       "fs" \
-       "version")"
-  "$(_get \
-       "deployments" \
-       "dir")"
-  "$(_get \
-       "wallet" \
-       "name")"
-  "$(_get \
-       "wallet" \
-       "path")"
-  "$(_get \
-       "wallet" \
-       "password")"
-  "$(_get \
-       "wallet" \
-       "seed")"
-  "$(_get \
-       "target" \
-       "network")"
-  "$(_get \
-       "api" \
-       "key")"
-  "$(_get \
-       "upload" \
-       "method")"
-  "$(_get \
-       "lock" \
-       "only")"
-  "$(_get \
-       "tasks" \
-       "parallel")"
-  "$(_get \
-       "cache" \
-       "dir")"
-  "$(_get \
-       "target" \
-       "file")"
+  "${fs_address}"
+  "${ll_address}"
+  "${fs_version}"
+  "${deployments_dir}"
+  "${wallet_name}"
+  "${wallet_path}"
+  "${wallet_password}"
+  "${wallet_seed}"
+  "${target_network}"
+  "${api_key}"
+  "${upload_method}"
+  "${lock_only}"
+  "${tasks_parallel}"
+  "${cache_dir}"
+  "${target_file}"
 )
 _evmfs_publish \
   "${app_opts[@]}"
