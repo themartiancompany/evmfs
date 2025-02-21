@@ -160,6 +160,9 @@ install-scripts:
 	  "$(_PROJECT)/get" \
 	  "$(LIB_DIR)/get"
 	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/lock" \
+	  "$(LIB_DIR)/lock"
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/$(_PROJECT)-get" \
 	  "$(BIN_DIR)/$(_PROJECT)-get"
 	$(_INSTALL_EXE) \
