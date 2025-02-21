@@ -47,8 +47,6 @@ function
     "";
   index_end =
     "";
-  file_chunks =
-    [];
   quiet =
     "";
 }
