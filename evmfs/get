@@ -1,5 +1,26 @@
 #!/usr/bin/env node
 
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+//    ----------------------------------------------------------------------
+//    Copyright © 2024, 2025  Pellegrino Prevete
+//
+//    All rights reserved
+//    ----------------------------------------------------------------------
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Affero General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU Affero General Public License for more details.
+//
+//    You should have received a copy of the GNU Affero General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 const
   _libcrash =
   require(
@@ -62,7 +83,7 @@ function
     _msg,
     _template;
   _template =
-    "getting chunk '{_index}' ('{_progress}'of '{_total}')";
+    "Downloading chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -88,7 +109,7 @@ function
     _msg,
     _template;
   _template =
-    "got chunk '{_index}' ('{_progress}'of '{_total}')";
+    "Downloaded chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -192,16 +213,16 @@ function
     _index_end - _index_start + 1;
   if ( _total_files > _total_indexes ) {
     _msg_error(
-      "more files to save into than downloads",
+      "More files to save into than indexes to download.",
       1);
   }
   if ( _total_files < _total_indexes ) {
     _msg_error(
-      "more downloads than files to save into",
+      "More indexes downloads than files to save into.",
       1);
   }
   _msg_info(
-    "input data checked");
+    "Input data checked.");
 }
 
 async function

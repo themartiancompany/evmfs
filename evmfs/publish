@@ -1,5 +1,26 @@
 #!/usr/bin/env node
 
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+//    ----------------------------------------------------------------------
+//    Copyright © 2024, 2025  Pellegrino Prevete
+//
+//    All rights reserved
+//    ----------------------------------------------------------------------
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Affero General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU Affero General Public License for more details.
+//
+//    You should have received a copy of the GNU Affero General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 const
   _libcrash =
   require(
@@ -15,11 +36,17 @@ _msg_info =
 _msg_error =
   _libcrash._msg_error;
 const
-  _evm_contract_call =
-  require(
-    '../evm-contracts-tools/evm-contract-call-dynamic');
+  _evm_contract_call_dynamic_module =
+    require(
+      '../evm-contracts-tools/evm-contract-call-dynamic');
 _contract_run =
-  _evm_contract_call._contract_run
+  _evm_contract_call_dynamic_module._contract_run
+const
+  _evm_contract_call_static_module =
+    require(
+      '../evm-contracts-tools/evm-contract-call-static');
+_contract_call_static =
+  _evm_contract_call_static_module._contract_call_static
 
 function
   _global_variables() {
@@ -35,9 +62,13 @@ function
     "";
   contract_bytecode_path =
     "";
+  publication_namespace =
+    "";
   file_hash =
     "";
-  publication_namespace =
+  index_start =
+    "";
+  index_end =
     "";
   file_chunks =
     [];
@@ -47,17 +78,22 @@ function
 
 function
   _msg_info_chunk_publish(
-    _chunk,
+    _index,
+    _progress,
     _total) {
   let
     _msg,
     _template;
   _template =
-    "publishing chunk '{_chunk}' of '{_total}'";
+    "Publishing chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
-      "{_chunk}",
-      _chunk);
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
   _msg =
     _msg.replaceAll(
       "{_total}",
@@ -68,17 +104,22 @@ function
 
 function
   _msg_info_chunk_published(
-    _chunk,
+    _index,
+    _progress,
     _total) {
   let
     _msg,
     _template;
   _template =
-    "published chunk '{_chunk}' of '{_total}'";
+    "Published chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
-      "{_chunk}",
-      _chunk);
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
   _msg =
     _msg.replaceAll(
       "{_total}",
@@ -89,6 +130,7 @@ function
 
 async function
   _chunk_publish(
+    _index,
     _contract_run_opts) {
   let _tx;
   try {
@@ -104,6 +146,31 @@ async function
   return _tx;
 }
 
+function
+  _input_data_check(
+    _index_start,
+    _index_end,
+    _total_files) {
+  let
+    _total_indexes;
+  _total_indexes =
+    _index_end - _index_start + 1;
+  if ( _total_files > _total_indexes ) {
+    _msg_error(
+      "More files to save into than indexes to download.",
+      1);
+  }
+  if ( _total_files < _total_indexes ) {
+    _msg_error(
+      "More indexes downloads than files to save into.",
+      1);
+  }
+  _msg_info(
+    "Input data checked.");
+}
+
+
+
 async function
   _publish(
     _wallet_seed_path,
@@ -114,6 +181,8 @@ async function
     _contract_bytecode_path,
     _publication_namespace,
     _file_hash,
+    _index_start,
+    _index_end,
     _file_chunks
   ) {
   let
@@ -124,6 +193,9 @@ async function
     _file_chunk_path,
     _method_args,
     _msg,
+    _index,
+    _progress,
+    _value,
     _total_chunks,
     _tx,
     _wallet_password;
@@ -145,17 +217,39 @@ async function
   ];
   _total_chunks =
     _file_chunks.length;
-  for ( _chunk in _file_chunks ) {
+  _progress =
+    1;
+  _cursor =
+    0;
+  for ( var _index = _index_start;
+	_index <= _index_end;
+	_index++ ) {
     _msg_info_chunk_publish(
-      _chunk,
-      _total_chunks);
+      _index,
+      _progress,
+      _chunks_total);
     _file_chunk_path =
-      _file_chunks[_chunk];
+      _file_chunks[_cursor];
+    if ( _file_chunk_path == undefined ) {
+      console.error(
+        "error with index",
+        _index,
+        "and cursor",
+        _cursor,
+        "file_chunk",
+        _file_chunks[_cursor]);
+      process.exit(1);
+    }
     _file_chunk =
       _file_read(
         _file_chunk_path);
     _contract_run_opts =
       _contract_run_base_opts;
+    _method_args =
+      _method_base_args.concat(
+        [_index.toString()]
+      );
+
     _method_args =
       _method_base_args;
     _method_args.push(
@@ -213,6 +307,14 @@ function
     "Publication namespace: {file_hash}".replace(
       "{file_hash}",
       file_hash));
+  _text.push(
+    "          Index start: {index_start}".replace(
+      "{index_start}",
+      index_start));
+  _text.push(
+    "            Index end: {index_end}".replace(
+      "{index_end}",
+      index_end));
   _file_chunks =
     file_chunks.join(
     " ");
@@ -315,7 +417,15 @@ function
         file_hash =
           _value;
       }
-      if ( 10 < _index ) {
+      if ( _index == 11 ) {
+        index_start =
+          _value;
+      }
+      if ( _index == 12 ) {
+        index_end =
+          _value;
+      }
+      if ( 12 < _index ) {
 	file_chunks.push(
           _value);
       }
@@ -345,6 +455,8 @@ if ( require.main == module ) {
     contract_bytecode_path,
     publication_namespace,
     file_hash,
+    index_start,
+    index_end,
     file_chunks,
   ];
   _publish.apply(
