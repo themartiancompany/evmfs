@@ -213,19 +213,35 @@ async function
     _chunks_files_paths
   ) {
   let
+    _check_call_base_opts,
+    _check_call_opts,
+    _chunk,
+    _chunk_check_args,
+    _chunk_file_path,
+    _chunk_publish_args,
+    _index,
+    _method_base_args,
+    _progress,
     _publish_call_base_opts,
     _publish_call_opts,
-    _chunk_file,
-    _chunk_file_path,
-    _method_args,
-    _index,
-    _progress,
-    _value,
+    _published,
     _total_chunks,
     _tx,
+    _value,
     _wallet_password;
   _wallet_password =
     "";
+  _check_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _contract_address,
+    "chunk",
+  ];
   _publish_call_base_opts = [
     _wallet_seed_path,
     _wallet_password,
@@ -250,8 +266,8 @@ async function
   _cursor =
     0;
   for ( var _index = _index_start;
-	_index <= _index_end;
-	_index++ ) {
+        _index <= _index_end;
+        _index++ ) {
     _msg_info_chunk_publish(
       _index,
       _progress,
@@ -262,24 +278,44 @@ async function
       _chunk_file_path,
       _index,
       _cursor);
-    _chunk_file =
+    _chunk =
       _file_read(
         _chunk_file_path);
-    _method_args =
+    _chunk_check_args =
       _method_base_args.concat(
-        [_index.toString(),
-	 _chunk_file]
-      );
-    _publish_call_opts =
-      _publish_call_base_opts.concat(
-        [_method_args]);
-    _tx = await
-      _chunk_publish(
-        _publish_call_opts);
-    _msg_info_chunk_published(
-      _index,
-      _progress,
-      _chunks_total);
+        [_index.toString()]);
+    _check_call_opts =
+      _check_call_base_opts.concat(
+        [_chunk_check_args]);
+    _published = await
+      _chunk_check(
+        _chunk,
+        _check_call_opts);
+    if ( _published == true ) {
+      _msg_info_chunk_published_already(
+        _index,
+        _progress,
+        _chunks_total);
+    else if ( _published == false ) {
+      _chunk_publish_args =
+        _method_base_args.concat(
+          [_index.toString(),
+           _chunk]);
+      _publish_call_opts =
+        _publish_call_base_opts.concat(
+          [_chunk_publish_args]);
+      _tx = await
+        _chunk_publish(
+          _publish_call_opts);
+      _msg_info_chunk_published(
+        _index,
+        _progress,
+        _chunks_total);
+    }
+    _progress =
+      _progress + 1;
+    _cursor =
+      _cursor + 1;
   }
 }
 

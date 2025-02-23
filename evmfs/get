@@ -257,11 +257,11 @@ async function
     _chunks_files_paths
   ) {
   let
+    _chunk_file_path,
     _chunks_total,
+    _cursor,
     _read_call_base_opts,
     _read_call_opts,
-    _cursor,
-    _chunk_file_path,
     _method_base_args,
     _method_args,
     _progress,

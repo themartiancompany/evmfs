@@ -340,7 +340,7 @@ async function
         _index,
         _progress,
         _chunks_total);
-    else if ( _locked == true ) {
+    else if ( _locked == false ) {
       _tx = await
         _chunk_lock(
           _index,
