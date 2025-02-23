@@ -40,16 +40,24 @@ const
     require(
       '../evm-contracts-tools/evm-contract-call-dynamic');
 _contract_run =
-  _evm_contract_call_dynamic_module._contract_run
+  _evm_contract_call_dynamic_module._contract_run;
 const
   _evm_contract_call_static_module =
     require(
       '../evm-contracts-tools/evm-contract-call-static');
 _contract_call_static =
-  _evm_contract_call_static_module._contract_call_static
+  _evm_contract_call_static_module._contract_call_static;
+const
+  _get_module =
+    require(
+      "./get");
+_get =
+  _get_module._get;
 
 function
   _global_variables() {
+  retries_max =
+    '';
   wallet_seed_path =
     "";
   api_key_path =
@@ -171,6 +179,7 @@ function
 
 async function
   _publish(
+    _retries_max,
     _wallet_seed_path,
     _api_key_path,
     _target_network,
@@ -267,6 +276,10 @@ function
   _text = 
     [];
   _text.push(
+    "      Maximum retries: {retries_max}".replace(
+      "{retries_max}",
+      retries_max));
+  _text.push(
     "          Wallet seed: {wallet_seed_path}".replace(
       "{wallet_seed_path}",
       wallet_seed_path));
@@ -328,6 +341,7 @@ function
     "Usage:",
     "  publish",
     "    <quiet>",
+    "    <retries_max>",
     "    <wallet_seed_path>",
     "    <api_key_path>",
     "    <target_network>",
@@ -341,6 +355,8 @@ function
     "Args:",
     "  <quiet>                   Can be 'y' or 'n'",
     "                            Default: y",
+    "  <retries_max>             Maximum number of retries before",
+    "                            failing (not implemented).",
     "  <wallet_seed_path>        Path of the file containing",
     "                            the seed phrase.",
     "  <api_key_path>            Path of the API key for the",
@@ -362,7 +378,6 @@ function
   process.exit();
 }
 
-
 function 
   _cmdline_parse() {
   quiet = 
@@ -377,46 +392,50 @@ function
           _value;
       }
       if ( _index == 3 ) {
-        wallet_seed_path =
+        retries_max =
           _value;
       }
       if ( _index == 4 ) {
-        api_key_path =
+        wallet_seed_path =
           _value;
       }
       if ( _index == 5 ) {
-        target_network =
+        api_key_path =
           _value;
       }
       if ( _index == 6 ) {
-        contract_address =
+        target_network =
           _value;
       }
       if ( _index == 7 ) {
-        contract_abi_path =
+        contract_address =
           _value;
       }
       if ( _index == 8 ) {
-        contract_bytecode_path =
+        contract_abi_path =
           _value;
       }
       if ( _index == 9 ) {
-        publication_namespace =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 10 ) {
-        file_hash =
+        publication_namespace =
           _value;
       }
       if ( _index == 11 ) {
-        index_start =
+        file_hash =
           _value;
       }
       if ( _index == 12 ) {
+        index_start =
+          _value;
+      }
+      if ( _index == 13 ) {
         index_end =
           _value;
       }
-      if ( 12 < _index ) {
+      if ( 13 < _index ) {
 	file_chunks.push(
           _value);
       }
@@ -432,12 +451,29 @@ function
   }
 }
 
+async function
+  _publish_cmdline(
+    _app_opts) {
+  let
+    _chunk,
+    _chunks_published;
+  _chunks_published = 
+    await _publish.apply(
+      null,
+      _app_opts);
+  for ( _chunk in _chunks_published ) {
+    process.stdout.write(
+      _chunks_published[_chunk].toString());
+  }
+}
+
 _global_variables();
 
 if ( require.main == module ) {
   _cmdline_parse();
   _config_show();
   app_opts = [
+    retries_max,
     wallet_seed_path,
     api_key_path,
     target_network,
@@ -450,7 +486,7 @@ if ( require.main == module ) {
     index_end,
     file_chunks,
   ];
-  _publish.apply(
+  _publish_cmdline.apply(
     null,
     app_opts);
 }

@@ -27,8 +27,8 @@ const
     '../libcrash-js/crash-js');
 _dirname =
   _libcrash._dirname;
-_file_write =
-  _libcrash._file_write;
+_file_read =
+  _libcrash._file_read;
 _path_join =
   _libcrash._path_join;
 _msg_info =
@@ -36,16 +36,16 @@ _msg_info =
 _msg_error =
   _libcrash._msg_error;
 const
-  _evm_contract_call =
-  require(
-    '../evm-contracts-tools/evm-contract-call-static');
-_contract_call_static =
-  _evm_contract_call._contract_call_static
+  _get_module =
+    require(
+      "./get");
+_chunk_get =
+  _get_module._chunk_get;
 
 function
   _global_variables() {
   app_name =
-    "get";
+    "check";
   retries_max =
     '';
   api_key_path =
@@ -75,7 +75,7 @@ function
 }
 
 function
-  _msg_info_chunk_get(
+  _msg_info_chunk_check(
     _index,
     _progress,
     _total) {
@@ -83,7 +83,7 @@ function
     _msg,
     _template;
   _template =
-    "Downloading chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Checking chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -101,7 +101,7 @@ function
 }
 
 function
-  _msg_info_chunk_got(
+  _msg_info_chunk_checked(
     _index,
     _progress,
     _total) {
@@ -109,7 +109,7 @@ function
     _msg,
     _template;
   _template =
-    "Downloaded chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Checked chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -147,17 +147,21 @@ function
 }
 
 async function
-  _chunk_get(
+  _chunk_check(
+    _chunk,
     _contract_call_static_opts) {
   let
     _passed,
     _retry,
     _value;
-  _value = 
-    await _contract_call_static.apply(
-      null,
+  _value = await
+    _chunk_get(
       _contract_call_static_opts);
-  return _value.toString();
+  if ( _value == _chunk ) {
+    return true;
+  else if ( _value != _chunk ) {
+    return false;
+  }
   // _retry =
   //   1;
   // _passed = 
@@ -212,12 +216,12 @@ function
     _index_end - _index_start + 1;
   if ( _total_files > _total_indexes ) {
     _msg_error(
-      "More files to save into than indexes to download.",
+      "More files to read into than indexes to check.",
       1);
   }
   if ( _total_files < _total_indexes ) {
     _msg_error(
-      "More indexes downloads than files to save into.",
+      "More indexes to check than files to read.",
       1);
   }
   _msg_info(
@@ -225,7 +229,7 @@ function
 }
 
 async function
-  _get(
+  _check(
     _retries_max,
     _api_key_path,
     _target_network,
@@ -241,9 +245,11 @@ async function
   ) {
   let
     _chunks_total,
+    _chunks_checked,
     _contract_call_static_base_opts,
     _contract_call_static_opts,
     _cursor,
+    _file_chunk,
     _file_chunk_path,
     _method_base_args,
     _method_args,
@@ -291,7 +297,8 @@ async function
       _progress,
       _chunks_total);
     _file_chunk_path =
-      _file_chunks[_cursor];
+      _file_chunks[
+        _cursor];
     if ( _file_chunk_path == undefined ) {
       console.error(
         "error with index",
@@ -299,9 +306,13 @@ async function
         "and cursor",
         _cursor,
         "file_chunk",
-        _file_chunks[_cursor]);
+        _file_chunks[
+          _cursor]);
       process.exit(1);
     }
+    _file_chunk =
+      _file_read(
+        _file_chunk_path);
     _method_args =
       _method_base_args.concat(
         [_index.toString()]
@@ -309,21 +320,22 @@ async function
     _contract_call_static_opts =
       _contract_call_static_base_opts.concat(
         [_method_args]);
-    _value = await
-      _chunk_get(
+    _check = await
+      _chunk_check(
+	_chunk,
         _contract_call_static_opts);
-    _msg_info_chunk_got(
+    _msg_info_chunk_checked(
       _index,
       _progress,
       _chunks_total);
-    _file_write(
-      _file_chunk_path,
-      _value);
+    _chunks_checked.push(
+      _check);
     _progress =
       _progress + 1;
     _cursor =
       _cursor + 1;
   }
+  return _chunks_checked;
 }
 
 function
@@ -398,10 +410,10 @@ function
     _line,
     _text;
   _text = [
-    "Downloads chunks of an EVMFS file.",
+    "Checks published chunks of an EVMFS file.",
     "",
     "Usage:",
-    "  get",
+    "  check",
     "    <quiet>",
     "    <retries_max>",
     "    <api_key_path>",
@@ -445,7 +457,6 @@ function
   process.exit(
     _exit);
 }
-
 
 function 
   _cmdline_parse() {
@@ -521,6 +532,21 @@ function
   }
 }
 
+async function
+  _check_cmdline(
+    _app_opts) {
+  let
+    _chunk,
+    _chunks_checked;
+  _chunks_checked = 
+    await _check.apply(
+      null,
+      _app_opts);
+  for ( _chunk in _chunks_published ) {
+    process.stdout.write(
+      _chunks_checked[_chunk].toString());
+  }
+}
 
 _global_variables();
 
@@ -541,14 +567,14 @@ if ( require.main == module ) {
     index_end,
     file_chunks,
   ];
-  _get.apply(
+  _check.apply(
     null,
     app_opts);
 }
 
 module.exports = {
-  _chunk_get:
-    _chunk_get,
-  _get:
-    _get
+  _chunk_check:
+    _chunk_check,
+  _check:
+    _check
 };
