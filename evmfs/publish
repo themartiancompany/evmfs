@@ -48,11 +48,11 @@ const
 _contract_call_static =
   _evm_contract_call_static_module._contract_call_static;
 const
-  _get_module =
+  _check_module =
     require(
-      "./get");
-_get =
-  _get_module._get;
+      "./check");
+_chunk_check =
+  _check_module._chunk_check;
 
 function
   _global_variables() {
@@ -193,8 +193,8 @@ async function
     _file_chunks
   ) {
   let
-    _contract_run_base_opts,
-    _contract_run_opts,
+    _publish_call_base_opts,
+    _publish_call_opts,
     _chunk,
     _file_chunk,
     _file_chunk_path,
@@ -208,7 +208,7 @@ async function
     _wallet_password;
   _wallet_password =
     "";
-  _contract_run_base_opts = [
+  _publish_call_base_opts = [
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
@@ -255,12 +255,12 @@ async function
         [_index.toString(),
 	 _file_chunk]
       );
-    _contract_run_opts =
-      _contract_run_base_opts.concat(
+    _publish_call_opts =
+      _publish_call_base_opts.concat(
         [_method_args]);
     _tx = await
       _chunk_publish(
-        _contract_run_opts);
+        _publish_call_opts);
     _msg_info_chunk_published(
       _chunk,
       _total_chunks);
