@@ -158,8 +158,25 @@ function
 
 async function
   _chunk_lock(
-    _index,
-    _contract_call_static_opts) {
+    _contract_run_opts) {
+  let
+    _tx;
+  try {
+    _tx = await
+      _contract_run.apply(
+        null,
+        _contract_run_opts);
+  } catch(e) {
+    _msg_error(
+      e,
+      1);
+  }
+  return _tx;
+}
+
+async function
+  _chunk_locked(
+    _locked_call_static_opts) {
   let
     _passed,
     _retry,
@@ -167,46 +184,85 @@ async function
   _value = 
     await _contract_call_static.apply(
       null,
-      _contract_call_static_opts);
-  return _value.toString();
-}
+      _locked_call_static_opts);
+  return _value;
+  // _retry =
+  //   1;
+  // _passed = 
+  //   false;
+  // while ( _retry <= _retries &&
+  //         _passed == false ) {
+  //   try {
+  //     _value = 
+  //       await _contract_call_static.apply(
+  //         null,
+  //         _contract_call_static_opts);
+  //     _passed =
+  //       true;
+  //   } catch(e) {
+  //     _msg = "error while processing index {_index}".replaceAll(
+  //       '{_index}',
+  //       _index);
+  //     _msg_error(
+  //       _msg,
+  //       0);
+  //     _error_handle(
+  //       e);
+  //     _retry =
+  //       _retry + 1;
+  //     _msg_error(
+  //       "increasing retry",
+  //       0);
+  //   }
+  // }
+  // if ( _retry > _retries ) {
+  //   _msg_error(
+  //     "maximum number of retries reached",
+  //     1)
+  // }
+  // if ( _value == undefined ) {
+  //   _msg_error(
+  //     "static call error",
+  //     1
 
 async function
   _lock(
     _retries_max,
+    _wallet_seed_path,
     _api_key_path,
     _target_network,
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
-    _contract_compiler_output_path,
+    _contract_compiler_output,
     _publication_namespace,
     _file_hash,
     _index_start,
     _index_end
   ) {
   let
-    _chunks_total,
-    _contract_call_static_base_opts,
-    _contract_call_static_opts,
-    _cursor,
-    _method_base_args,
+    _lock_call_base_opts,
+    _lock_call_opts,
+    _locked_call_base_opts,
+    _locked_call_opts,
     _method_args,
-    _msg,
+    _index,
     _progress,
     _value,
-    _wallet_seed;
-  _wallet_seed =
-    '';
-  _contract_call_static_base_opts = [
-    _wallet_seed,
-    _retries_max,
+    _total_chunks,
+    _tx,
+    _wallet_password;
+  _wallet_password =
+    "";
+  _lock_call_base_opts = [
+    _wallet_seed_path,
+    _wallet_password,
     _api_key_path,
     _target_network,
+    _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
-    _contract_address,
     "lockChunk",
   ];
   _method_base_args = [
@@ -232,13 +288,13 @@ async function
       _method_base_args.concat(
         [_index.toString()]
       );
-    _contract_call_static_opts =
-      _contract_call_static_base_opts.concat(
+    _lock_call_opts =
+      _lock_call_base_opts.concat(
         [_method_args]);
     _value = await
       _chunk_lock(
 	_index,
-        _contract_call_static_opts);
+        _lock_call_opts);
     _msg_info_chunk_locked(
       _index,
       _progress,
