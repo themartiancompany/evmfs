@@ -80,7 +80,7 @@ function
     "";
   index_end =
     "";
-  file_chunks =
+  chunks_files_paths =
     [];
   quiet =
     "";
@@ -179,6 +179,23 @@ function
     "Input data checked.");
 }
 
+function
+  _chunk_file_path_check(
+    _path,
+    _index,
+    _cursor) {
+  if ( _path == undefined ) {
+    console.error(
+      "Chunk file for index",
+      _index,
+      "and cursor",
+      _cursor,
+      "undefined.");
+    process.exit(
+      1);
+  }
+}
+
 async function
   _publish(
     _retries_max,
@@ -193,13 +210,13 @@ async function
     _file_hash,
     _index_start,
     _index_end,
-    _file_chunks
+    _chunks_files_paths
   ) {
   let
     _publish_call_base_opts,
     _publish_call_opts,
-    _file_chunk,
-    _file_chunk_path,
+    _chunk_file,
+    _chunk_file_path,
     _method_args,
     _index,
     _progress,
@@ -227,7 +244,7 @@ async function
     _file_hash
   ];
   _total_chunks =
-    _file_chunks.length;
+    _chunks_files_paths.length;
   _progress =
     1;
   _cursor =
@@ -239,25 +256,19 @@ async function
       _index,
       _progress,
       _chunks_total);
-    _file_chunk_path =
-      _file_chunks[_cursor];
-    if ( _file_chunk_path == undefined ) {
-      console.error(
-        "error with index",
-        _index,
-        "and cursor",
-        _cursor,
-        "file_chunk",
-        _file_chunks[_cursor]);
-      process.exit(1);
-    }
-    _file_chunk =
+    _chunk_file_path =
+      _chunks_files_paths[_cursor];
+    _chunk_file_path_check(
+      _chunk_file_path,
+      _index,
+      _cursor);
+    _chunk_file =
       _file_read(
-        _file_chunk_path);
+        _chunk_file_path);
     _method_args =
       _method_base_args.concat(
         [_index.toString(),
-	 _file_chunk]
+	 _chunk_file]
       );
     _publish_call_opts =
       _publish_call_base_opts.concat(
@@ -275,7 +286,7 @@ async function
 function
   _config_show() {
   let
-    _file_chunks,
+    _chunks_files_paths,
     _line,
     _text;
   _text = 
@@ -329,13 +340,13 @@ function
     "                Index end: {index_end}".replace(
       "{index_end}",
       index_end));
-  _file_chunks =
-    file_chunks.join(
+  _chunks_files_paths =
+    chunks_files_paths.join(
     " ");
   _text.push(
-    "              File chunks: {_file_chunks}".replace(
-      "{_file_chunks}",
-      _file_chunks));
+    "              File chunks: {_chunks_files_paths}".replace(
+      "{_chunks_files_paths}",
+      _chunks_files_paths));
   for ( _line in _text ) {
     _msg_info(
       _text[_line]);
@@ -361,7 +372,7 @@ function
     "    <contract_compiler_output_path>",
     "    <publication_namespace>",
     "    <file_hash>",
-    "    [file_chunk]",
+    "    [chunk_file_path]",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
@@ -382,7 +393,7 @@ function
     "  <publication_namespace>          Namespace in which the file will be",
     "                                   published.",
     "  <file_hash>                      Hash of the file to publish.",
-    "  [file_chunks]                    File chunks to publish.",
+    "  [chunks_files_paths]             File chunks to publish.",
   ];
   for ( _line of _text ) {
     _msg_info(
@@ -453,7 +464,7 @@ function
           _value;
       }
       if ( 14 < _index ) {
-	file_chunks.push(
+	chunks_files_paths.push(
           _value);
       }
       if ( _value == "-h" ||
@@ -463,7 +474,7 @@ function
   });
   if ( file_hash == "" ||
        publication_namespace  == "" ||
-       file_chunks == [] ) {
+       chunks_files_paths == [] ) {
     _usage();
   }
 }
@@ -503,7 +514,7 @@ if ( require.main == module ) {
     file_hash,
     index_start,
     index_end,
-    file_chunks,
+    chunks_files_paths,
   ];
   _publish_cmdline.apply(
     null,

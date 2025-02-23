@@ -148,7 +148,7 @@ function
 
 async function
   _chunk_get(
-    _contract_call_static_opts) {
+    _read_call_opts) {
   let
     _passed,
     _retry,
@@ -156,7 +156,7 @@ async function
   _value = 
     await _contract_call_static.apply(
       null,
-      _contract_call_static_opts);
+      _read_call_opts);
   return _value.toString();
   // _retry =
   //   1;
@@ -168,7 +168,7 @@ async function
   //     _value = 
   //       await _contract_call_static.apply(
   //         null,
-  //         _contract_call_static_opts);
+  //         _read_call_opts);
   //     _passed =
   //       true;
   //   } catch(e) {
@@ -258,19 +258,19 @@ async function
   ) {
   let
     _chunks_total,
-    _contract_call_static_base_opts,
-    _contract_call_static_opts,
+    _read_call_base_opts,
+    _read_call_opts,
     _cursor,
     _chunk_file_path,
     _method_base_args,
     _method_args,
     _progress,
     _value,
-    _wallet_seed;
-  _wallet_seed =
+    _wallet_seed_path;
+  _wallet_seed_path =
     '';
-  _contract_call_static_base_opts = [
-    _wallet_seed,
+  _read_call_base_opts = [
+    _wallet_seed_path,
     _retries_max,
     _api_key_path,
     _target_network,
@@ -316,12 +316,12 @@ async function
       _method_base_args.concat(
         [_index.toString()]
       );
-    _contract_call_static_opts =
-      _contract_call_static_base_opts.concat(
+    _read_call_opts =
+      _read_call_base_opts.concat(
         [_method_args]);
     _value = await
       _chunk_get(
-        _contract_call_static_opts);
+        _read_call_opts);
     _msg_info_chunk_got(
       _index,
       _progress,

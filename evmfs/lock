@@ -125,6 +125,32 @@ function
 }
 
 function
+  _msg_info_chunk_locked_already(
+    _index,
+    _progress,
+    _total) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Chunk '{_index}' already locked ('{_progress}'of '{_total}').";
+  _msg =
+    _template.replaceAll(
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
+  _msg_info(
+    _msg);
+}
+
+function
   _error_handle(
     error) {
   let
@@ -243,12 +269,11 @@ async function
   let
     _lock_call_base_opts,
     _lock_call_opts,
+    _locked,
     _locked_call_base_opts,
     _locked_call_opts,
     _method_args,
-    _index,
     _progress,
-    _value,
     _total_chunks,
     _tx,
     _wallet_password;
@@ -258,12 +283,25 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
+    0,
+    "ether",
     _target_network,
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
     "lockChunk",
+  ];
+  _locked_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _contract_address,
+    "locked",
   ];
   _method_base_args = [
     _publication_namespace,
@@ -278,27 +316,40 @@ async function
   _cursor =
     0;
   for ( var _index = _index_start;
-	_index <= _index_end;
-	_index++ ) {
+        _index <= _index_end;
+        _index++ ) {
     _msg_info_chunk_lock(
       _index,
       _progress,
       _chunks_total);
     _method_args =
       _method_base_args.concat(
-        [_index.toString()]
-      );
+        [_index.toString()]);
     _lock_call_opts =
       _lock_call_base_opts.concat(
         [_method_args]);
-    _value = await
-      _chunk_lock(
-	_index,
-        _lock_call_opts);
-    _msg_info_chunk_locked(
-      _index,
-      _progress,
-      _chunks_total);
+    _locked_call_opts =
+      _lock_call_base_opts.concat(
+        [_method_args]);
+    _locked = await
+      _chunk_locked(
+        _index,
+        _locked_call_opts);
+    if ( _locked == true ) {
+      _msg_info_chunk_locked_already(
+        _index,
+        _progress,
+        _chunks_total);
+    else if ( _locked == true ) {
+      _tx = await
+        _chunk_lock(
+          _index,
+          _lock_call_opts);
+      _msg_info_chunk_locked(
+        _index,
+        _progress,
+        _chunks_total);
+    }
     _progress =
       _progress + 1;
     _cursor =
@@ -486,7 +537,6 @@ function
       1);
   }
 }
-
 
 _global_variables();
 
