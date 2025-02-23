@@ -169,8 +169,6 @@ function
     "Input data checked.");
 }
 
-
-
 async function
   _publish(
     _wallet_seed_path,
@@ -243,21 +241,14 @@ async function
     _file_chunk =
       _file_read(
         _file_chunk_path);
-    _contract_run_opts =
-      _contract_run_base_opts;
     _method_args =
       _method_base_args.concat(
-        [_index.toString()]
+        [_index.toString(),
+	 _file_chunk]
       );
-
-    _method_args =
-      _method_base_args;
-    _method_args.push(
-      _chunk);
-    _method_args.push(
-      _file_chunk);
-    _contract_run_opts.push(
-      _method_args);
+    _contract_run_opts =
+      _contract_run_base_opts.concat(
+        [_method_args]);
     _tx = await
       _chunk_publish(
         _contract_run_opts);
