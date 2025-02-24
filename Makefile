@@ -184,6 +184,9 @@ install-scripts:
 	  "$(_PROJECT)/lock" \
 	  "$(LIB_DIR)/lock"
 	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/verify" \
+	  "$(LIB_DIR)/verify"
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/$(_PROJECT)-get" \
 	  "$(BIN_DIR)/$(_PROJECT)-get"
 	$(_INSTALL_EXE) \

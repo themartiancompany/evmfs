@@ -21,20 +21,24 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+_printf =
+  process.stdout.write;
 const
   _libcrash =
   require(
     '../libcrash-js/crash-js');
 _dirname =
   _libcrash._dirname;
+_ext_rm =
+  _libcrash._ext_rmin;
 _file_read =
   _libcrash._file_read;
-_path_join =
-  _libcrash._path_join;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =
   _libcrash._msg_error;
+_path_join =
+  _libcrash._path_join;
 const
   _evm_contract_call_dynamic_module =
     require(
@@ -42,17 +46,17 @@ const
 _contract_run =
   _evm_contract_call_dynamic_module._contract_run;
 const
-  _evm_contract_call_static_module =
-    require(
-      '../evm-contracts-tools/evm-contract-call-static');
-_contract_call_static =
-  _evm_contract_call_static_module._contract_call_static;
-const
   _check_module =
     require(
       "./check");
 _chunk_check =
   _check_module._chunk_check;
+const
+  _verify_module =
+    require(
+      './verify');
+_verify =
+  _verify_module._verify;
 
 function
   _global_variables() {
@@ -313,7 +317,8 @@ async function
         _progress,
         _chunks_total);
       _chunks_unverified.push(
-        _index);
+        [_index,
+         _chunk_file_path]);
     }
     _progress =
       _progress + 1;
@@ -524,16 +529,22 @@ async function
     _app_opts) {
   let
     _chunk,
-    _chunks_published;
-  _chunks_published = 
+    _chunks_unverified,
+    _index;
+  _chunks_unverified = 
     await _publish.apply(
       null,
       _app_opts);
-  for ( _chunk in _chunks_published ) {
-    process.stdout.write(
-      _chunks_published[
-        _chunk].toString());
-  }
+  _verify(
+    _chunks_unverified);
+  // for ( _chunk in _chunks_unverified ) {
+  //   _index =
+  //     _chunks_unverified[
+  //       _chunk][
+  //         0].toString()
+  //   _printf(
+  //     _index);
+  // }
 }
 
 _global_variables();

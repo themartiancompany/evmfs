@@ -31,6 +31,8 @@ _dirname =
   _libcrash._dirname;
 _file_read =
   _libcrash._file_read;
+_file_exists =
+  _libcrash._file_exists;
 _path_join =
   _libcrash._path_join;
 _msg_info =
@@ -40,14 +42,16 @@ _msg_error =
 const
   _get_module =
     require(
-      "./get");
+      "./check");
 _chunk_get =
-  _get_module._chunk_get;
+  _check_module._check;
+_chunk_file_path_check =
+  _file_exists;
 
 function
   _global_variables() {
   app_name =
-    "check";
+    "verify";
   retries_max =
     '';
   api_key_path =
@@ -66,18 +70,16 @@ function
     "";
   file_hash =
     "";
-  index_start =
-    "";
-  index_end =
-    "";
-  chunks_files_paths =
+  chunks_file_paths_prefix =
+    ""
+  chunks_indexes =
     [];
   quiet =
     "";
 }
 
 function
-  _msg_info_chunk_check(
+  _msg_info_chunk_verify(
     _index,
     _progress,
     _total) {
@@ -85,7 +87,7 @@ function
     _msg,
     _template;
   _template =
-    "Checking chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Verifying chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -103,7 +105,7 @@ function
 }
 
 function
-  _msg_info_chunk_checked(
+  _msg_info_chunk_verified(
     _index,
     _progress,
     _total) {
@@ -111,7 +113,7 @@ function
     _msg,
     _template;
   _template =
-    "Checked chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Verified chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -127,6 +129,40 @@ function
   _msg_info(
     _msg);
 }
+
+function
+  _msg_error_chunk_corrupted(
+    _index,
+    _chunk_file_path,
+    _progress,
+    _total) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Chunk '{_index}' at location '{_chunk_file_path}' " +
+    "corrupted ('{_progress}'of '{_total}').";
+  _msg =
+    _template.replaceAll(
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_chunk_file_path}",
+      _chunk_file_path);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
+  _msg_error(
+    _msg,
+    1)
+}
+
 
 function
   _error_handle(
@@ -148,107 +184,25 @@ function
     0);
 }
 
-async function
-  _chunk_check(
-    _chunk,
-    _get_call_opts) {
-  let
-    _passed,
-    _retry,
-    _value;
-  _value = await
-    _chunk_get(
-      _get_call_opts);
-  if ( _value == _chunk ) {
-    return true;
-  else if ( _value != _chunk ) {
-    return false;
-  }
-  // _retry =
-  //   1;
-  // _passed = 
-  //   false;
-  // while ( _retry <= _retries &&
-  //         _passed == false ) {
-  //   try {
-  //     _value = 
-  //       await _contract_call_static.apply(
-  //         null,
-  //         _get_call_opts);
-  //     _passed =
-  //       true;
-  //   } catch(e) {
-  //     _msg = "error while processing index {_index}".replaceAll(
-  //       '{_index}',
-  //       _index);
-  //     _msg_error(
-  //       _msg,
-  //       0);
-  //     _error_handle(
-  //       e);
-  //     _retry =
-  //       _retry + 1;
-  //     _msg_error(
-  //       "increasing retry",
-  //       0);
-  //   }
-  // }
-  // if ( _retry > _retries ) {
-  //   _msg_error(
-  //     "maximum number of retries reached",
-  //     1)
-  // }
-  // if ( _value == undefined ) {
-  //   _msg_error(
-  //     "static call error",
-  //     1
-  //   );
-  // }
-  // return _value.toString();
-}
-
 function
-  _input_data_check(
-    _index_start,
-    _index_end,
-    _total_files) {
+  _chunk_file_path_get(
+    _prefix,
+    _index) {
   let
-    _total_indexes;
-  _total_indexes =
-    _index_end - _index_start + 1;
-  if ( _total_files > _total_indexes ) {
-    _msg_error(
-      "More files to read into than indexes to check.",
-      1);
-  }
-  if ( _total_files < _total_indexes ) {
-    _msg_error(
-      "More indexes to check than files to read.",
-      1);
-  }
-  _msg_info(
-    "Input data checked.");
-}
-
-function
-  _chunk_file_path_check(
-    _path,
-    _index,
-    _cursor) {
-  if ( _path == undefined ) {
-    console.error(
-      "Chunk file for index",
-      _index,
-      "and cursor",
-      _cursor,
-      "undefined.");
-    process.exit(
-      1);
-  }
+    _chunk_no,
+    _path;
+  _chunk_no =
+    _index + 1;
+  _path =
+    _prefix.concat(
+      ".{_chunk_no}".replaceAll(
+        "{_chunk_no}",
+        _chunk_no));
+  return _path;
 }
 
 async function
-  _check(
+  _verify(
     _retries_max,
     _api_key_path,
     _target_network,
@@ -258,102 +212,69 @@ async function
     _contract_compiler_output_path,
     _publication_namespace,
     _file_hash,
-    _index_start,
-    _index_end,
-    _chunks_files_paths
+    _chunks_files_paths_prefix,
+    _chunks_indexes
   ) {
   let
+    _chunk_file_path,
+    _chunks_corrupted,
     _chunks_total,
-    _chunks_checked,
-    _check_call_base_opts,
-    _check_call_opts,
+    _correct,
     _cursor,
     _chunk,
     _chunk_file_path,
-    _method_base_args,
-    _method_args,
-    _msg,
-    _progress,
-    _value,
-    _wallet_seed_path;
-  _wallet_seed_path =
-    '';
-  _check_call_base_opts = [
-    _wallet_seed_path,
-    _retries_max,
-    _api_key_path,
-    _target_network,
-    _contract_abi_path,
-    _contract_bytecode_path,
-    _contract_compiler_output_path,
-    _contract_address,
-    "chunk",
-  ];
-  _method_base_args = [
-    _publication_namespace,
-    _file_hash
-  ];
-  if ( _chunks_files_paths == [] ) {
-    _msg_error(
-      "file chunks list empty",
-      1);
-  }
+    _progress;
   _chunks_total =
-    _chunks_files_paths.length;
-  _input_data_check(
-    _chunks_files_paths,
-    _index_start,
-    _index_end);
-  _progress =
-    1;
-  _cursor =
-    0;
-  for ( var _index = _index_start;
-	_index <= _index_end;
-	_index++ ) {
-    _msg_info_chunk_check(
+    _chunks_indexes.length;
+  for ( _cursor in _chunks_indexes ) {
+    _progress =
+      _cursor + 1;
+    _index =
+      _chunks_indexes[
+        _cursor];
+    _msg_info_chunk_verify(
       _index,
       _progress,
       _chunks_total);
     _chunk_file_path =
-      _chunks_files_paths[
-        _cursor];
+      _chunk_file_path_get(
+        _chunks_files_paths_prefix,
+        _index);
     _chunk_file_path_check(
-      _chunk_file_path,
-      _index,
-      _cursor);
-    _chunk =
-      _file_read(
-        _chunk_file_path);
-    _method_args =
-      _method_base_args.concat(
-        [_index.toString()]
-      );
-    _check_call_opts =
-      _check_call_base_opts.concat(
-        [_method_args]);
-    _check = await
-      _chunk_check(
-        _chunk,
-        _check_call_opts);
-    _msg_info_chunk_checked(
-      _index,
-      _progress,
-      _chunks_total);
-    _chunks_checked.push(
-      _check);
-    _progress =
-      _progress + 1;
-    _cursor =
-      _cursor + 1;
+      _chunk_file_path);
+    _correct = await
+      _check(
+        _retries_max,
+        _api_key_path,
+        _target_network,
+        _contract_address,
+        _contract_abi_path,
+        _contract_bytecode_path,
+        _contract_compiler_output_path,
+        _publication_namespace,
+        _file_hash,
+        _index,
+        _index,
+        [_chunk_file_path]); 
+    if ( _correct == false ) {
+      // Temporary
+      _msg_error_chunk_corrupted(
+        _index,
+        _chunk_file_path,
+        _progress,
+        _total);
+      // Soon
+      _chunks_corrupted.push(
+        _index);
+    }
   }
-  return _chunks_checked;
+  return _chunks_corrupted;
 }
 
 function
   _config_show() {
   let
-    _chunks_files_paths,
+    _chunks_indexes,
     _line,
     _text;
   _text = 
@@ -395,20 +316,16 @@ function
       "{file_hash}",
       file_hash));
   _text.push(
-    "              Index start: {index_start}".replace(
+    "Chunks files paths prefix: {index_start}".replace(
       "{index_start}",
       index_start));
-  _text.push(
-    "                Index end: {index_end}".replace(
-      "{index_end}",
-      index_end));
-  _chunks_files_paths =
-    chunks_files_paths.join(
+  _chunks_indexes =
+    chunks_indexes.join(
     " ");
   _text.push(
-    "              File chunks: {_chunks_files_paths}".replace(
+    "           Chunks indexes: {_chunks_files_paths}".replace(
       "{_chunks_files_paths}",
-      _chunks_files_paths));
+      _chunks_indexes));
   for ( _line in _text ) {
     _msg_info(
       _text[_line]);
@@ -422,10 +339,10 @@ function
     _line,
     _text;
   _text = [
-    "Checks published chunks of an EVMFS file.",
+    "Verify published chunks of an EVMFS file.",
     "",
     "Usage:",
-    "  check",
+    "  verify",
     "    <quiet>",
     "    <retries_max>",
     "    <api_key_path>",
@@ -437,9 +354,8 @@ function
     "    <publication_namespace>",
     "    <index_start>",
     "    <file_hash>",
-    "    <index_start>",
-    "    <index_end>",
-    "    [chunk_file_path]",
+    "    <chunks_files_paths_prefix>",
+    "    [chunks_indexes]",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
@@ -458,9 +374,8 @@ function
     "  <publication_namespace>          Namespace in which the file will be",
     "                                   published.",
     "  <file_hash>                      Hash of the file to publish.",
-    "  <index_start>                    Chunk index from where to start.",
-    "  <index_end>                      Final chunk index to download.",
-    "  [chunk_file_path]                Files in which to write the chunks.",
+    "  <chunks_files_paths_prefix>      Chunks files paths prefix.",
+    "  [chunks_indexes]                 Indexes of the chunks to verify.",
   ];
   for ( _line of _text ) {
     _msg_info(
@@ -520,15 +435,11 @@ function
           _value;
       }
       if ( _index == 12 ) {
-        index_start =
+        chunks_files_paths_prefix =
           _value;
       }
-      if ( _index == 13 ) {
-        index_end =
-          _value;
-      }
-      if ( 13 < _index ) {
-	chunks_files_paths.push(
+      if ( 12 < _index ) {
+	chunks_indexes.push(
           _value);
       }
       if ( _value == "-h" ||
@@ -545,19 +456,18 @@ function
 }
 
 async function
-  _check_cmdline(
+  _verify_cmdline(
     _app_opts) {
   let
-    _chunk,
-    _chunks_checked;
-  _chunks_checked = 
-    await _check.apply(
+    _chunks_corrupted,
+    _index;
+  _chunks_corrupted = 
+    await _verify.apply(
       null,
       _app_opts);
-  for ( _chunk in _chunks_published ) {
+  for ( _index of _chunks_corrupted ) {
     _printf(
-      _chunks_checked[
-        _chunk].toString());
+      _index.toString());
   }
 }
 
@@ -576,18 +486,17 @@ if ( require.main == module ) {
     contract_compiler_output_path,
     publication_namespace,
     file_hash,
-    index_start,
-    index_end,
-    chunks_files_paths,
+    chunks_files_paths_prefix,
+    chunk_indexes,
   ];
-  _check.apply(
+  _verify.apply(
     null,
     app_opts);
 }
 
 module.exports = {
-  _chunk_check:
-    _chunk_check,
-  _check:
-    _check
+  _chunk_verify:
+    _chunk_verify,
+  _verify:
+    _verify
 };

@@ -931,6 +931,7 @@ _file_upload_bulk() {
     _ll_compiler_output="${10}" \
     _many_chunks \
     _sum \
+    _chunk_prefix \
     _msg=()
   _many_chunks="false"
   _msg=(
