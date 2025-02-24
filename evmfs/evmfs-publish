@@ -525,6 +525,72 @@ _verify_skip() {
   _verify_queue["${_index}"]="false"
 }
 
+_chunks_publish_bulk() {
+  local \
+    _tasks_parallel="${1}" \
+    _publish \
+    _publish_args=()
+  _publish="$( \
+    _get_lib)/evmfs/publish"
+  _publish_args+=(
+    "1" # retries_max
+    "${_wallet_seed}"
+    "${_api_key_path}"
+    "${_target_network}"
+    "${_fs_address}"
+    "${_fs_abi}"
+    "${_fs_bytecode}"
+    "${_fs_compiler_output}"
+    "${_namespace}"
+    "${_sum}"
+    "0"                         # indexes: to be tweaked
+    "$((${chunks_total} - 1))"  # for the cross-chain 
+    "${_publish_queue[@]}"
+  )
+  _node_run \
+    "${_publish}" \
+    "${_publish_args[@]}"
+}
+
+_chunks_lock_bulk() {
+  local \
+    _tasks_parallel="${1}" \
+    _lock \
+    _lock_args=()
+  _msg=(
+    "Locking file."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _lock="$( \
+    _get_lib)/evmfs/lock"
+  _publish_args+=(
+    "1" # retries_max
+    "${_wallet_seed}"
+    "${_api_key_path}"
+    "${_target_network}"
+    "${_fs_address}"
+    "${_fs_abi}"
+    "${_fs_bytecode}"
+    "${_fs_compiler_output}"
+    "${_namespace}"
+    "${_sum}"
+    "0"                         # indexes: to be tweaked
+    "$((${chunks_total} - 1))"  # for the cross-chain 
+    "${_publish_queue[@]}"
+  )
+  _node_run \
+    "${_lock}" \
+    "${_lock_args[@]}"
+  _msg=(
+    "all '${_chunks_total}' chunks"
+    "correctly locked."
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+
 _chunks_publish_new() {
   local \
     _tasks_parallel="${1}" \
@@ -913,10 +979,6 @@ _file_upload_standalone() {
     "${_msg[*]}"
 }
 
-_chunks_publish_bulk() {
-
-}
-
 _file_upload_bulk() {
   local \
     _target_network="${1}" \
@@ -934,6 +996,7 @@ _file_upload_bulk() {
     _chunk_prefix \
     _msg=()
   _many_chunks="false"
+  _contract_call_opts_setup
   _msg=(
     "Re-evaluating file hashsum."
   )
@@ -948,7 +1011,7 @@ _file_upload_bulk() {
   if [[ "${_lock_only}" == "n" ]]; then
     _chunks_publish_bulk \
       "${_tasks_parallel}"
-    _chunks_verify_bulk
+    # _chunks_verify_bulk
   fi
   _chunks_lock_bulk \
     "${_tasks_parallel}"
@@ -961,44 +1024,6 @@ _file_upload_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  #   _sum="${3}" \
-  #   _index="${4}" \
-  #   _chunk="${5}" \
-  #     "${_target_network}" \
-  #     "${_fs_address}" \
-  #     "${_namespace}" \
-  #     "${_target_file}" \
-  #     "${_fs_abi}" \
-  #     "${_fs_bytecode}" \
-  #     "${_fs_compiler_output}" \
-  #     "${_ll_abi}" \
-  #     "${_ll_bytecode}" \
-  #     "${_ll_compiler_output}" \
-
-  #   _publish \
-  #   _publish_args=()
-  # _publish="$( \
-  #   _get_lib)/evmfs/publish"
-  # _publish_args+=(
-    # wallet_seed_path,
-    # api_key_path,
-    # target_network,
-    # contract_address,
-    # contract_abi_path,
-    # contract_bytecode_path,
-    # publication_namespace,
-    # file_hash,
-    # file_chunks,
-    #
-    # "${_fs_address}"
-    # "${_namespace}"
-    # "${_sum}"
-    # "${_index}"
-    # "${_chunk}"
-  # )
-  # _node_run \
-  #   "${_publish}" \
-  #   "${_publish_args[@]}"
 }
 
 _evmfs_publish() {
@@ -1268,22 +1293,10 @@ _publishing_address_get() {
     _namespace \
     _file \
     _sum
-  _network="$( \
-    _get \
-      "target" \
-      "network")"
-  _fs_address="$( \
-    _get \
-      "fs" \
-      "address")"
-  _namespace="$( \
-    _get \
-      "wallet" \
-      "address")"
-  _file="$( \
-    _get \
-      "target" \
-      "file")"
+  _network="${target_nework}"
+  _fs_address="${fs_address}"
+  _namespace="${wallet_address}"
+  _file="${target_file}"
   _sum="$( \
     _file_hash \
       "${_file}")"
