@@ -22,24 +22,6 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-interface FileSystemInterface { 
-  function listed(
-    address _publisher)
-    external
-    view
-    returns(uint256);
-}
-
-interface UserRepositoryInterface { 
-  function revNo(
-    string memory _package,
-    address _publisher)
-    external
-    view
-    returns(uint256);
-}
-
-
 /**
  * @title Cross Chain File System
  * @dev Ethereum Virtual Machine File System
@@ -106,11 +88,13 @@ contract CrossChainFileSystem {
           _hash][
             _index][
               _currentChunk][
-                _chainId] = _fileSystem;
+                _chainId] =
+        _fileSystem;
       chunksNo[
         _namespace][
           _hash][
-            _index] = _currentChunk + 1;
+            _index] =
+        _currentChunk + 1;
     }
 
 }
