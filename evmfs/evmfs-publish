@@ -1088,7 +1088,7 @@ _evmfs_publish() {
       "${_ll_bytecode}" \
       "${_ll_compiler_output}" \
       "${_tasks_parallel}"
-  if [[ "${_upload_method}" == "bulk" ]]; then
+  elif [[ "${_upload_method}" == "bulk" ]]; then
     _file_upload_bulk \
       "${_target_network}" \
       "${_fs_address}" \
@@ -1293,7 +1293,7 @@ _publishing_address_get() {
     _namespace \
     _file \
     _sum
-  _network="${target_nework}"
+  _network="${target_network}"
   _fs_address="${fs_address}"
   _namespace="${wallet_address}"
   _file="${target_file}"
