@@ -82,7 +82,7 @@ contract CrossChainFileSystem {
         _chunksNo[
           _namespace][
             _hash][
-              _index] 
+              _index];
       chunks[
         _namespace][
           _hash][
