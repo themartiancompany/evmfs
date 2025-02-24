@@ -325,6 +325,29 @@ async function
     _cursor =
       _cursor + 1;
   }
+  _chunks_files_paths_prefix =
+    _ext_rm(
+      _chunks_unverified[
+        0][
+	  1]);
+  for ( _chunk of _chunks_unverified ) {
+    _indexes_unverified.push(
+      _chunk[
+        0]);
+  }
+  _verify(
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _publication_namespace,
+    _file_hash,
+    _chunks_files_paths_prefix,
+    _indexes_unverified
+  ) 
   return _chunks_unverified;
 }
 
