@@ -79,7 +79,7 @@ contract CrossChainFileSystem {
       checkOwner(
         _namespace);
       uint256 _currentChunk =
-        _chunksNo[
+        chunksNo[
           _namespace][
             _hash][
               _index];
