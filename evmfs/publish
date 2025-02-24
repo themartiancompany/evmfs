@@ -219,6 +219,7 @@ async function
     _chunk_check_args,
     _chunk_file_path,
     _chunk_publish_args,
+    _chunks_unverified,
     _index,
     _method_base_args,
     _progress,
@@ -311,12 +312,15 @@ async function
         _index,
         _progress,
         _chunks_total);
+      _chunks_unverified.push(
+        _index);
     }
     _progress =
       _progress + 1;
     _cursor =
       _cursor + 1;
   }
+  return _chunks_unverified;
 }
 
 function
