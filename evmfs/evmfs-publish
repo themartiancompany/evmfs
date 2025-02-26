@@ -590,7 +590,13 @@ _chunks_publish_bulk() {
     _tasks_parallel="${1}" \
     _publish \
     _publish_args=() \
-    _backend
+    _backend \
+    _msg=()
+  _msg=(
+    "Publishing file."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _node_network_setup \
     "${_target_network}"
   _publish="$( \
@@ -620,12 +626,15 @@ _chunks_lock_bulk() {
   local \
     _tasks_parallel="${1}" \
     _lock \
-    _lock_args=()
+    _lock_args=() \
+    _backend
   _msg=(
     "Locking file."
   )
   _msg_info \
     "${_msg[*]}"
+  _node_network_setup \
+    "${_target_network}"
   _lock="$( \
     _get_lib)/evmfs/lock"
   _lock_args+=(
@@ -633,7 +642,7 @@ _chunks_lock_bulk() {
     "1" # retries_max
     "${_wallet_seed}"
     "${_api_key_path}"
-    "${_target_network}"
+    "${_backend}"
     "${_fs_address}"
     "${_fs_abi}"
     "${_fs_bytecode}"
