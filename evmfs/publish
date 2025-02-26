@@ -223,7 +223,7 @@ async function
     _chunk_check_args,
     _chunk_file_path,
     _chunk_publish_args,
-    _chunks_unverified,
+    _chunks_unverified = [],
     _method_base_args,
     _progress,
     _publish_call_base_opts,
@@ -265,6 +265,10 @@ async function
   ];
   _total_chunks =
     _chunks_files_paths.length;
+  _input_data_check(
+    _chunks_files_paths,
+    _index_start,
+    _index_end);
   _progress =
     1;
   _cursor =

@@ -532,7 +532,7 @@ _chunks_publish_bulk() {
   _publish="$( \
     _get_lib)/evmfs/publish"
   _publish_args+=(
-    "1" # retries_max
+    "1"                          # retries_max
     "${_wallet_seed}"
     "${_api_key_path}"
     "${_target_network}"
@@ -542,7 +542,7 @@ _chunks_publish_bulk() {
     "${_fs_compiler_output}"
     "${_namespace}"
     "${_sum}"
-    "0"                         # indexes: to be tweaked
+    "0"                          # indexes: to be tweaked
     "$((${_chunks_total} - 1))"  # for the cross-chain 
     "${_publish_queue[@]}"
   )
