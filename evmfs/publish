@@ -119,6 +119,59 @@ function
 }
 
 function
+  _msg_info_chunk_unpublished(
+    _index,
+    _progress,
+    _total) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Chunk '{_index}' unpublished, publishing now ('{_progress}'of '{_total}').";
+  _msg =
+    _template.replaceAll(
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
+  _msg_info(
+    _msg);
+}
+
+function
+  _msg_info_chunk_published_already(
+    _index,
+    _progress,
+    _total) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Chunk '{_index}' published already ('{_progress}'of '{_total}').";
+  _msg =
+    _template.replaceAll(
+      "{_index}",
+      _index);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
+  _msg_info(
+    _msg);
+}
+
+
+function
   _msg_info_chunk_published(
     _index,
     _progress,
@@ -315,6 +368,10 @@ async function
         _chunks_total);
     }
     else if ( _published == false ) {
+      _msg_info_chunk_unpublished(
+        _index,
+        _progress,
+        _chunks_total);
       _chunk_publish_args =
         _method_base_args.concat(
           [_index.toString(),
