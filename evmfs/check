@@ -27,10 +27,8 @@ const
   _libcrash =
   require(
     '../libcrash-js/crash-js');
-_basename =
-  _libcrash._basename;
-_dirname =
-  _libcrash._dirname;
+_cmdline_check =
+  _libcrash._cmdline_check;
 _file_read =
   _libcrash._file_read;
 _path_join =
@@ -576,9 +574,8 @@ async function
 }
 
 
-if ( require.main === module &&
-     _basename(
-       process.argv[1]) == "check" ) {
+if ( _cmdline_check(
+       "check") ) {
   _global_variables();
   _msg_info(
     "Running check from command-line");

@@ -25,8 +25,8 @@ const
   _libcrash =
   require(
     '../libcrash-js/crash-js');
-_dirname =
-  _libcrash._dirname;
+_cmdline_check =
+  _libcrash._cmdline_check;
 _file_write =
   _libcrash._file_write;
 _path_join =
@@ -532,9 +532,10 @@ function
 }
 
 
-_global_variables();
 
-if ( require.main == module ) {
+if ( _cmdline_check(
+       "get") ) {
+  _global_variables();
   _cmdline_parse();
   _config_show();
   app_opts = [

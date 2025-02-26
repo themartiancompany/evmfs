@@ -25,12 +25,10 @@ _printf =
   process.stdout.write;
 const
   _libcrash =
-  require(
-    '../libcrash-js/crash-js');
-_basename =
-  _libcrash._basename;
-_dirname =
-  _libcrash._dirname;
+    require(
+      '../libcrash-js/crash-js');
+_cmdline_check =
+  _libcrash._cmdline_check;
 _file_read =
   _libcrash._file_read;
 _file_exists =
@@ -472,10 +470,8 @@ async function
   }
 }
 
-
-if ( require.main === module &&
-     _basename(
-       process.argv[1]) == "verify" ) {
+if ( _cmdline_check(
+       "verify") ) {
   _global_variables();
   _cmdline_parse();
   _config_show();
