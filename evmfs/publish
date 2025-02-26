@@ -677,16 +677,6 @@ async function
     await _publish.apply(
       null,
       _app_opts);
-  _verify(
-    _chunks_unverified);
-  // for ( _chunk in _chunks_unverified ) {
-  //   _index =
-  //     _chunks_unverified[
-  //       _chunk][
-  //         0].toString()
-  //   _printf(
-  //     _index);
-  // }
 }
 
 if ( _cmdline_check(
