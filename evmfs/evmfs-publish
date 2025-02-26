@@ -125,8 +125,7 @@ _node_run() {
   NODE_PATH="${_node_path}" \
   node \
     "${_cmd}" \
-      "${_args[@]}" || \
-    true
+      "${_args[@]}"
 }
 
 _file_size_check() {
@@ -564,7 +563,7 @@ _chunks_lock_bulk() {
     "${_msg[*]}"
   _lock="$( \
     _get_lib)/evmfs/lock"
-  _publish_args+=(
+  _lock_args+=(
     "1" # retries_max
     "${_wallet_seed}"
     "${_api_key_path}"
@@ -575,8 +574,8 @@ _chunks_lock_bulk() {
     "${_fs_compiler_output}"
     "${_namespace}"
     "${_sum}"
-    "0"                         # indexes: to be tweaked
-    "$((${chunks_total} - 1))"  # for the cross-chain 
+    "0"                          # indexes: to be tweaked
+    "$((${_chunks_total} - 1))"  # for the cross-chain 
     "${_publish_queue[@]}"
   )
   _node_run \
