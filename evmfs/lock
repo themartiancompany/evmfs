@@ -215,10 +215,16 @@ async function
     _passed,
     _retry,
     _value;
-  _value = await
-    _contract_call_static.apply(
-      null,
-      _locked_call_opts);
+  try {
+    _value = await
+      _contract_call_static.apply(
+        null,
+        _locked_call_opts);
+  } catch(e) {
+    _msg_error(
+      e,
+      1);
+  }
   return _value;
 }
 
