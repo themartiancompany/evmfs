@@ -60,6 +60,8 @@ _verify =
 
 function
   _global_variables() {
+  app_name =
+    "publish";
   retries_max =
     '';
   wallet_seed_path =
@@ -450,7 +452,8 @@ function
 }
 
 function
-  _usage() {
+  _usage(
+    _exit_code) {
   let
     _line,
     _text;
@@ -495,7 +498,8 @@ function
     _msg_info(
       _line);
   }
-  process.exit();
+  process.exit(
+    _exit_code);
 }
 
 function 
@@ -565,13 +569,19 @@ function
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
-        _usage();
+        quiet =
+          "n";
+        _usage(
+          0);
       }
   });
   if ( file_hash == "" ||
        publication_namespace  == "" ||
        chunks_files_paths == [] ) {
-    _usage();
+    quiet =
+      "n";
+    _usage(
+      1);
   }
 }
 

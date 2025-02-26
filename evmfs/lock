@@ -539,9 +539,10 @@ function
   }
 }
 
-_global_variables();
 
-if ( require.main == module ) {
+if ( _cmdline_check(
+       "lock") ) {
+  _global_variables();
   _cmdline_parse();
   _config_show();
   app_opts = [
