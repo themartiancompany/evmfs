@@ -268,7 +268,7 @@ async function
     _contract_bytecode_path,
     _contract_compiler_output_path,
     _contract_address,
-    "locked"
+    "lock"
   ];
   _method_base_args = [
     _publication_namespace,
