@@ -30,7 +30,7 @@ const
 _cmdline_check =
   _libcrash._cmdline_check;
 _ext_rm =
-  _libcrash._ext_rmin;
+  _libcrash._ext_rm;
 _file_read =
   _libcrash._file_read;
 _msg_info =
