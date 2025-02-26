@@ -48,6 +48,8 @@ function
     "lock";
   retries_max =
     "";
+  wallet_seed_path =
+    "";
   api_key_path =
     "";
   target_network =
@@ -338,6 +340,10 @@ function
       "{retries_max}",
       retries_max));
   _text.push(
+    "              Wallet seed: {wallet_seed_path}".replace(
+      "{wallet_seed_path}",
+      wallet_seed_path));
+  _text.push(
     "                  API Key: {api_key_path}".replace(
       "{api_key_path}",
       api_key_path));
@@ -455,6 +461,10 @@ function
           _value;
       }
       if ( _index == 4 ) {
+        wallet_seed_path =
+          _value;
+      }
+      if ( _index == 4 ) {
         api_key_path =
           _value;
       }
@@ -519,6 +529,7 @@ if ( _cmdline_check(
   _config_show();
   app_opts = [
     retries_max,
+    wallet_seed_path,
     api_key_path,
     target_network,
     contract_address,
