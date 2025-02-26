@@ -531,8 +531,6 @@ function
   }
 }
 
-
-
 if ( _cmdline_check(
        "get") ) {
   _global_variables();
