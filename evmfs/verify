@@ -40,7 +40,7 @@ _msg_info =
 _msg_error =
   _libcrash._msg_error;
 const
-  _get_module =
+  _check_module =
     require(
       "./check");
 _chunk_get =
