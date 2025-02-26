@@ -325,7 +325,7 @@ async function
          _chunk_file_path]);
     }
     else {
-      msg_error(
+      _msg_error(
         "Error checking chunk publication status",
 	1);
     }
@@ -335,10 +335,16 @@ async function
       _cursor + 1;
   }
   _chunks_files_paths_prefix =
+  if ( _chunks_unverified != [] ) {
     _ext_rm(
       _chunks_unverified[
         0][
-	  1]);
+          1]);
+  }
+  else if ( _chunks_unverified == [] ) {
+    _msg_info(
+      "File already published.");
+  }
   for ( _chunk of _chunks_unverified ) {
     _indexes_unverified.push(
       _chunk[
