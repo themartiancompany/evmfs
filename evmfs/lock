@@ -36,6 +36,12 @@ _msg_info =
 _msg_error =
   _libcrash._msg_error;
 const
+  _evm_contract_call_dynamic_module =
+    require(
+      '../evm-contracts-tools/evm-contract-call-dynamic');
+_contract_run =
+  _evm_contract_call_dynamic_module._contract_run;
+const
   _evm_contract_call_module =
     require(
       "../evm-contracts-tools/evm-contract-call-static");

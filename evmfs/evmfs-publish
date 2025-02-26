@@ -104,30 +104,44 @@ _cache_dir_auto_detect() {
 
 _node_run() {
   local \
-    _cmd="${1}" \
+    _retries_max="${1}" \
+    _cmd="${2}" \
     _args=() \
-    _node_args=() \
     _node_path \
-    _lib
+    _lib \
+    _retry \
+    _msg=()
   shift \
-    1
+    2
   _args=(
     "$@"
   )
+  _retry=1
   _lib="$( \
     _get_lib)"
   _node_path="${_lib}/node_modules" 
   export \
     NODE_PATH="${_node_path}"
-  if [[ "${quiet}" != "y" ]]; then
-    # NODE_DEBUG=cluster,net,http,fs,tls,module,timers
-    true
-  fi
-  NODE_PATH="${_node_path}" \
-  node \
-    "${_node_args[@]}" \
-    "${_cmd}" \
-      "${_args[@]}"
+  for _retry \
+    in $(seq "${_retries_max}"); do
+    if NODE_PATH="${_node_path}" \
+       node \
+         "${_cmd}" \
+         "${_args[@]}"; then
+      return
+    else
+      _msg=(
+        "contract calling error,"
+        "retry '${_retry}' out of"
+        "'${_retries_max}'"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        "0"
+    fi
+  done
+  return \
+    1
 }
 
 _file_size_check() {
@@ -619,6 +633,7 @@ _chunks_publish_bulk() {
     "${_publish_queue[@]}"
   )
   _node_run \
+    "${retries_max}" \
     "${_publish}" \
     "${_publish_args[@]}"
 }
@@ -655,6 +670,7 @@ _chunks_lock_bulk() {
     "${_publish_queue[@]}"
   )
   _node_run \
+    "${_retries_max}" \
     "${_lock}" \
     "${_lock_args[@]}"
   _msg=(
