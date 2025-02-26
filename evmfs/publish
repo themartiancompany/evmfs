@@ -331,6 +331,7 @@ async function
     "chunks",
   ];
   _publish_call_base_opts = [
+    _retries_max,
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
