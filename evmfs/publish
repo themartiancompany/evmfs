@@ -334,12 +334,12 @@ async function
     _cursor =
       _cursor + 1;
   }
-  _chunks_files_paths_prefix =
   if ( _chunks_unverified != [] ) {
-    _ext_rm(
-      _chunks_unverified[
-        0][
-          1]);
+    _chunks_files_paths_prefix =
+      _ext_rm(
+        _chunks_unverified[
+          0][
+            1]);
   }
   else if ( _chunks_unverified == [] ) {
     _msg_info(
