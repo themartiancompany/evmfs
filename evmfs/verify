@@ -216,13 +216,12 @@ async function
     _chunks_indexes
   ) {
   let
+    _chunk,
     _chunk_file_path,
     _chunks_corrupted,
     _chunks_total,
     _correct,
     _cursor,
-    _chunk,
-    _chunk_file_path,
     _progress;
   _chunks_total =
     _chunks_indexes.length;
