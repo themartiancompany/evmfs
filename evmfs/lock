@@ -204,7 +204,7 @@ async function
 
 async function
   _chunk_locked(
-    _locked_call_static_opts) {
+    _locked_call_opts) {
   let
     _passed,
     _retry,
@@ -212,7 +212,7 @@ async function
   _value = await
     _contract_call_static.apply(
       null,
-      _locked_call_static_opts);
+      _locked_call_opts);
   return _value;
 }
 
@@ -296,11 +296,10 @@ async function
       _lock_call_base_opts.concat(
         [_method_args]);
     _locked_call_opts =
-      _lock_call_base_opts.concat(
+      _locked_call_base_opts.concat(
         [_method_args]);
     _locked = await
       _chunk_locked(
-        _index,
         _locked_call_opts);
     if ( _locked == true ) {
       _msg_info_chunk_locked_already(
@@ -311,7 +310,6 @@ async function
     else if ( _locked == false ) {
       _tx = await
         _chunk_lock(
-          _index,
           _lock_call_opts);
       _msg_info_chunk_locked(
         _index,
@@ -323,6 +321,8 @@ async function
     _cursor =
       _cursor + 1;
   }
+  _msg_info(
+    "All chunks correcly locked.");
 }
 
 function
