@@ -270,7 +270,7 @@ async function
     1;
   _cursor =
     0;
-  for ( var _index = _index_start;
+  for ( _index = _index_start;
         _index <= _index_end;
         _index++ ) {
     _msg_info_chunk_publish(
@@ -301,6 +301,7 @@ async function
         _index,
         _progress,
         _chunks_total);
+    }
     else if ( _published == false ) {
       _chunk_publish_args =
         _method_base_args.concat(
