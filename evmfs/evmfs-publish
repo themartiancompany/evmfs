@@ -55,6 +55,7 @@ _global_variables() {
   target_network=""
   api_key=""
   upload_method=""
+  retries_max=""
   lock_only=""
   tasks_parallel=""
   cache_dir=""
@@ -603,7 +604,7 @@ _chunks_publish_bulk() {
     _get_lib)/evmfs/publish"
   _publish_args+=(
     "${quiet}"
-    "1"                          # retries_max
+    "${_retries_max}"
     "${_wallet_seed}"
     "${_api_key_path}"
     "${_backend}"
@@ -639,7 +640,7 @@ _chunks_lock_bulk() {
     _get_lib)/evmfs/lock"
   _lock_args+=(
     "${quiet}"
-    "1" # retries_max
+    "${_retries_max}"
     "${_wallet_seed}"
     "${_api_key_path}"
     "${_backend}"
@@ -1113,10 +1114,11 @@ _evmfs_publish() {
     _target_network="${9}" \
     _api_key_path="${10}" \
     _upload_method="${11}" \
-    _lock_only="${12}" \
-    _tasks_parallel="${13}" \
-    _cache_dir="${14}" \
-    _target_file="${15}" \
+    _retries_max="${12}" \
+    _lock_only="${13}" \
+    _tasks_parallel="${14}" \
+    _cache_dir="${15}" \
+    _target_file="${16}" \
     _command_args=() \
     _cmd \
     _args=() \
@@ -1128,7 +1130,7 @@ _evmfs_publish() {
     _ll_bytecode \
     _ll_compiler_output
   shift \
-    15
+    16
   _command_args+=(
     "$@"
   )
@@ -1254,6 +1256,10 @@ _set_overrides() {
     "tasks" \
     "parallel" \
     "2"
+  _set_override \
+    "retries" \
+    "max" \
+    "300"
   _contract_version_auto_detect \
     "${deployments_dir}" \
     "FileSystem" \
@@ -1341,6 +1347,9 @@ $(_display_networks \
                             Default: ${api_key}
      -m <upload_method>     It can be 'standalone' or 'simulate'.
                             Default: ${upload_method}
+     -r <retries_max>       Maximum number of retries before
+                            failing.
+                            Default: ${retries_max}
      -L                     Skip check and publish and only lock
                             the file.
                             Default: ${lock_only}
@@ -1408,6 +1417,7 @@ _show_config() {
   _msg_info "           Target network:   ${target_network}"
   _msg_info "                  API key:   ${api_key}"
   _msg_info "            Upload method:   ${upload_method}"
+  _msg_info "          Maximum retries:   ${retries_max}"
   _msg_info "                Lock only:   ${lock_only}"
   _msg_info "           Tasks parallel:   ${tasks_parallel}"
   _msg_info "          Cache directory:   ${cache_dir}"
@@ -1421,7 +1431,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:V:ud:N:w:p:s:n:k:m:LP:C:cvh?' \
+    'A:B:V:ud:N:w:p:s:n:k:m:r:LP:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1437,6 +1447,7 @@ while \
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_upload_method="${OPTARG}" ;;
+    r) override_retries_max="${OPTARG}" ;;
     L) override_lock_only="y" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
@@ -1501,6 +1512,7 @@ app_opts=(
   "${target_network}"
   "${api_key}"
   "${upload_method}"
+  "${retries_max}"
   "${lock_only}"
   "${tasks_parallel}"
   "${cache_dir}"

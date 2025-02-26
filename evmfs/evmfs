@@ -52,6 +52,7 @@ _global_variables() {
   target_key=""
   target_value=""
   call_method=""
+  retries_max=""
   lock_only=""
   output_file=""
   tasks_parallel=""
@@ -85,10 +86,7 @@ _requirements() {
 _get_conf_dir_path() {
   local \
     _dir
-  _dir="${HOME}/.config/$( \
-    _get \
-      "app" \
-      "name")"
+  _dir="${HOME}/.config/${app_name}"
   echo \
     "${_dir}"
 }
@@ -114,19 +112,20 @@ _evmfs() {
     _network="${9}" \
     _api_key_path="${10}" \
     _call_method="${11}" \
-    _lock_only="${12}" \
-    _tasks_parallel="${13}" \
-    _cache_dir="${14}" \
-    _user_level="${15}" \
-    _output_file="${16}" \
-    _target_key="${17}" \
-    _target_value="${18}" \
+    _retries_max="${12}" \
+    _lock_only="${13}" \
+    _tasks_parallel="${14}" \
+    _cache_dir="${15}" \
+    _user_level="${16}" \
+    _output_file="${17}" \
+    _target_key="${18}" \
+    _target_value="${19}" \
     _target_uri \
     _target_file \
     _command_args=() \
     _args=()
   shift \
-    18
+    19
   _command_args+=(
     "$@"
   )
@@ -158,6 +157,10 @@ _evmfs() {
       "${_tasks_parallel}"
     -C
       "${_cache_dir}"
+    -m
+      "${_call_method}"
+    -r
+      "${_retries_max}"
   )
   if [[ "${_user_level}" == "y" ]]; then
     _args+=(
@@ -183,8 +186,6 @@ _evmfs() {
     fi
     _target_file="${_target_key}"
     _args+=(
-      -m
-        "${_call_method}"
       "${_target_file}"
     )
   else
@@ -236,19 +237,11 @@ _hash_get() {
 
 _output_file_auto_detect() {
   local \
-    _target_command \
     _output_file \
     _target_uri
-  _target_command="$( \
-    _get \
-      "target" \
-      "command")"
   _output_file=""
-  if [[ "${_target_command}" == "get" ]]; then
-    _target_uri="$( \
-      _get \
-        "target" \
-        "key")"
+  if [[ "${target_command}" == "get" ]]; then
+    _target_uri="${target_key}"
     _output_file="$( \
       pwd)/$( \
         _hash_get \
@@ -260,36 +253,10 @@ _output_file_auto_detect() {
     "${_output_file}"
 }
 
-_call_method_auto_detect() {
-  local \
-    _target_command \
-    _call_method
-  _target_command="$( \
-    _get \
-      "target" \
-      "command")"
-  if [[ "${_target_command}" == "get" ]]; then
-    _call_method="bulk"
-  elif [[ "${_target_command}" == "publish" ]]; then
-    _call_method="standalone"
-  else
-    _call_method="standalone"
-  fi
-  _set_override \
-    "call" \
-    "method" \
-    "${_call_method}"
-}
-
 _tasks_parallel_auto_detect() {
   local \
-    _call_method \
     _tasks_parallel
-  _call_method="$( \
-    _get \
-      "call" \
-      "method")"
-  if [[ "${_call_method}" == "standalone" ]]; then
+  if [[ "${call_method}" == "standalone" ]]; then
     _tasks_parallel=200
   elif [[ "${_call_method}" == "bulk" ]]; then
     _tasks_parallel=1
@@ -368,8 +335,15 @@ _set_overrides() {
     "cache" \
     "dir" \
     "$(_cache_dir_auto_detect)"
-  _call_method_auto_detect
+  _set_override \
+    "call" \
+    "method" \
+    "bulk"
   _tasks_parallel_auto_detect
+  _set_override \
+    "retries" \
+    "max" \
+    "300"
   _set_override \
     "lock" \
     "only" \
@@ -397,10 +371,7 @@ _usage() {
     _fs_deployment \
     _networks \
     _usage_text
-  _fs_deployment="$( \
-    _get \
-      "deployments" \
-      "dir")/FileSystem"
+  _fs_deployment="${deployments_dir}/FileSystem"
   _networks=( $( \
     evm-contract-deployment-networks \
       -A \
@@ -462,6 +433,9 @@ $(_display_networks \
      -m <call_method>       It can be 'standalone', 'bulk' or
                             'simulate'
                             Default: ${call_method}
+     -r <retries_max>       Maximum number of retries before
+                            failing.
+                            Default: ${retries_max}
      -L                     Skip check and publish and only lock
                             the file.
                             Default: ${lock_only}
@@ -512,6 +486,7 @@ _show_config() {
   _msg_info "                  API key:   ${api_key}"
   _msg_info "          Cache directory:   ${cache_dir}"
   _msg_info "              Call method:   ${call_method}"
+  _msg_info "          Maximum retries:   ${retries_max}"
   _msg_info "                Lock only:   ${lock_only}"
   _msg_info "           Parallel tasks:   ${tasks_parallel}"
   _msg_info "              Output file:   ${output_file}"
@@ -524,13 +499,11 @@ _globals
 _global_variables
 _requirements
 _config_user_init \
-  "$(_get \
-       "app" \
-       "name")"
+  "${app_name}"
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:o:ud:N:w:p:s:n:k:m:LP:C:cvh?' \
+    'A:V:o:ud:N:w:p:s:n:k:m:r:LP:C:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -546,6 +519,7 @@ while \
     n) override_target_network="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_call_method="${OPTARG}" ;;
+    r) override_retries_max="${OPTARG}" ;;
     L) override_lock_only="y" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
     C) override_cache_dir="${OPTARG}" ;;
@@ -608,11 +582,6 @@ command_args+=(
   "$@"
 )
 _set_overrides
-_config_user_init \
-  "$( \
-    _get \
-      "app" \
-      "name")"
 _show_config
 app_opts=(
   "${target_command}"
@@ -626,6 +595,7 @@ app_opts=(
   "${target_network}"
   "${api_key}"
   "${call_method}"
+  "${retries_max}"
   "${lock_only}"
   "${tasks_parallel}"
   "${cache_dir}"
