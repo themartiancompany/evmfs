@@ -574,7 +574,7 @@ async function
 }
 
 if ( _cmdline_check(
-       "check") ) {
+       "check") == true ) {
   _global_variables();
   _msg_info(
     "Running check from command-line");
@@ -601,7 +601,7 @@ if ( _cmdline_check(
 
 module.exports = {
   _chunk_check:
-    _chunk_check,
+    _chunk_check
   _check:
     _check
 };

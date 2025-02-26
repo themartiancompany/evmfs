@@ -43,8 +43,8 @@ const
   _check_module =
     require(
       "./check");
-_chunk_get =
-  _check_module._check;
+_chunk_check =
+  _check_module._chunk_check;
 _chunk_file_path_check =
   _file_exists;
 

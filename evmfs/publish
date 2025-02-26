@@ -289,7 +289,8 @@ async function
       _progress,
       _chunks_total);
     _chunk_file_path =
-      _chunks_files_paths[_cursor];
+      _chunks_files_paths[
+        _cursor];
     _chunk_file_path_check(
       _chunk_file_path,
       _index,
@@ -609,7 +610,7 @@ async function
 }
 
 if ( _cmdline_check(
-       "publish") ) {
+       "publish") == true ) {
   _global_variables();
   _cmdline_parse();
   _config_show();
