@@ -246,7 +246,7 @@ async function
     _contract_bytecode_path,
     _contract_compiler_output_path,
     _contract_address,
-    "chunk",
+    "chunks",
   ];
   _publish_call_base_opts = [
     _wallet_seed_path,

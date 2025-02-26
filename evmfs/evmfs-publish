@@ -525,11 +525,74 @@ _verify_skip() {
   _verify_queue["${_index}"]="false"
 }
 
+_node_network_setup() {
+  local \
+    _chain="${1}" \
+    _chain_name \
+    _chain_id \
+    _rpc \
+    _msg=()
+  _msg=(
+    "looking for info on EVM blockchain"
+    "'${_chain}'"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _chain_id="$( \
+    evm-chains-info \
+      -o \
+        "id" \
+      "${_chain}")"
+  if [[ "${_chain_id}" != "" ]]; then
+    _chain_name="$( \
+      evm-chains-info \
+        -o \
+          "name" \
+        "${_chain}" 2>/dev/null || \
+        true)"
+    _msg=(
+      "Found blockchain '${_chain_name}'"
+      "with id '${_chain_id}'"
+      "Selecting RPC address with"
+      "criterion 'kirsh'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _rpc="$( \
+      evm-chains-info \
+        -o \
+          "rpc" \
+        -s \
+          "kirsh" \
+        "${_chain}")"
+  elif [[ "${_chain_id}" == "" ]]; then
+    _msg=(
+      "Found no known blockchain for input"
+      "'${_chain}', interpreting given input"
+      "as an rpc address for the selected"
+      "network."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _rpc="${_chain}"
+  fi
+  _msg=(
+    "Selected RPC address"
+    "'${_rpc}'"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _backend="${_rpc}"
+}
+
 _chunks_publish_bulk() {
   local \
     _tasks_parallel="${1}" \
     _publish \
-    _publish_args=()
+    _publish_args=() \
+    _backend
+  _node_network_setup \
+    "${_target_network}"
   _publish="$( \
     _get_lib)/evmfs/publish"
   _publish_args+=(
@@ -537,7 +600,7 @@ _chunks_publish_bulk() {
     "1"                          # retries_max
     "${_wallet_seed}"
     "${_api_key_path}"
-    "${_target_network}"
+    "${_backend}"
     "${_fs_address}"
     "${_fs_abi}"
     "${_fs_bytecode}"

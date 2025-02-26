@@ -293,7 +293,7 @@ async function
     _contract_bytecode_path,
     _contract_compiler_output_path,
     _contract_address,
-    "chunk",
+    "chunks",
   ];
   _method_base_args = [
     _publication_namespace,
@@ -601,7 +601,7 @@ if ( _cmdline_check(
 
 module.exports = {
   _chunk_check:
-    _chunk_check
+    _chunk_check,
   _check:
     _check
 };
