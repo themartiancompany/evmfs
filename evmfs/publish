@@ -27,8 +27,8 @@ const
   _libcrash =
   require(
     '../libcrash-js/crash-js');
-_dirname =
-  _libcrash._dirname;
+_cmdline_check =
+  _libcrash._cmdline_check;
 _ext_rm =
   _libcrash._ext_rmin;
 _file_read =
@@ -598,9 +598,10 @@ async function
   // }
 }
 
-_global_variables();
 
-if ( require.main == module ) {
+if ( _cmdline_check(
+       "publish") ) {
+  _global_variables();
   _cmdline_parse();
   _config_show();
   app_opts = [
