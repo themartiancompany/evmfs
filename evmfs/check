@@ -161,6 +161,7 @@ async function
       _get_call_opts);
   if ( _value == _chunk ) {
     return true;
+  }
   else if ( _value != _chunk ) {
     return false;
   }
