@@ -156,9 +156,15 @@ async function
     _passed,
     _retry,
     _value;
-  _value = await
-    _chunk_get(
-      _get_call_opts);
+  try {
+    _value = await
+      _chunk_get(
+        _get_call_opts);
+  } catch(e) {
+    _msg_error(
+      e,
+      1);
+  }
   if ( _value == undefined ) {
     _msg_error(
       "Error getting chunk from the network.",
