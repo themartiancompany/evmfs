@@ -1263,7 +1263,7 @@ _set_overrides() {
   _set_override \
     "upload" \
     "method" \
-    "standalone"
+    "bulk"
   _set_override \
     "lock" \
     "only" \
