@@ -273,6 +273,12 @@ async function
     1;
   _cursor =
     0;
+  console.log(
+    "index start",
+    _index_start);
+  console.log(
+    "index end",
+    _index_end);
   for ( var _index = _index_start;
         _index <= _index_end;
         _index++ ) {

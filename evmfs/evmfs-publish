@@ -532,6 +532,7 @@ _chunks_publish_bulk() {
   _publish="$( \
     _get_lib)/evmfs/publish"
   _publish_args+=(
+    "${quiet}"
     "1"                          # retries_max
     "${_wallet_seed}"
     "${_api_key_path}"
@@ -564,6 +565,7 @@ _chunks_lock_bulk() {
   _lock="$( \
     _get_lib)/evmfs/lock"
   _lock_args+=(
+    "${quiet}"
     "1" # retries_max
     "${_wallet_seed}"
     "${_api_key_path}"
