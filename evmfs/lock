@@ -464,43 +464,43 @@ function
         wallet_seed_path =
           _value;
       }
-      if ( _index == 4 ) {
+      if ( _index == 5 ) {
         api_key_path =
           _value;
       }
-      if ( _index == 5 ) {
+      if ( _index == 6 ) {
         target_network =
           _value;
       }
-      if ( _index == 6 ) {
+      if ( _index == 7 ) {
         contract_address =
           _value;
       }
-      if ( _index == 7 ) {
+      if ( _index == 8 ) {
         contract_abi_path =
           _value;
       }
-      if ( _index == 8 ) {
+      if ( _index == 9 ) {
         contract_bytecode_path =
           _value;
       }
-      if ( _index == 9 ) {
+      if ( _index == 10 ) {
         contract_compiler_output_path =
           _value;
       }
-      if ( _index == 10 ) {
+      if ( _index == 11 ) {
         publication_namespace =
           _value;
       }
-      if ( _index == 11 ) {
+      if ( _index == 12 ) {
         file_hash =
           _value;
       }
-      if ( _index == 12 ) {
+      if ( _index == 13 ) {
         index_start =
           _value;
       }
-      if ( _index == 13 ) {
+      if ( _index == 14 ) {
         index_end =
           _value;
       }
