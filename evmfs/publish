@@ -335,11 +335,18 @@ async function
       _cursor + 1;
   }
   if ( _chunks_unverified != [] ) {
-    _chunks_files_paths_prefix =
-      _ext_rm(
-        _chunks_unverified[
-          0][
-            1]);
+    if ( _chunks_unverified[0] == undefined ) {
+      _msg_error(
+        "Weird error.",
+        1);
+    }
+    else if ( _chunks_unverified[0] != [] ) {
+      _chunks_files_paths_prefix =
+        _ext_rm(
+          _chunks_unverified[
+            0][
+              1]);
+    }
   }
   else if ( _chunks_unverified == [] ) {
     _msg_info(
