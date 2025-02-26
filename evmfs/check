@@ -573,7 +573,6 @@ async function
   }
 }
 
-
 if ( _cmdline_check(
        "check") ) {
   _global_variables();
