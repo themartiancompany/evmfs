@@ -544,7 +544,7 @@ _chunks_publish_bulk() {
     "${_namespace}"
     "${_sum}"
     "0"                         # indexes: to be tweaked
-    "$((${chunks_total} - 1))"  # for the cross-chain 
+    "$((${_chunks_total} - 1))"  # for the cross-chain 
     "${_publish_queue[@]}"
   )
   _node_run \
@@ -984,7 +984,7 @@ _file_upload_bulk() {
     _target_network="${1}" \
     _fs_address="${2}" \
     _namespace="${3}" \
-    _target_file="${4}" \
+    _file="${4}" \
     _fs_abi="${5}" \
     _fs_bytecode="${6}" \
     _fs_compiler_output="${7}" \
