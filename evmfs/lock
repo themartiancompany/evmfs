@@ -267,6 +267,7 @@ async function
     _index_end
   ) {
   let
+    _chunks_total,
     _lock_call_base_opts,
     _lock_call_opts,
     _locked,
@@ -274,7 +275,6 @@ async function
     _locked_call_opts,
     _method_args,
     _progress,
-    _total_chunks,
     _tx,
     _wallet_password;
   _wallet_password =

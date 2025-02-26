@@ -223,13 +223,13 @@ async function
     _chunk_check_args,
     _chunk_file_path,
     _chunk_publish_args,
+    _chunks_total,
     _chunks_unverified = [],
     _method_base_args,
     _progress,
     _publish_call_base_opts,
     _publish_call_opts,
     _published,
-    _total_chunks,
     _tx,
     _value,
     _wallet_password;
@@ -263,7 +263,7 @@ async function
     _publication_namespace,
     _file_hash
   ];
-  _total_chunks =
+  _chunks_total =
     _chunks_files_paths.length;
   _input_data_check(
     _chunks_files_paths,
