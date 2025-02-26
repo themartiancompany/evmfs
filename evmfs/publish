@@ -592,7 +592,6 @@ if ( require.main == module ) {
     chunks_files_paths,
   ];
   _publish_cmdline.apply(
-    null,
     app_opts);
 }
 
