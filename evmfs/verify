@@ -494,8 +494,6 @@ if ( require.main == module ) {
 }
 
 module.exports = {
-  _chunk_verify:
-    _chunk_verify,
   _verify:
     _verify
 };
