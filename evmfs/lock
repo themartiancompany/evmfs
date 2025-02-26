@@ -9,8 +9,8 @@
 //    ----------------------------------------------------------------------
 //
 //    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
+//    it under the terms of the GNU Affero General Public License as published
+//    by the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
 //    This program is distributed in the hope that it will be useful,
@@ -23,31 +23,31 @@
 
 const
   _libcrash =
-  require(
-    '../libcrash-js/crash-js');
+    require(
+      "../libcrash-js/crash-js");
 _dirname =
   _libcrash._dirname;
 _file_write =
   _libcrash._file_write;
 _path_join =
   _libcrash._path_join;
-const
-  _evm_contract_call =
-  require(
-    '../evm-contracts-tools/evm-contract-call-static');
-_contract_call_static =
-  _evm_contract_call._contract_call_static
 _msg_info =
   _libcrash._msg_info;
 _msg_error =
   _libcrash._msg_error;
+const
+  _evm_contract_call_module =
+    require(
+      "../evm-contracts-tools/evm-contract-call-static");
+_contract_call_static =
+  _evm_contract_call_module._contract_call_static;
 
 function
   _global_variables() {
   app_name =
     "lock";
   retries_max =
-    '';
+    "";
   api_key_path =
     "";
   target_network =
@@ -155,15 +155,15 @@ function
     error) {
   let
     _message;
-  if ( 'error' in error && 
-       error['error'] != undefined &&
-       'message' in error['error'] ) {
+  if ( "error" in error &&
+       error["error"] != undefined &&
+       "message" in error["error"] ) {
     _message =
-      error['error']['message'];
+      error["error"]["message"];
   }
-  else if ( 'shortMessage' in error ) {
+  else if ( "shortMessage" in error ) {
     _message =
-      error['shortMessage'];
+      error["shortMessage"];
   }
   _msg_error(
     _message,
@@ -207,49 +207,12 @@ async function
     _passed,
     _retry,
     _value;
-  _value = 
-    await _contract_call_static.apply(
+  _value = await
+    _contract_call_static.apply(
       null,
       _locked_call_static_opts);
   return _value;
-  // _retry =
-  //   1;
-  // _passed = 
-  //   false;
-  // while ( _retry <= _retries &&
-  //         _passed == false ) {
-  //   try {
-  //     _value = 
-  //       await _contract_call_static.apply(
-  //         null,
-  //         _contract_call_static_opts);
-  //     _passed =
-  //       true;
-  //   } catch(e) {
-  //     _msg = "error while processing index {_index}".replaceAll(
-  //       '{_index}',
-  //       _index);
-  //     _msg_error(
-  //       _msg,
-  //       0);
-  //     _error_handle(
-  //       e);
-  //     _retry =
-  //       _retry + 1;
-  //     _msg_error(
-  //       "increasing retry",
-  //       0);
-  //   }
-  // }
-  // if ( _retry > _retries ) {
-  //   _msg_error(
-  //     "maximum number of retries reached",
-  //     1)
-  // }
-  // if ( _value == undefined ) {
-  //   _msg_error(
-  //     "static call error",
-  //     1
+}
 
 async function
   _lock(
@@ -268,6 +231,7 @@ async function
   ) {
   let
     _chunks_total,
+    _index,
     _lock_call_base_opts,
     _lock_call_opts,
     _locked,
@@ -290,7 +254,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
-    "lockChunk",
+    "lockChunk"
   ];
   _locked_call_base_opts = [
     _wallet_seed_path,
@@ -301,7 +265,7 @@ async function
     _contract_bytecode_path,
     _contract_compiler_output_path,
     _contract_address,
-    "locked",
+    "locked"
   ];
   _method_base_args = [
     _publication_namespace,
@@ -315,7 +279,7 @@ async function
     1;
   _cursor =
     0;
-  for ( var _index = _index_start;
+  for ( _index = _index_start;
         _index <= _index_end;
         _index++ ) {
     _msg_info_chunk_lock(
@@ -363,8 +327,11 @@ function
   let
     _line,
     _text;
-  _text = 
+  _text =
     [];
+  _text.push(
+    " Lock configuration:"
+  );
   _text.push(
     "          Maximum retries: {retries_max}".replace(
       "{retries_max}",
@@ -469,9 +436,9 @@ function
 }
 
 
-function 
+function
   _cmdline_parse() {
-  quiet = 
+  quiet =
     "y";
   process.argv.forEach(
     function (
@@ -528,12 +495,16 @@ function
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
+        quiet =
+          "n";
         _usage(
-	  0);
+          0);
       }
   });
   if ( file_hash == "" ||
        publication_namespace == "" ) {
+    quiet =
+      "n";
     _usage(
       1);
   }
@@ -541,7 +512,7 @@ function
 
 
 if ( _cmdline_check(
-       "lock") ) {
+       "lock") == true ) {
   _global_variables();
   _cmdline_parse();
   _config_show();
@@ -565,5 +536,5 @@ if ( _cmdline_check(
 
 module.exports = {
   _lock:
-    _lock
+    _lock,
 };
