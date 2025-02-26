@@ -430,9 +430,6 @@ async function
     _cursor =
       _cursor + 1;
   }
-  console.log(
-    "_chunks_unverified",
-    _chunks_unverified);
   _chunks_files_paths_prefix =
     _chunks_files_paths_prefix_get(
       _chunks_unverified);
@@ -673,10 +670,9 @@ async function
     _chunk,
     _chunks_unverified,
     _index;
-  _chunks_unverified = 
-    await _publish.apply(
-      null,
-      _app_opts);
+  await _publish.apply(
+    null,
+    _app_opts);
 }
 
 if ( _cmdline_check(

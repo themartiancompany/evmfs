@@ -223,7 +223,7 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
-    _contract_compiler_output,
+    _contract_compiler_output_path,
     _publication_namespace,
     _file_hash,
     _index_start,
