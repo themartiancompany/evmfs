@@ -224,7 +224,6 @@ async function
     _chunk_file_path,
     _chunk_publish_args,
     _chunks_unverified,
-    _index,
     _method_base_args,
     _progress,
     _publish_call_base_opts,
@@ -270,7 +269,7 @@ async function
     1;
   _cursor =
     0;
-  for ( _index = _index_start;
+  for ( var _index = _index_start;
         _index <= _index_end;
         _index++ ) {
     _msg_info_chunk_publish(
@@ -320,6 +319,11 @@ async function
       _chunks_unverified.push(
         [_index,
          _chunk_file_path]);
+    }
+    else {
+      msg_error(
+        "Error checking chunk publication status",
+	1);
     }
     _progress =
       _progress + 1;

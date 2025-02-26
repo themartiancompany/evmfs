@@ -159,6 +159,11 @@ async function
   _value = await
     _chunk_get(
       _get_call_opts);
+  if ( _value == undefined ) {
+    _msg_error(
+      "Error getting chunk from the network.",
+      1);
+  }
   if ( _value == _chunk ) {
     return true;
   }
