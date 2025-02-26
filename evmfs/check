@@ -304,8 +304,14 @@ async function
       "file chunks list empty",
       1);
   }
-  _chunks_total =
-    _chunks_files_paths.length;
+  if ( _chunks_files_paths != undefined ) {
+    _chunks_total =
+      _chunks_files_paths.length;
+  }
+  else if ( _chunks_files_paths == undefined ) {
+    _msg_error(
+      "No chunks files provided");
+  }
   _input_data_check(
     _chunks_files_paths,
     _index_start,
@@ -570,6 +576,8 @@ async function
 _global_variables();
 
 if ( require.main == module ) {
+  _msg_info(
+    "Running check from command-line");
   _cmdline_parse();
   _config_show();
   app_opts = [

@@ -105,6 +105,7 @@ _node_run() {
   local \
     _cmd="${1}" \
     _args=() \
+    _node_args=() \
     _node_path \
     _lib
   shift \
@@ -118,12 +119,12 @@ _node_run() {
   export \
     NODE_PATH="${_node_path}"
   if [[ "${quiet}" != "y" ]]; then
-    _args+=(
-      -v
-    )
+    # NODE_DEBUG=cluster,net,http,fs,tls,module,timers
+    true
   fi
   NODE_PATH="${_node_path}" \
   node \
+    "${_node_args[@]}" \
     "${_cmd}" \
       "${_args[@]}"
 }
