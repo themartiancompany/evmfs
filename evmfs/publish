@@ -207,7 +207,11 @@ async function
       _contract_run.apply(
         null,
         _contract_run_opts);
+    console.log(
+      _tx);
   } catch(e) {
+    console.error(
+      "publish._chunk_publish error");
     _msg_error(
       e,
       1);
