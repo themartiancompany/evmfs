@@ -124,16 +124,17 @@ _node_run() {
     NODE_PATH="${_node_path}"
   for _retry \
     in $(seq "${_retries_max}"); do
-    if NODE_PATH="${_node_path}" \
-       node \
-         "${_cmd}" \
-         "${_args[@]}"; then
-      return
+    node \
+      "${_cmd}" \
+      "${_args[@]}"
+    if [ $? -eq 0 ]; then
+      return \
+        0
     else
       _msg=(
-        "contract calling error,"
+        "Contract calling error,"
         "retry '${_retry}' out of"
-        "'${_retries_max}'"
+        "'${_retries_max}'."
       )
       _msg_error \
         "${_msg[*]}" \
