@@ -161,6 +161,8 @@ async function
       _chunk_get(
         _get_call_opts);
   } catch(e) {
+    console.error(
+      e);
     _msg_error(
       e,
       1);
