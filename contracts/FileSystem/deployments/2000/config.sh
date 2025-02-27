@@ -13,5 +13,5 @@ evm_version=(
   ["1.0"]="paris"
 )
 contract_address=(
-  ["1.0"]="0x60AAA471e3ee3E36931A82d0d53cCE120ed2de64"
+  ["1.0"]="0xDebB1F4A3dD682BD131ba90aA45aC4735FbaF9D0"
 )
