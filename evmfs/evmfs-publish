@@ -125,8 +125,10 @@ _node_run() {
   for _retry \
     in $(seq "${_retries_max}"); do
     node \
+      --trace \
       "${_cmd}" \
-      "${_args[@]}"
+      "${_args[@]}" > \
+      "$(pwd)/log.txt"
     if [ $? -eq 0 ]; then
       _msg_info \
         "Node exited gracefully."
