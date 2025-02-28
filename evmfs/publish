@@ -208,11 +208,13 @@ async function
     console.log(
       _tx);
   } catch(e) {
+    console.log(
+      e);
     console.error(
       "publish._chunk_publish error");
     _msg_error(
       e,
-      1);
+      0);
   }
   return _tx;
 }
@@ -395,7 +397,9 @@ async function
           _chunk,
           _check_call_opts);
     } catch (e) {
-      msg.error(
+      console.log(
+        e);
+      console.error(
         e);
     }
     if ( _published == true ) {
@@ -421,6 +425,8 @@ async function
           _chunk_publish(
             _publish_call_opts);
       } catch (e) {
+	console.log(
+	  e);
         console.error(
           e);
       }
