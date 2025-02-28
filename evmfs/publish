@@ -401,6 +401,7 @@ async function
         e);
       console.error(
         e);
+      throw e;
     }
     if ( _published == true ) {
       _msg_info_chunk_published_already(
@@ -429,6 +430,7 @@ async function
 	  e);
         console.error(
           e);
+	throw e;
       }
       _msg_info_chunk_published(
         _index,
