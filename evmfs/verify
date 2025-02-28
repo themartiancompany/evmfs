@@ -21,14 +21,14 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-_printf =
-  process.stdout.write;
 const
   _libcrash =
     require(
       '../libcrash-js/crash-js');
 _cmdline_check =
   _libcrash._cmdline_check;
+_echo =
+  _libcrash._echo;
 _file_read =
   _libcrash._file_read;
 _file_exists =
@@ -465,7 +465,7 @@ async function
       null,
       _app_opts);
   for ( _index of _chunks_corrupted ) {
-    _printf(
+    _echo(
       _index.toString());
   }
 }
