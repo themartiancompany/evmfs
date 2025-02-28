@@ -128,6 +128,8 @@ _node_run() {
       "${_cmd}" \
       "${_args[@]}"
     if [ $? -eq 0 ]; then
+      _msg_info \
+        "Node exited gracefully."
       return \
         0
     else

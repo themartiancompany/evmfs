@@ -416,9 +416,14 @@ async function
       _publish_call_opts =
         _publish_call_base_opts.concat(
           [_chunk_publish_args]);
-      _tx = await
-        _chunk_publish(
-          _publish_call_opts);
+      try {
+        _tx = await
+          _chunk_publish(
+            _publish_call_opts);
+      } catch (e) {
+        console.error(
+          e);
+      }
       _msg_info_chunk_published(
         _index,
         _progress,
