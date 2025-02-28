@@ -160,17 +160,13 @@ async function
     _value = await
       _chunk_get(
         _get_call_opts);
+    if ( _value == undefined ) {
+      throw "Got undefined value for the chunk.";
+    }
   } catch(e) {
     console.error(
-      e);
-    _msg_error(
-      e,
-      1);
-  }
-  if ( _value == undefined ) {
-    _msg_error(
-      "Error getting chunk from the network.",
-      1);
+      "Error getting chunk from the network.");
+    throw e;
   }
   if ( _value == _chunk ) {
     return true;
@@ -178,47 +174,6 @@ async function
   else if ( _value != _chunk ) {
     return false;
   }
-  // _retry =
-  //   1;
-  // _passed = 
-  //   false;
-  // while ( _retry <= _retries &&
-  //         _passed == false ) {
-  //   try {
-  //     _value = 
-  //       await _contract_call_static.apply(
-  //         null,
-  //         _get_call_opts);
-  //     _passed =
-  //       true;
-  //   } catch(e) {
-  //     _msg = "error while processing index {_index}".replaceAll(
-  //       '{_index}',
-  //       _index);
-  //     _msg_error(
-  //       _msg,
-  //       0);
-  //     _error_handle(
-  //       e);
-  //     _retry =
-  //       _retry + 1;
-  //     _msg_error(
-  //       "increasing retry",
-  //       0);
-  //   }
-  // }
-  // if ( _retry > _retries ) {
-  //   _msg_error(
-  //     "maximum number of retries reached",
-  //     1)
-  // }
-  // if ( _value == undefined ) {
-  //   _msg_error(
-  //     "static call error",
-  //     1
-  //   );
-  // }
-  // return _value.toString();
 }
 
 function
@@ -352,10 +307,16 @@ async function
     _check_call_opts =
       _check_call_base_opts.concat(
         [_method_args]);
-    _check = await
-      _chunk_check(
-        _chunk,
-        _check_call_opts);
+    try {
+      _check = await
+        _chunk_check(
+          _chunk,
+          _check_call_opts);
+    } catch (e) {
+      console.error(
+        e);
+      throw e;
+    }
     _msg_info_chunk_checked(
       _index,
       _progress,

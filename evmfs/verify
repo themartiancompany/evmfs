@@ -241,20 +241,26 @@ async function
         _index);
     _chunk_file_path_check(
       _chunk_file_path);
-    _correct = await
-      _check(
-        _retries_max,
-        _api_key_path,
-        _target_network,
-        _contract_address,
-        _contract_abi_path,
-        _contract_bytecode_path,
-        _contract_compiler_output_path,
-        _publication_namespace,
-        _file_hash,
-        _index,
-        _index,
-        [_chunk_file_path]); 
+    try {
+      _correct = await
+        _check(
+          _retries_max,
+          _api_key_path,
+          _target_network,
+          _contract_address,
+          _contract_abi_path,
+          _contract_bytecode_path,
+          _contract_compiler_output_path,
+          _publication_namespace,
+          _file_hash,
+          _index,
+          _index,
+          [_chunk_file_path]); 
+    } catch (e) {
+      console.error(
+        "Error running check routine.");
+      throw e;
+    }
     if ( _correct == false ) {
       // Temporary
       _msg_error_chunk_corrupted(

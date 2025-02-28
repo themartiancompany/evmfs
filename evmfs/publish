@@ -205,13 +205,9 @@ async function
       _contract_run.apply(
         null,
         _contract_run_opts);
-    console.log(
-      _tx);
   } catch(e) {
-    console.log(
-      e);
     console.error(
-      "publish._chunk_publish error");
+      "Error publishing the chunk.");
     _msg_error(
       e,
       0);
@@ -363,12 +359,6 @@ async function
     1;
   _cursor =
     0;
-  console.log(
-    "index start",
-    _index_start);
-  console.log(
-    "index end",
-    _index_end);
   for ( _index = _index_start;
         _index <= _index_end;
         _index++ ) {
@@ -398,12 +388,8 @@ async function
           _chunk,
           _check_call_opts);
     } catch (e) {
-      console.log(
-        "error checking publication status");
-      console.log(
-        e);
       console.error(
-        e);
+        "Error checking publication status.");
       throw e;
     }
     if ( _published == true ) {
@@ -429,12 +415,8 @@ async function
           _chunk_publish(
             _publish_call_opts);
       } catch (e) {
-	console.log(
-          "error publishing chunk");
-	console.log(
-	  e);
         console.error(
-          e);
+          "Error running publishing chunk function.");
 	throw e;
       }
       _msg_info_chunk_published(
@@ -448,9 +430,7 @@ async function
     else {
       console.error(
         _published);
-      _msg_error(
-        "Error checking chunk publication status",
-	1);
+      throw "Unexpected chunk publication status value.";
     }
     _progress =
       _progress + 1;
@@ -461,9 +441,6 @@ async function
     _chunks_files_paths_prefix =
       _chunks_files_paths_prefix_get(
         _chunks_unverified);
-    console.log(
-      "_chunks_files_paths_prefix",
-      _chunks_files_paths_prefix);
     for ( _chunk of _chunks_unverified ) {
       _indexes_unverified.push(
         _chunk[
@@ -702,18 +679,18 @@ async function
     _chunk,
     _chunks_unverified,
     _index;
-  await _publish.apply(
-    null,
-    _app_opts);
+  try {
+    await _publish.apply(
+      null,
+      _app_opts);
+  } catch (e) {
+    console.error(
+      e);
+    _msg_error(
+      "Publication error",
+      1);
+  }
 }
-
-process.on('uncaughtException', (err, origin) => {
-  fs.writeSync(
-    process.stderr.fd,
-    `Caught exception: ${err}\n` +
-    `Exception origin: ${origin}\n`,
-  );
-});
 
 if ( _cmdline_check(
        "publish") == true ) {
