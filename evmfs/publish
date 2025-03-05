@@ -31,6 +31,8 @@ _ext_rm =
   _libcrash._ext_rm;
 _file_read =
   _libcrash._file_read;
+_file_write =
+  _libcrash._file_read;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =
@@ -84,7 +86,7 @@ function
     "";
   index_end =
     "";
-  checkpoint_file =
+  checkpoint_file_path =
     "";
   chunks_files_paths =
     [];
@@ -298,7 +300,7 @@ async function
     _file_hash,
     _index_start,
     _index_end,
-    _checkpoint_file
+    _checkpoint_file_path
     _chunks_files_paths
   ) {
   let
@@ -438,6 +440,9 @@ async function
         _published);
       throw "Unexpected chunk publication status value.";
     }
+    _file_write(
+      _checkpoint_file_path,
+      _index);
     _progress =
       _progress + 1;
     _cursor =
@@ -532,9 +537,9 @@ function
       "{index_end}",
       index_end));
   _text.push(
-    "          Checkpoint file: {checkpoint_file}".replace(
-      "{checkpoint_file}",
-      checkpoint_file));
+    "          Checkpoint file: {checkpoint_file_path}".replace(
+      "{checkpoint_file_path}",
+      checkpoint_file_path));
   _chunks_files_paths =
     chunks_files_paths.join(
     " ");
@@ -570,7 +575,7 @@ function
     "    <file_hash>",
     "    <index_start>",
     "    <index_end>",
-    "    <checkpoint_file>",
+    "    <checkpoint_file_path>",
     "    [chunk_file_path]",
     "",
     "Args:",
@@ -594,7 +599,7 @@ function
     "  <file_hash>                      Hash of the file to publish.",
     "  <index_start>                    Chunk index from where to start.",
     "  <index_end>                      Final chunk index to download.",
-    "  <checkpoint_file>                Checkpoint file on which latest",
+    "  <checkpoint_file_path>           Checkpoint file on which latest",
     "                                   downloaded chunk index is saved",
     "                                   in case node was to crash.",
     "  [chunks_files_paths]             File chunks to publish.",
@@ -669,7 +674,7 @@ function
           _value;
       }
       if ( _index == 15 ) {
-        checkpoint_file =
+        checkpoint_file_path =
           _value;
       }
       if ( 15 < _index ) {
@@ -732,7 +737,7 @@ if ( _cmdline_check(
     file_hash,
     index_start,
     index_end,
-    checkpoint_file,
+    checkpoint_file_path,
     chunks_files_paths,
   ];
   _publish_cmdline(
