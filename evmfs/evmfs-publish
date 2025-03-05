@@ -125,10 +125,8 @@ _node_run() {
   for _retry \
     in $(seq "${_retries_max}"); do
     node \
-      --trace \
       "${_cmd}" \
-      "${_args[@]}" > \
-      "$(pwd)/log.txt"
+      "${_args[@]}"
     if [ $? -eq 0 ]; then
       _msg_info \
         "Node exited gracefully."
@@ -664,6 +662,8 @@ _chunks_publish_bulk() {
         "${_msg[*]}"
       break
     fi
+    _msg_info \
+      "Preparing arguments."
     _publish_args+=(
       "${quiet}"
       "${_retries_max}"
@@ -681,6 +681,8 @@ _chunks_publish_bulk() {
       "${_checkpoint_publish_file_path}"
       "${_publish_queue[@]:${_checkpoint}}"
     )
+    _msg_info \
+      "Running node."
     _node_run \
       "${retries_max}" \
       "${_publish}" \
