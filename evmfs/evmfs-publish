@@ -795,9 +795,9 @@ _chunks_lock_bulk() {
       "${_fs_compiler_output}"
       "${_namespace}"
       "${_sum}"
-      "${_index_end}"
       "${_checkpoint}"
-      # "${_publish_queue[@]}"
+      "${_index_end}"
+      "${_checkpoint_lock_file_path}"
     )
     _node_run \
       "${_retries_max}" \
@@ -1226,7 +1226,8 @@ _file_upload_bulk() {
   if [[ "${_lock_only}" == "n" ]]; then
     _chunks_publish_bulk \
       "${_tasks_parallel}"
-    # _chunks_verify_bulk
+    _chunks_verify_bulk \
+      "${_tasks_parallel}"
   fi
   _chunks_lock_bulk \
     "${_tasks_parallel}"
