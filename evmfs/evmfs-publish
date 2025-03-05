@@ -624,6 +624,8 @@ _checkpoint_get() {
     _msg_info \
       "${_msg[*]}"
     _checkpoint="${_index_start}"
+    touch \
+      "${_checkpoint_file_path}"
   fi
 }
 
