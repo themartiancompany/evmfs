@@ -84,6 +84,8 @@ function
     "";
   index_end =
     "";
+  checkpoint_file =
+    "";
   chunks_files_paths =
     [];
   quiet =
@@ -296,6 +298,7 @@ async function
     _file_hash,
     _index_start,
     _index_end,
+    _checkpoint_file
     _chunks_files_paths
   ) {
   let
@@ -366,6 +369,9 @@ async function
       _index,
       _progress,
       _chunks_total);
+    _chunk_file_path =
+      _chunks_files_paths[
+        _cursor];
     _chunk_file_path =
       _chunks_files_paths[
         _cursor];
@@ -525,6 +531,10 @@ function
     "                Index end: {index_end}".replace(
       "{index_end}",
       index_end));
+  _text.push(
+    "          Checkpoint file: {checkpoint_file}".replace(
+      "{checkpoint_file}",
+      checkpoint_file));
   _chunks_files_paths =
     chunks_files_paths.join(
     " ");
@@ -558,6 +568,9 @@ function
     "    <contract_compiler_output_path>",
     "    <publication_namespace>",
     "    <file_hash>",
+    "    <index_start>",
+    "    <index_end>",
+    "    <checkpoint_file>",
     "    [chunk_file_path]",
     "",
     "Args:",
@@ -579,6 +592,11 @@ function
     "  <publication_namespace>          Namespace in which the file will be",
     "                                   published.",
     "  <file_hash>                      Hash of the file to publish.",
+    "  <index_start>                    Chunk index from where to start.",
+    "  <index_end>                      Final chunk index to download.",
+    "  <checkpoint_file>                Checkpoint file on which latest",
+    "                                   downloaded chunk index is saved",
+    "                                   in case node was to crash.",
     "  [chunks_files_paths]             File chunks to publish.",
   ];
   for ( _line of _text ) {
@@ -650,7 +668,11 @@ function
         index_end =
           _value;
       }
-      if ( 14 < _index ) {
+      if ( _index == 15 ) {
+        checkpoint_file =
+          _value;
+      }
+      if ( 15 < _index ) {
 	chunks_files_paths.push(
           _value);
       }
@@ -710,6 +732,7 @@ if ( _cmdline_check(
     file_hash,
     index_start,
     index_end,
+    checkpoint_file,
     chunks_files_paths,
   ];
   _publish_cmdline(

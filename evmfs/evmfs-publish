@@ -605,13 +605,45 @@ _node_network_setup() {
   _backend="${_rpc}"
 }
 
+_checkpoint_get() {
+  local \
+    _checkpoint_file_path="${1}" \
+    _msg=()
+  if [[ -e "${_checkpoint_file_path}" ]]; then
+    _checkpoint="$( \
+      cat \
+        "${_checkpoint_file_path}")"
+    _msg=(
+      "Checkpoint is '${_checkpoint}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  else
+    _msg=(
+      "Checkpoint file does not exist."
+      "Setting checkpoint to '${_index_start}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _checkpoint="${_index_start}"
+  fi
+}
+
 _chunks_publish_bulk() {
   local \
     _tasks_parallel="${1}" \
     _publish \
     _publish_args=() \
     _backend \
-    _msg=()
+    _msg=() \
+    _checkpoint_file_path \
+    _index_start \
+    _index_end \
+    _checkpoint
+  _checkpoint_file_path="${_tmp_dir}/checkpoint.publish"
+  _index_start="0"                       # indexes: to be tweaked
+  _index_end="$(( \                      # for the cross-chain 
+    _chunks_total - 1))"
   _msg=(
     "Publishing file."
   )
@@ -621,26 +653,39 @@ _chunks_publish_bulk() {
     "${_target_network}"
   _publish="$( \
     _get_lib)/evmfs/publish"
-  _publish_args+=(
-    "${quiet}"
-    "${_retries_max}"
-    "${_wallet_seed}"
-    "${_api_key_path}"
-    "${_backend}"
-    "${_fs_address}"
-    "${_fs_abi}"
-    "${_fs_bytecode}"
-    "${_fs_compiler_output}"
-    "${_namespace}"
-    "${_sum}"
-    "0"                          # indexes: to be tweaked
-    "$((${_chunks_total} - 1))"  # for the cross-chain 
-    "${_publish_queue[@]}"
-  )
-  _node_run \
-    "${retries_max}" \
-    "${_publish}" \
-    "${_publish_args[@]}"
+  while true; do
+    _checkpoint_get \
+      "${_checkpoint_file_path}"
+    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+      _msg=(
+        "All indexes published."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      break
+    fi
+    _publish_args+=(
+      "${quiet}"
+      "${_retries_max}"
+      "${_wallet_seed}"
+      "${_api_key_path}"
+      "${_backend}"
+      "${_fs_address}"
+      "${_fs_abi}"
+      "${_fs_bytecode}"
+      "${_fs_compiler_output}"
+      "${_namespace}"
+      "${_sum}"
+      "${_checkpoint}"
+      "${_index_end}"
+      "${_checkpoint_file_path}"
+      "${_publish_queue[@]}"
+    )
+    _node_run \
+      "${retries_max}" \
+      "${_publish}" \
+      "${_publish_args[@]}"
+  done
 }
 
 _chunks_lock_bulk() {

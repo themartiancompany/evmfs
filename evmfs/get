@@ -153,52 +153,18 @@ async function
     _passed,
     _retry,
     _value;
-  _value = 
-    await _contract_call_static.apply(
-      null,
-      _read_call_opts);
+  try {
+    _value = 
+      await _contract_call_static.apply(
+        null,
+        _read_call_opts);
+  } catch (e) {
+    _msg_error(
+      "Error retrieving chunk.",
+      0);
+    throw e;
+  }
   return _value.toString();
-  // _retry =
-  //   1;
-  // _passed = 
-  //   false;
-  // while ( _retry <= _retries &&
-  //         _passed == false ) {
-  //   try {
-  //     _value = 
-  //       await _contract_call_static.apply(
-  //         null,
-  //         _read_call_opts);
-  //     _passed =
-  //       true;
-  //   } catch(e) {
-  //     _msg = "error while processing index {_index}".replaceAll(
-  //       '{_index}',
-  //       _index);
-  //     _msg_error(
-  //       _msg,
-  //       0);
-  //     _error_handle(
-  //       e);
-  //     _retry =
-  //       _retry + 1;
-  //     _msg_error(
-  //       "increasing retry",
-  //       0);
-  //   }
-  // }
-  // if ( _retry > _retries ) {
-  //   _msg_error(
-  //     "maximum number of retries reached",
-  //     1)
-  // }
-  // if ( _value == undefined ) {
-  //   _msg_error(
-  //     "static call error",
-  //     1
-  //   );
-  // }
-  // return _value.toString();
 }
 
 function
@@ -319,9 +285,15 @@ async function
     _read_call_opts =
       _read_call_base_opts.concat(
         [_method_args]);
-    _value = await
-      _chunk_get(
-        _read_call_opts);
+    try {
+      _value = await
+        _chunk_get(
+          _read_call_opts);
+    } catch (e) {
+      console.error(
+        "Error retrieving chunk.");
+      throw e;
+    }
     _msg_info_chunk_got(
       _index,
       _progress,
