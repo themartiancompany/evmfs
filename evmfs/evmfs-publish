@@ -636,16 +636,17 @@ _chunks_publish_bulk() {
     _publish_args=() \
     _backend \
     _msg=() \
-    _checkpoint_file_path \
+    _checkpoint_publish_file_path \
     _index_start \
     _index_end \
     _checkpoint
-  _checkpoint_file_path="${_tmp_dir}/checkpoint.publish"
+  _checkpoint_publish_file_path="${_tmp_dir}/checkpoint.publish"
   _index_start="0"                       # indexes: to be tweaked
   _index_end="$(( \                      # for the cross-chain 
     _chunks_total - 1))"
   _msg=(
-    "Publishing file."
+    "Publishing '${_chunks_total}'"
+    "chunks."
   )
   _msg_info \
     "${_msg[*]}"
@@ -655,10 +656,10 @@ _chunks_publish_bulk() {
     _get_lib)/evmfs/publish"
   while true; do
     _checkpoint_get \
-      "${_checkpoint_file_path}"
+      "${_checkpoint_publish_file_path}"
     if [[ "${_checkpoint}" == "${_index_end}" ]]; then
       _msg=(
-        "All indexes published."
+        "All '${_chunks_total}' indexes published."
       )
       _msg_info \
         "${_msg[*]}"
@@ -678,8 +679,8 @@ _chunks_publish_bulk() {
       "${_sum}"
       "${_checkpoint}"
       "${_index_end}"
-      "${_checkpoint_file_path}"
-      "${_publish_queue[@]}"
+      "${_checkpoint_publish_file_path}"
+      "${_publish_queue[@]:${_checkpoint}}"
     )
     _node_run \
       "${retries_max}" \
@@ -688,12 +689,79 @@ _chunks_publish_bulk() {
   done
 }
 
+_chunks_verify_bulk() {
+  local \
+    _tasks_parallel="${1}" \
+    _verify \
+    _verify_args=() \
+    _backend \
+    _msg=() \
+    _checkpoint_verify_file_path \
+    _index_start \
+    _index_end \
+    _checkpoint
+  _checkpoint_verify_file_path="${_tmp_dir}/checkpoint.verify"
+  _index_start="0"                       # indexes: to be tweaked
+  _index_end="$(( \                      # for the cross-chain 
+    _chunks_total - 1))"
+  _msg=(
+    "Verifying '${_chunks_total}' published chunks."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _node_network_setup \
+    "${_target_network}"
+  _verify="$( \
+    _get_lib)/evmfs/verify"
+  while true; do
+    _checkpoint_get \
+      "${_checkpoint_verify_file_path}"
+    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+      _msg=(
+        "All indexes verified."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      break
+    fi
+    _verify_args+=(
+      "${quiet}"
+      "${_retries_max}"
+      "${_wallet_seed}"
+      "${_api_key_path}"
+      "${_backend}"
+      "${_fs_address}"
+      "${_fs_abi}"
+      "${_fs_bytecode}"
+      "${_fs_compiler_output}"
+      "${_namespace}"
+      "${_sum}"
+      "${_checkpoint_verify_file_path}"
+      "${_chunk_prefix}"
+      "${_publish_queue[@]:${_checkpoint}}"
+    )
+    _node_run \
+      "${retries_max}" \
+      "${_verify}" \
+      "${_verify_args[@]}"
+  done
+}
+
 _chunks_lock_bulk() {
   local \
     _tasks_parallel="${1}" \
     _lock \
     _lock_args=() \
-    _backend
+    _backend \
+    _msg=() \
+    _checkpoint_lock_file_path \
+    _index_start \
+    _index_end \
+    _checkpoint
+  _checkpoint_lock_file_path="${_tmp_dir}/checkpoint.lock"
+  _index_start="0"                       # indexes: to be tweaked
+  _index_end="$(( \                      # for the cross-chain 
+    _chunks_total - 1))"
   _msg=(
     "Locking file."
   )
@@ -703,34 +771,40 @@ _chunks_lock_bulk() {
     "${_target_network}"
   _lock="$( \
     _get_lib)/evmfs/lock"
-  _lock_args+=(
-    "${quiet}"
-    "${_retries_max}"
-    "${_wallet_seed}"
-    "${_api_key_path}"
-    "${_backend}"
-    "${_fs_address}"
-    "${_fs_abi}"
-    "${_fs_bytecode}"
-    "${_fs_compiler_output}"
-    "${_namespace}"
-    "${_sum}"
-    "0"                          # indexes: to be tweaked
-    "$((${_chunks_total} - 1))"  # for the cross-chain 
-    "${_publish_queue[@]}"
-  )
-  _node_run \
-    "${_retries_max}" \
-    "${_lock}" \
-    "${_lock_args[@]}"
-  _msg=(
-    "all '${_chunks_total}' chunks"
-    "correctly locked."
-  )
-  _msg_info \
-    "${_msg[*]}"
+  while true; do
+    _checkpoint_get \
+      "${_checkpoint_lock_file_path}"
+    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+      _msg=(
+        "All '${_chunks_total}' chunks"
+        "correctly locked."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      break
+    fi
+    _lock_args+=(
+      "${quiet}"
+      "${_retries_max}"
+      "${_wallet_seed}"
+      "${_api_key_path}"
+      "${_backend}"
+      "${_fs_address}"
+      "${_fs_abi}"
+      "${_fs_bytecode}"
+      "${_fs_compiler_output}"
+      "${_namespace}"
+      "${_sum}"
+      "${_index_end}"
+      "${_checkpoint}"
+      # "${_publish_queue[@]}"
+    )
+    _node_run \
+      "${_retries_max}" \
+      "${_lock}" \
+      "${_lock_args[@]}"
+  done
 }
-
 
 _chunks_publish_new() {
   local \

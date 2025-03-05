@@ -442,7 +442,7 @@ async function
     }
     _file_write(
       _checkpoint_file_path,
-      _index);
+      _index + 1);
     _progress =
       _progress + 1;
     _cursor =
@@ -459,18 +459,20 @@ async function
     }
   }
   if ( _indexes_unverified.length != 0 ) {
-    _verify(
-      _retries_max,
-      _api_key_path,
-      _target_network,
-      _contract_address,
-      _contract_abi_path,
-      _contract_bytecode_path,
-      _contract_compiler_output_path,
-      _publication_namespace,
-      _file_hash,
-      _chunks_files_paths_prefix,
-      _indexes_unverified); 
+    _msg_info(
+      "Some index are left to verify.");
+    // _verify(
+    //   _retries_max,
+    //   _api_key_path,
+    //   _target_network,
+    //   _contract_address,
+    //   _contract_abi_path,
+    //   _contract_bytecode_path,
+    //   _contract_compiler_output_path,
+    //   _publication_namespace,
+    //   _file_hash,
+    //   _chunks_files_paths_prefix,
+    //   _indexes_unverified); 
   }
   else if ( _indexes_unverified.length == 0 ) {
     _msg_info(
