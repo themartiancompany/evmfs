@@ -642,8 +642,7 @@ _chunks_publish_bulk() {
     _checkpoint
   _checkpoint_publish_file_path="${_tmp_dir}/checkpoint.publish"
   _index_start="0"                       # indexes: to be tweaked
-  _index_end="$(( \                      # for the cross-chain 
-    _chunks_total - 1))"
+  _index_end="$((_chunks_total - 1))"
   _msg=(
     "Publishing '${_chunks_total}'"
     "chunks."
@@ -702,8 +701,7 @@ _chunks_verify_bulk() {
     _checkpoint
   _checkpoint_verify_file_path="${_tmp_dir}/checkpoint.verify"
   _index_start="0"                       # indexes: to be tweaked
-  _index_end="$(( \                      # for the cross-chain 
-    _chunks_total - 1))"
+  _index_end="$((_chunks_total - 1))"
   _msg=(
     "Verifying '${_chunks_total}' published chunks."
   )
@@ -760,8 +758,7 @@ _chunks_lock_bulk() {
     _checkpoint
   _checkpoint_lock_file_path="${_tmp_dir}/checkpoint.lock"
   _index_start="0"                       # indexes: to be tweaked
-  _index_end="$(( \                      # for the cross-chain 
-    _chunks_total - 1))"
+  _index_end="$((_chunks_total - 1))"
   _msg=(
     "Locking file."
   )

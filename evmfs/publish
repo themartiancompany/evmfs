@@ -300,7 +300,7 @@ async function
     _file_hash,
     _index_start,
     _index_end,
-    _checkpoint_file_path
+    _checkpoint_file_path,
     _chunks_files_paths
   ) {
   let
