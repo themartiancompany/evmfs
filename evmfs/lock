@@ -42,11 +42,11 @@ const
 _contract_run =
   _evm_contract_call_dynamic_module._contract_run;
 const
-  _evm_contract_call_module =
+  _evm_contract_call_static_module =
     require(
       "../evm-contracts-tools/evm-contract-call-static");
 _contract_call_static =
-  _evm_contract_call_module._contract_call_static;
+  _evm_contract_call_static_module._contract_call_static;
 
 function
   _global_variables() {

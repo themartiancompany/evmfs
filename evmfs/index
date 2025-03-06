@@ -41,17 +41,11 @@ const
       '../evm-contracts-tools/evm-contract-call-dynamic');
 _contract_run =
   _evm_contract_call_dynamic_module._contract_run;
-const
-  _evm_contract_call_module =
-    require(
-      "../evm-contracts-tools/evm-contract-call-static");
-_contract_call_static =
-  _evm_contract_call_module._contract_call_static;
 
 function
   _global_variables() {
   app_name =
-    "lock";
+    "index";
   retries_max =
     "";
   wallet_seed_path =
@@ -87,7 +81,7 @@ function
 }
 
 function
-  _msg_info_chunk_lock(
+  _msg_info_chunk_index(
     _index,
     _progress,
     _total) {
@@ -95,7 +89,7 @@ function
     _msg,
     _template;
   _template =
-    "Locking chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Indexing chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -113,7 +107,7 @@ function
 }
 
 function
-  _msg_info_chunk_locked(
+  _msg_info_chunk_indexed(
     _index,
     _progress,
     _total) {
@@ -121,33 +115,7 @@ function
     _msg,
     _template;
   _template =
-    "Locked chunk '{_index}' ('{_progress}'of '{_total}').";
-  _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
-  _msg_info(
-    _msg);
-}
-
-function
-  _msg_info_chunk_locked_already(
-    _index,
-    _progress,
-    _total) {
-  let
-    _msg,
-    _template;
-  _template =
-    "Chunk '{_index}' already locked ('{_progress}'of '{_total}').";
+    "Indexed chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -189,7 +157,7 @@ function
     _chunks_total) {
   if ( _chunks_total < 1 ) {
     _msg_error(
-      "Upper chunk lower than lower chunk.",
+      "Upper chunk index lower than lower chunk index.",
       1);
   }
   _msg_info(
@@ -197,7 +165,7 @@ function
 }
 
 async function
-  _chunk_lock(
+  _chunk_index(
     _contract_run_opts) {
   let
     _tx;
@@ -208,7 +176,7 @@ async function
         _contract_run_opts);
   } catch(e) {
     _msg_error(
-      "Error locking chunk.",
+      "Error indexing chunk.",
       0);
     throw e;
   }
@@ -216,27 +184,7 @@ async function
 }
 
 async function
-  _chunk_locked(
-    _locked_call_opts) {
-  let
-    _passed,
-    _retry,
-    _value;
-  try {
-    _value = await
-      _contract_call_static.apply(
-        null,
-        _locked_call_opts);
-  } catch(e) {
-    _msg_error(
-      e,
-      1);
-  }
-  return _value;
-}
-
-async function
-  _lock(
+  _index(
     _retries_max,
     _wallet_seed_path,
     _api_key_path,
@@ -249,23 +197,23 @@ async function
     _file_hash,
     _index_start,
     _index_end,
+    _index_start,
+    _chunk_chain_id,
+    _chunk_fs_address,
     _checkpoint_file_path
   ) {
   let
     _chunks_total,
     _index,
-    _lock_call_base_opts,
-    _lock_call_opts,
-    _locked,
-    _locked_call_base_opts,
-    _locked_call_opts,
+    _index_call_base_opts,
+    _index_call_opts,
     _method_args,
     _progress,
     _tx,
     _wallet_password;
   _wallet_password =
     "";
-  _lock_call_base_opts = [
+  _index_call_base_opts = [
     _retries_max,
     _wallet_seed_path,
     _wallet_password,
@@ -277,18 +225,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
-    "lockChunk"
-  ];
-  _locked_call_base_opts = [
-    _wallet_seed_path,
-    _retries_max,
-    _api_key_path,
-    _target_network,
-    _contract_abi_path,
-    _contract_bytecode_path,
-    _contract_compiler_output_path,
-    _contract_address,
-    "lock"
+    "publishCrossChainChunk"
   ];
   _method_base_args = [
     _publication_namespace,
@@ -303,37 +240,25 @@ async function
   for ( _index = _index_start;
         _index <= _index_end;
         _index++ ) {
-    _msg_info_chunk_lock(
+    _msg_info_chunk_index(
       _index,
       _progress,
       _chunks_total);
     _method_args =
       _method_base_args.concat(
-        [_index.toString()]);
-    _lock_call_opts =
-      _lock_call_base_opts.concat(
+        [_index.toString(),
+	 _chunk_chain_id,
+	 _chunk_fs_address]);
+    _index_call_opts =
+      _index_call_base_opts.concat(
         [_method_args]);
-    _locked_call_opts =
-      _locked_call_base_opts.concat(
-        [_method_args]);
-    _locked = await
-      _chunk_locked(
-        _locked_call_opts);
-    if ( _locked == true ) {
-      _msg_info_chunk_locked_already(
-        _index,
-        _progress,
-        _chunks_total);
-    }
-    else if ( _locked == false ) {
-      _tx = await
-        _chunk_lock(
-          _lock_call_opts);
-      _msg_info_chunk_locked(
-        _index,
-        _progress,
-        _chunks_total);
-    }
+    _tx = await
+      _chunk_index(
+        _index_call_opts);
+    _msg_info_chunk_indexed(
+      _index,
+      _progress,
+      _chunks_total);
     _file_write(
       _checkpoint_file_path,
       _index + 1);
@@ -341,7 +266,7 @@ async function
       _progress + 1;
   }
   _msg_info(
-    "All chunks correcly locked.");
+    "All chunks correcly indexed.");
 }
 
 function
@@ -352,7 +277,7 @@ function
   _text =
     [];
   _text.push(
-    " Lock configuration:"
+    " Index configuration:"
   );
   _text.push(
     "          Maximum retries: {retries_max}".replace(
@@ -403,6 +328,14 @@ function
       "{index_end}",
       index_end));
   _text.push(
+    "           Chunk chain ID: {chunk_chain_id}".replace(
+      "{chunk_chain_id}",
+      chunk_chain_id));
+  _text.push(
+    "         Chunk FS address: {chunk_fs_address}".replace(
+      "{chunk_fs_address}",
+      chunk_fs_address));
+  _text.push(
     "     Checkpoint file path: {checkpoint_file_path}".replace(
       "{checkpoint_file_path}",
       checkpoint_file_path));
@@ -419,10 +352,10 @@ function
     _line,
     _text;
   _text = [
-    "Lock chunks of an EVMFS file.",
+    "Index cross-chain chunks of an EVMFS file.",
     "",
     "Usage:",
-    "  lock",
+    "  index",
     "    <quiet>",
     "    <retries_max>",
     "    <api_key_path>",
@@ -436,6 +369,8 @@ function
     "    <file_hash>",
     "    <index_start>",
     "    <index_end>",
+    "    <chunk_chain_id>",
+    "    <chunk_fs_address>",
     "    <checkpoint_file_path>",
     "",
     "Args:",
@@ -456,7 +391,11 @@ function
     "                                   published.",
     "  <file_hash>                      Hash of the file to publish.",
     "  <index_start>                    Chunk index from where to start.",
-    "  <index_end>                      Final chunk index to lock.",
+    "  <index_end>                      Final chunk index to index.",
+    "  <chunk_chain_id>                 Chain ID of the network on which",
+    "                                   the chunk has been published.",
+    "  <chunk_fs_address>               File system address on which",
+    "                                   the chunk has been published.",
     "  <checkpoint_file_path>           Checkpoint file on which latest",
     "                                   downloaded chunk index is saved",
     "                                   in case node was to crash.",
