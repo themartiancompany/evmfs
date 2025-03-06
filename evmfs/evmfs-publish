@@ -52,7 +52,8 @@ _global_variables() {
   wallet_password=""
   wallet_seed=""
   wallet_address=""
-  target_network=""
+  networks_amount=""
+  target_networks=()
   api_key=""
   upload_method=""
   retries_max=""
@@ -284,9 +285,9 @@ _chunk_publish() {
     _payload \
     _passed_flag
   _msg=(
-    "checking chunk '${_chunk}'"
+    "Checking chunk '${_chunk}'"
     "$(( "${_index}" + 1 ))"
-    "of ${_chunks_total}"
+    "of ${_chunks_total}."
   )
   _msg_info \
     "${_msg[*]}"
@@ -301,8 +302,8 @@ _chunk_publish() {
     "${_chunk_check_opts[@]}"
   if [[ "${_passed_flag}" == "true" ]]; then
     _msg=(
-      "chunk '${_chunk}' correctly published"
-      "already at index '${_index}'"
+      "Chunk '${_chunk}' correctly published"
+      "already at index '${_index}'."
     )
     _msg_info \
       "${_msg[*]}"
@@ -310,9 +311,9 @@ _chunk_publish() {
       "${_index}"
   elif [[ "${_passed_flag}" == "false" ]]; then
     _msg=(
-      "publishing chunk '${_chunk}'"
+      "Publishing chunk '${_chunk}'"
       "$(( "${_index}" + 1 ))"
-      "of ${_chunks_total}"
+      "of '${_chunks_total}'."
     )
     _msg_info \
       "${_msg[*]}"
@@ -333,9 +334,9 @@ _chunk_publish() {
       "${_index}" \
       "${_payload}"
     _msg=(
-      "published chunk"
+      "Published chunk"
       "$(( ${_index} + 1))"
-      "of ${_chunks_total}"
+      "of ${_chunks_total}."
     )
     _msg_info \
       "${_msg[*]}"
@@ -1353,10 +1354,13 @@ _set_overrides() {
   _deployments_dir_auto_detect \
     "evmfs" \
     "${user_level}"
-  _network_auto_detect \
-    "FileSystem" \
-    "${deployments_dir}" \
-    "${user_level}"
+  network_amounts="${#target_networks[@]}"
+  if (( "${networks_amount}" < 1 )); then
+    _network_auto_detect \
+      "FileSystem" \
+      "${deployments_dir}" \
+      "${user_level}"
+  fi
   _api_key_auto_detect \
     "${target_network}"
   _set_override \
@@ -1586,7 +1590,9 @@ while \
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
-    n) override_target_network="${OPTARG}" ;;
+    n) target_network+=(
+         "${OPTARG}"
+       ) ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_upload_method="${OPTARG}" ;;
     r) override_retries_max="${OPTARG}" ;;
@@ -1651,7 +1657,7 @@ app_opts=(
   "${wallet_path}"
   "${wallet_password}"
   "${wallet_seed}"
-  "${target_network}"
+  "${networks_amount}"
   "${api_key}"
   "${upload_method}"
   "${retries_max}"
@@ -1659,6 +1665,7 @@ app_opts=(
   "${tasks_parallel}"
   "${cache_dir}"
   "${target_file}"
+  "${target_networks[@]}"
 )
 _evmfs_publish \
   "${app_opts[@]}"
