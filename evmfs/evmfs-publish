@@ -1242,6 +1242,20 @@ _index_network_get() {
   fi
 }
 
+_fs_address_get() {
+  _fs_address=""
+  if (( 1 < "${_networks_amount}" )); then
+  fi
+  _contract_address_auto_detect \
+    "evmfs" \
+    "FileSystem" \
+    "_fs" \
+    "${_target_network}" \
+    "${_fs_version}" \
+    "${_user_level}" \
+    "${_deployments_dir}"
+}
+
 _file_upload_crosschain() {
   local \
     _ccfs_address="${1}" \
@@ -1311,8 +1325,8 @@ _file_upload_crosschain() {
       "_fs" \
       "${_target_network}" \
       "${_fs_version}" \
-      "${user_level}" \
-      "${deployments_dir}"
+      "${_user_level}" \
+      "${_deployments_dir}"
     _contract_call_opts_setup
     if (( ! "${_index_end}" < "${_index_start}" )); then
       if [[ "${_lock_only}" == "n" ]]; then
@@ -1359,18 +1373,19 @@ _evmfs_publish() {
     _ccfs_address="${3}" \
     _fs_version="${4}" \
     _deployments_dir="${5}" \
-    _wallet_name="${6}" \
-    _wallet_path="${7}" \
-    _wallet_password="${8}" \
-    _wallet_seed="${9}" \
-    _network_amount="${10}" \
-    _api_key_path="${11}" \
-    _upload_method="${12}" \
-    _retries_max="${13}" \
-    _lock_only="${14}" \
-    _tasks_parallel="${15}" \
-    _cache_dir="${16}" \
-    _target_file="${17}" \
+    _user_level="${6}" \
+    _wallet_name="${7}" \
+    _wallet_path="${8}" \
+    _wallet_password="${9}" \
+    _wallet_seed="${10}" \
+    _network_amount="${11}" \
+    _api_key_path="${12}" \
+    _upload_method="${13}" \
+    _retries_max="${14}" \
+    _lock_only="${15}" \
+    _tasks_parallel="${16}" \
+    _cache_dir="${17}" \
+    _target_file="${18}" \
     _target_networks=() \
     _command_args=() \
     _msg=() \
@@ -1387,7 +1402,7 @@ _evmfs_publish() {
     _ll_bytecode \
     _ll_compiler_output
   shift \
-    17
+    18
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1843,6 +1858,7 @@ app_opts=(
   "${ccfs_address}"
   "${fs_version}"
   "${deployments_dir}"
+  "${user_level}"
   "${wallet_name}"
   "${wallet_path}"
   "${wallet_password}"
