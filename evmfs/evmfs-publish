@@ -350,6 +350,12 @@ _contract_call_opts_setup() {
     _evm_contract_call_opts=() \
     _fs_call_opts=() \
     _msg=()
+  _check_call_opts=()
+  _publish_call_opts=()
+  _verify_call_opts=()
+  _lock_call_opts=()
+  _length_call_opts=()
+  _length_lock_call_opts=()
   if [[ "${quiet}" == "n" ]]; then
     _publish_call_opts+=(
       -v
@@ -635,6 +641,8 @@ _checkpoint_get() {
 _chunks_publish_bulk() {
   local \
     _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _publish \
     _publish_args=() \
     _backend \
@@ -644,7 +652,7 @@ _chunks_publish_bulk() {
     _index_end \
     _checkpoint
   _checkpoint_publish_file_path="${_tmp_dir}/checkpoint.publish"
-  _index_start="0"                       # indexes: to be tweaked
+  _index_start="0"
   _index_end="$((_chunks_total - 1))"
   _msg=(
     "Publishing '${_chunks_total}'"
@@ -1205,6 +1213,30 @@ _file_upload() {
     "${_msg[*]}"
 }
 
+_chunks_network_assignment() {
+  _chunks_total_network="$(( \
+    "${_chunks_total}" / \
+    "${_networks_amount}"))"
+  _chunks_remainder_network="$(( \
+    "${_chunks_total}" - \
+    ( "${_chunks_total_network}" * \
+      "${_networks_amount}" ) ))"
+}
+
+_index_network_get() {
+  _index_start="$(( \
+    ( "${_network}" - 1 ) * \
+    _chunks_total_network ))"
+  _index_end="$(( \
+    "${_network}" * \
+    "${_chunks_total_network}" - 1 ))"
+  if [[ "${_network}" == "${_networks_amount}" ]]; then
+    _index_end="$(( \
+      "${_index_end}" + \
+      "${_chunks_remainder_network}" ))"
+  fi
+}
+
 _file_upload_crosschain() {
   local \
     _ccfs_address="${1}" \
@@ -1214,7 +1246,20 @@ _file_upload_crosschain() {
     _ccfs_bytecode="${5}" \
     _ccfs_compiler_output="${6}" \
     _upload_method="${7}" \
+    _network \
     _target_networks=() \
+    _index_start \
+    _index_end \
+    _bin2txt_opts=() \
+    _check_call_opts=() \
+    _publish_call_opts=() \
+    _verify_call_opts=() \
+    _lock_call_opts=() \
+    _length_call_opts=() \
+    _length_lock_call_opts=() \
+    _chunk_publish_opts=()
+    _chunks_total_network \
+    _chunks_remainder_network \
     _fs_abi \
     _fs_bytecode \
     _fs_compiler_output \
@@ -1243,6 +1288,18 @@ _file_upload_crosschain() {
   _work_dir_setup
   _file_encode
   _queue_setup
+  _chunks_network_assignment 
+  # _index_start="0"
+  # _index_end="$((_chunks_total - 1))"
+  for _network \
+    in $(seq \
+           "${_networks_amount}"); do
+    _index_network_get
+  done
+  for _network in \
+    "${_target_networks[@]}"; do
+    _index_
+  done
   if [[ "${_lock_only}" == "n" ]]; then
     _chunks_publish_bulk \
       "${_tasks_parallel}"
