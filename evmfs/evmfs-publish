@@ -1224,16 +1224,21 @@ _chunks_network_assignment() {
 }
 
 _index_network_get() {
-  _index_start="$(( \
-    ( "${_network}" - 1 ) * \
-    _chunks_total_network ))"
-  _index_end="$(( \
-    "${_network}" * \
-    "${_chunks_total_network}" - 1 ))"
-  if [[ "${_network}" == "${_networks_amount}" ]]; then
+  if [[ "${_network}" == "1" ]]; then
+    _index_start=0
+  else
+    _index_start="$(( \
+      "${_index_end}" + 1))"
+  fi
+  if (( "${_network}" < \
+        "${_chunks_remainder_network}" )); then
     _index_end="$(( \
-      "${_index_end}" + \
-      "${_chunks_remainder_network}" ))"
+      "${_index_start}" + \
+      "${_chunks_total_network}"))"
+  else
+    _index_end="$(( \
+      "${_index_start}" + \
+      "${_chunks_total_network}" - 1))"
   fi
 }
 
@@ -1246,7 +1251,9 @@ _file_upload_crosschain() {
     _ccfs_bytecode="${5}" \
     _ccfs_compiler_output="${6}" \
     _upload_method="${7}" \
+    _cursor \
     _network \
+    _target_network \
     _target_networks=() \
     _index_start \
     _index_end \
@@ -1263,6 +1270,7 @@ _file_upload_crosschain() {
     _fs_abi \
     _fs_bytecode \
     _fs_compiler_output \
+    _target_ll_fs_address \
     _ll_abi \
     _ll_bytecode \
     _ll_compiler_output \
@@ -1276,7 +1284,6 @@ _file_upload_crosschain() {
     "$@"
   )
   _many_chunks="false"
-  _contract_call_opts_setup
   _msg=(
     "Re-evaluating file hashsum."
   )
@@ -1291,25 +1298,51 @@ _file_upload_crosschain() {
   _chunks_network_assignment 
   # _index_start="0"
   # _index_end="$((_chunks_total - 1))"
+  _cursor=0
   for _network \
     in $(seq \
            "${_networks_amount}"); do
     _index_network_get
+    _target_network="${_target_networks["${_cursor}"]}"
+    _fs_address=""
+    _contract_address_auto_detect \
+      "evmfs" \
+      "FileSystem" \
+      "_fs" \
+      "${_target_network}" \
+      "${_fs_version}" \
+      "${user_level}" \
+      "${deployments_dir}"
+    _contract_call_opts_setup
+    if (( ! "${_index_end}" < "${_index_start}" )); then
+      if [[ "${_lock_only}" == "n" ]]; then
+        "_chunks_publish_${_upload_method}" \
+          "${_tasks_parallel}"
+        "_chunks_verify_${_upload_method}" \
+          "${_tasks_parallel}"
+      fi
+      "_chunks_lock_${_upload_method}" \
+        "${_tasks_parallel}"
+    fi
+    _cursor="$(( \
+      "${_cursor}" + 1))"
   done
-  for _network in \
-    "${_target_networks[@]}"; do
-    _index_
-  done
-  if [[ "${_lock_only}" == "n" ]]; then
-    _chunks_publish_bulk \
-      "${_tasks_parallel}"
-    _chunks_verify_bulk \
-      "${_tasks_parallel}"
+  # We lock the length on kirsh network
+  _target_network="${_target_networks[0]}"
+  _target_ll_fs_address="${_fs_address}"
+  if (( 1 < "${_networks_amount}" )); then
+    _target_ll_fs_address="${_ccfs_address}"
   fi
-  _chunks_lock_bulk \
-    "${_tasks_parallel}"
+  _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_target_network}" \
+    "LengthLock" \
+    "_ll" \
+    "${_fs_version}"
+  _contract_call_opts_setup
   _chunks_length_lock \
-    "${_chunks_total}"
+    "${_chunks_total}" \
+    "${_target_ll_fs_address}"
   _msg=(
     "File '${_file}' uploaded and"
     "available at URI"
@@ -1318,8 +1351,6 @@ _file_upload_crosschain() {
   _msg_info \
     "${_msg[*]}"
 }
-
-
 
 _evmfs_publish() {
   local \
@@ -1541,13 +1572,13 @@ _set_overrides() {
     "${target_networks[0]}"
   if [[ "${networks_amount}" == 1 ]]; then
     _api_key_auto_detect \
-      "${target_networks[@]}"
+      "${target_networks[0]}"
     if [[ "${fs_version}" == "1.0" ]]; then
       _contract_address_auto_detect \
         "evmfs" \
         "LengthLock" \
         "ll" \
-        "${target_networks[@]}" \
+        "${target_networks[0]}" \
         "${fs_version}" \
         "${user_level}" \
         "${deployments_dir}"
@@ -1556,7 +1587,7 @@ _set_overrides() {
       "evmfs" \
       "FileSystem" \
       "fs" \
-      "${target_networks[@]}" \
+      "${target_networks[0]}" \
       "${fs_version}" \
       "${user_level}" \
       "${deployments_dir}"
