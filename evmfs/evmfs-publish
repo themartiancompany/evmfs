@@ -62,7 +62,7 @@ _global_variables() {
   lock_only=""
   tasks_parallel=""
   cache_dir=""
-  target_file=""
+  target_files=()
   command_args=()
   color=""
   quiet=""
@@ -155,6 +155,7 @@ _file_size_check() {
     _file="${1}" \
     _size \
     _msg=()
+  _chunks_many="false"
   _size="$( \
     du \
       -b \
@@ -168,7 +169,7 @@ _file_size_check() {
   if (( 22000 < "${_size}" )); then
     _msg_info \
       "writing over more than a single string!"
-    _many_chunks="true"
+    _chunks_many="true"
   fi
 }
 
@@ -350,17 +351,10 @@ _contract_call_opts_setup() {
     _evm_contract_call_opts=() \
     _fs_call_opts=() \
     _msg=()
-  _check_call_opts=()
-  _publish_call_opts=()
-  _verify_call_opts=()
-  _lock_call_opts=()
   _length_call_opts=()
   _length_lock_call_opts=()
   if [[ "${quiet}" == "n" ]]; then
-    _publish_call_opts+=(
-      -v
-    )
-    _lock_call_opts+=(
+    _length_lock_call_opts+=(
       -v
     )
   fi
@@ -372,35 +366,49 @@ _contract_call_opts_setup() {
     -k
       "${_api_key_path}"
   )
-  _fs_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
-    -A
-      "${_fs_abi}"
-    -B
-      "${_fs_bytecode}"
-    -C
-      "${_fs_compiler_output}"
-  )
-  _check_call_opts+=(
-    "${_fs_call_opts[@]}"
-    -t
-      "static"
-  )
-  _publish_call_opts+=(
-    "${_fs_call_opts[@]}"
-    -t
-      "dynamic"
-  )
-  _verify_call_opts+=(
-    "${_fs_call_opts[@]}"
-    -t
-      "static"
-  )
-  _lock_call_opts+=(
-    "${_fs_call_opts[@]}"
-    -t
-      "dynamic"
-  )
+  if [[ "${_upload_method}" == "standalone" ]]; then
+    _check_call_opts=()
+    _publish_call_opts=()
+    _verify_call_opts=()
+    _lock_call_opts=()
+    if [[ "${quiet}" == "n" ]]; then
+      _publish_call_opts+=(
+        -v
+      )
+      _lock_call_opts+=(
+        -v
+      )
+    fi
+    _fs_call_opts+=(
+      "${_evm_contract_call_opts[@]}"
+      -A
+        "${_fs_abi}"
+      -B
+        "${_fs_bytecode}"
+      -C
+        "${_fs_compiler_output}"
+    )
+    _check_call_opts+=(
+      "${_fs_call_opts[@]}"
+      -t
+        "static"
+    )
+    _publish_call_opts+=(
+      "${_fs_call_opts[@]}"
+      -t
+        "dynamic"
+    )
+    _verify_call_opts+=(
+      "${_fs_call_opts[@]}"
+      -t
+        "static"
+    )
+    _lock_call_opts+=(
+      "${_fs_call_opts[@]}"
+      -t
+        "dynamic"
+    )
+  fi
   _length_call_opts+=(
     "${_evm_contract_call_opts[@]}"
     -A
@@ -488,9 +496,9 @@ _queue_setup() {
     _chunk \
     _msg=() \
     _query
-  if [[ "${_many_chunks}" == "true" ]]; then
+  if [[ "${_chunks_many}" == "true" ]]; then
     _query="${_chunk_prefix}."
-  elif [[ "${_many_chunks}" == "false" ]]; then
+  elif [[ "${_chunks_many}" == "false" ]]; then
     _query="${_chunk_prefix}"
   fi
   if [[ "${_lock_only}" == "n" ]]; then
@@ -650,13 +658,15 @@ _chunks_publish_bulk() {
     _checkpoint_publish_file_path \
     _index_start \
     _index_end \
-    _checkpoint
+    _checkpoint \
+    _chunks_total_run
   _checkpoint_publish_file_path="${_tmp_dir}/checkpoint.publish"
-  _index_start="0"
-  _index_end="$((_chunks_total - 1))"
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" ))"
   _msg=(
-    "Publishing '${_chunks_total}'"
-    "chunks."
+    "Publishing '${_chunks_total_run}'"
+    "chunks from '${_index_start}'"
+    "to '${_index_end}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -669,14 +679,14 @@ _chunks_publish_bulk() {
       "${_checkpoint_publish_file_path}"
     if [[ "${_checkpoint}" == "${_index_end}" ]]; then
       _msg=(
-        "All '${_chunks_total}' indexes published."
+        "All '${_chunks_total_run}' indexes published."
       )
       _msg_info \
         "${_msg[*]}"
       break
     fi
     _msg_info \
-      "Preparing arguments."
+      "Preparing node arguments."
     _publish_args+=(
       "${quiet}"
       "${_retries_max}"
@@ -706,6 +716,8 @@ _chunks_publish_bulk() {
 _chunks_verify_bulk() {
   local \
     _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _verify \
     _verify_args=() \
     _backend \
@@ -715,10 +727,12 @@ _chunks_verify_bulk() {
     _index_end \
     _checkpoint
   _checkpoint_verify_file_path="${_tmp_dir}/checkpoint.verify"
-  _index_start="0"                       # indexes: to be tweaked
-  _index_end="$((_chunks_total - 1))"
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" ))"
   _msg=(
-    "Verifying '${_chunks_total}' published chunks."
+    "Verifying '${_chunks_total_run}' published"
+    "chunks going from index '${_index_start}'"
+    "to index '${_index_end}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -731,7 +745,7 @@ _chunks_verify_bulk() {
       "${_checkpoint_verify_file_path}"
     if [[ "${_checkpoint}" == "${_index_end}" ]]; then
       _msg=(
-        "All indexes verified."
+        "All '${_chunks_total_run}' indexes verified."
       )
       _msg_info \
         "${_msg[*]}"
@@ -763,6 +777,8 @@ _chunks_verify_bulk() {
 _chunks_lock_bulk() {
   local \
     _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _lock \
     _lock_args=() \
     _backend \
@@ -772,10 +788,12 @@ _chunks_lock_bulk() {
     _index_end \
     _checkpoint
   _checkpoint_lock_file_path="${_tmp_dir}/checkpoint.lock"
-  _index_start="0"                       # indexes: to be tweaked
-  _index_end="$((_chunks_total - 1))"
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" ))"
   _msg=(
-    "Locking file."
+    "Locking '${_chunks_total_run}' verified"
+    "chunks going from index '${_index_start}'"
+    "to index '${_index_end}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -788,7 +806,7 @@ _chunks_lock_bulk() {
       "${_checkpoint_lock_file_path}"
     if [[ "${_checkpoint}" == "${_index_end}" ]]; then
       _msg=(
-        "All '${_chunks_total}' chunks"
+        "All '${_chunks_total_run}' chunks"
         "correctly locked."
       )
       _msg_info \
@@ -823,6 +841,8 @@ _chunks_lock_bulk() {
 _chunks_publish_new() {
   local \
     _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _chunk \
     _index \
     _pending \
@@ -880,6 +900,8 @@ _chunks_publish_new() {
 _chunks_publish_standalone() {
   local \
     _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _chunk \
     _index \
     _msg=()
@@ -1148,7 +1170,7 @@ _chunk_check() {
   fi
 }
 
-_file_upload() {
+_file_upload_old() {
   local \
     _target_network="${1}" \
     _fs_address="${2}" \
@@ -1170,7 +1192,7 @@ _file_upload() {
     _chunk \
     _payload \
     _chunk_prefix \
-    _many_chunks \
+    _chunks_many \
     _tmp_dir \
     _bin2txt_opts=() \
     _check_call_opts=() \
@@ -1180,7 +1202,6 @@ _file_upload() {
     _length_call_opts=() \
     _length_lock_call_opts=() \
     _chunk_publish_opts=()
-  _many_chunks="false"
   _contract_call_opts_setup
   _msg=(
     "Re-evaluating file hashsum."
@@ -1193,14 +1214,23 @@ _file_upload() {
   _work_dir_setup
   _file_encode
   _queue_setup
+  _index_start=0
+  _index_end="$(( \
+    ${_chunks_total} - 1))"
   if [[ "${_lock_only}" == "n" ]]; then
     "_chunks_publish_${_upload_method}" \
-      "${_tasks_parallel}"
+      "${_tasks_parallel}" \
+      "${_index_start}" \
+      "${_index_end}"
     "_chunks_verify_${_upload_method}" \
-      "${_tasks_parallel}"
+      "${_tasks_parallel}" \
+      "${_index_start}" \
+      "${_index_end}"
   fi
   "_chunks_lock_${_upload_method}" \
-    "${_tasks_parallel}"
+    "${_tasks_parallel}" \
+    "${_index_start}" \
+    "${_index_end}"
   _chunks_length_lock \
     "${_fs_address}" \
     "${_chunks_total}"
@@ -1243,44 +1273,116 @@ _index_network_get() {
 }
 
 _fs_address_get() {
-  _fs_address=""
   if (( 1 < "${_networks_amount}" )); then
+    _fs_address=""
+    _contract_address_auto_detect \
+      "evmfs" \
+      "FileSystem" \
+      "_fs" \
+      "${_target_network}" \
+      "${_fs_version}" \
+      "${_user_level}" \
+      "${_deployments_dir}"
   fi
-  _contract_address_auto_detect \
-    "evmfs" \
-    "FileSystem" \
-    "_fs" \
-    "${_target_network}" \
-    "${_fs_version}" \
-    "${_user_level}" \
-    "${_deployments_dir}"
 }
 
-_file_upload_crosschain() {
+_index_publish_bulk() {
+  local \
+    _tasks_parallel="${1}" \
+    _target_network="${2}" \
+    _fs_address="${3}" \
+    _index_start="${4}" \
+    _index_end="${5}"
+    _index \
+    _index_args=() \
+    _backend \
+    _msg=() \
+    _checkpoint_index_file_path \
+    _index_start \
+    _index_end \
+    _checkpoint
+  _checkpoint_index_file_path="${_tmp_dir}/checkpoint.index"
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" ))"
+  _msg=(
+    "Indexing '${_chunks_total_run}' locked"
+    "chunks from index '${_index_start}'"
+    "to index '${_index_end}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _node_network_setup \
+    "${_target_networks[0]}"
+  _index="$( \
+    _get_lib)/evmfs/index"
+  while true; do
+    _checkpoint_get \
+      "${_checkpoint_index_file_path}"
+    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+      _msg=(
+        "All '${_chunks_total_run}' chunks'"
+        "locations published."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      break
+    fi
+    _msg_info \
+      "Preparing node arguments."
+    _index_args+=(
+      "${quiet}"
+      "${_retries_max}"
+      "${_wallet_seed}"
+      "${_api_key_path}"
+      "${_backend}"
+      "${_fs_address}"
+      "${_fs_abi}"
+      "${_fs_bytecode}"
+      "${_fs_compiler_output}"
+      "${_namespace}"
+      "${_sum}"
+      "${_checkpoint}"
+      "${_index_end}"
+      "${_target_network}"
+      "${_fs_address}"
+      "${_checkpoint_index_file_path}"
+    )
+    _msg_info \
+      "Running node."
+    _node_run \
+      "${retries_max}" \
+      "${_index}" \
+      "${_index_args[@]}"
+  done
+}
+
+_file_upload() {
   local \
     _ccfs_address="${1}" \
     _namespace="${2}" \
     _file="${3}" \
-    _ccfs_abi="${4}" \
-    _ccfs_bytecode="${5}" \
-    _ccfs_compiler_output="${6}" \
-    _upload_method="${7}" \
+    _upload_method="${4}" \
+    _chunks_many \
+    _sum \
+    _publish_queue=() \
+    _verify_queue=() \
+    _chunks_total \
+    _tmp_dir \
+    _chunk_prefix \
+    _bin2txt_opts=() \
+    _length_call_opts=() \
+    _length_lock_call_opts=() \
+    _ccfs_abi \
+    _ccfs_bytecode \
+    _ccfs_compiler_output \
     _cursor \
     _network \
     _target_network \
     _target_networks=() \
-    _index_start \
-    _index_end \
-    _bin2txt_opts=() \
-    _check_call_opts=() \
-    _publish_call_opts=() \
-    _verify_call_opts=() \
-    _lock_call_opts=() \
-    _length_call_opts=() \
-    _length_lock_call_opts=() \
-    _chunk_publish_opts=()
     _chunks_total_network \
     _chunks_remainder_network \
+    _index_start \
+    _index_end \
     _fs_abi \
     _fs_bytecode \
     _fs_compiler_output \
@@ -1288,16 +1390,19 @@ _file_upload_crosschain() {
     _ll_abi \
     _ll_bytecode \
     _ll_compiler_output \
-    _many_chunks \
-    _sum \
-    _chunk_prefix \
+    _chunk \
+    _payload \
+    _check_call_opts=() \
+    _publish_call_opts=() \
+    _verify_call_opts=() \
+    _lock_call_opts=() \
+    _chunk_publish_opts=() \
     _msg=()
   shift \
-    7
+    4
   _target_networks+=(
     "$@"
   )
-  _many_chunks="false"
   _msg=(
     "Re-evaluating file hashsum."
   )
@@ -1310,33 +1415,51 @@ _file_upload_crosschain() {
   _file_encode
   _queue_setup
   _chunks_network_assignment 
-  # _index_start="0"
-  # _index_end="$((_chunks_total - 1))"
+  if (( 1 < "${_network_amounts}" )); then
+    _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_target_networks[0]}" \
+    "CrossChainFileSystem" \
+    "_ccfs" \
+    "${_fs_version}"
+  fi
   _cursor=0
   for _network \
     in $(seq \
            "${_networks_amount}"); do
     _index_network_get
     _target_network="${_target_networks["${_cursor}"]}"
-    _fs_address=""
-    _contract_address_auto_detect \
-      "evmfs" \
+    _fs_address_get
+    _contract_artifacts_auto_detect \
+      "${_deployments_dir}" \
+      "${_target_network}" \
       "FileSystem" \
       "_fs" \
-      "${_target_network}" \
-      "${_fs_version}" \
-      "${_user_level}" \
-      "${_deployments_dir}"
+      "${_fs_version}"
     _contract_call_opts_setup
     if (( ! "${_index_end}" < "${_index_start}" )); then
       if [[ "${_lock_only}" == "n" ]]; then
         "_chunks_publish_${_upload_method}" \
-          "${_tasks_parallel}"
+          "${_tasks_parallel}" \
+          "${_index_start}" \
+          "${_index_end}"
         "_chunks_verify_${_upload_method}" \
-          "${_tasks_parallel}"
+          "${_tasks_parallel}" \
+          "${_index_start}" \
+          "${_index_end}"
       fi
       "_chunks_lock_${_upload_method}" \
-        "${_tasks_parallel}"
+        "${_tasks_parallel}" \
+        "${_index_start}" \
+        "${_index_end}"
+      if (( 1 < "${_networks_amount}" )); then
+        "_index_publish_${_upload_method}" \
+          "${_tasks_parallel}" \
+          "${_target_network}" \
+          "${_fs_address}" \
+          "${_index_start}" \
+          "${_index_end}"
+      fi
     fi
     _cursor="$(( \
       "${_cursor}" + 1))"
@@ -1385,24 +1508,16 @@ _evmfs_publish() {
     _lock_only="${15}" \
     _tasks_parallel="${16}" \
     _cache_dir="${17}" \
-    _target_file="${18}" \
+    _target_file \
+    _target_files=() \
     _target_networks=() \
     _command_args=() \
     _msg=() \
     _cmd \
     _args=() \
-    _namespace \
-    _ccfs_abi \
-    _ccfs_bytecode \
-    _ccfs_compiler_output \
-    _fs_abi \
-    _fs_bytecode \
-    _fs_compiler_output \
-    _ll_abi \
-    _ll_bytecode \
-    _ll_compiler_output
+    _namespace
   shift \
-    18
+    17
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1410,7 +1525,7 @@ _evmfs_publish() {
     )
     shift
   done
-  _command_args+=(
+  _target_files+=(
     "$@"
   )
   _namespace="$( \
@@ -1418,72 +1533,15 @@ _evmfs_publish() {
      get \
        "${_wallet_name}" \
        "address")"
-  if [[ "${_network_amounts}" == "1" ]]; then
-    _contract_artifacts_auto_detect \
-      "${_deployments_dir}" \
-      "${_target_networks[0]}" \
-      "FileSystem" \
-      "_fs" \
-      "${_fs_version}"
-    _contract_artifacts_auto_detect \
-      "${_deployments_dir}" \
-      "${_target_networks[0]}" \
-      "LengthLock" \
-      "_ll" \
-      "${_fs_version}"
+  for _target_file in "${_target_files[@]}"; do
     if [[ "${_upload_method}" == "bulk" || \
           "${_upload_method}" == "standalone" ]]; then
       _file_upload \
-        "${_target_networks[0]}" \
-        "${_fs_address}" \
-        "${_namespace}" \
-        "${_target_file}" \
-        "${_fs_abi}" \
-        "${_fs_bytecode}" \
-        "${_fs_compiler_output}" \
-        "${_ll_abi}" \
-        "${_ll_bytecode}" \
-        "${_ll_compiler_output}" \
-        "${_tasks_parallel}" \
-        "${_upload_method}"
-    elif [[ "${_upload_method}" == "simulate" ]]; then
-      echo \
-        "$(_publishing_address_get)"
-    else
-      _msg=(
-        "Unknown upload"
-        "method '${_upload_method}'."
-      )
-      _msg_error \
-        "${_msg[*]}" \
-        1
-    fi
-  elif (( 1 < "${_network_amounts}" )); then
-    if [[ "${_upload_method}" == "bulk" ]]; then
-      _contract_artifacts_auto_detect \
-        "${_deployments_dir}" \
-        "${_target_networks[0]}" \
-        "CrossChainFileSystem" \
-        "_ccfs" \
-        "${_fs_version}"
-      _file_upload_crosschain
         "${_ccfs_address}" \
         "${_namespace}" \
         "${_target_file}" \
-        "${_ccfs_abi}" \
-        "${_ccfs_bytecode}" \
-        "${_ccfs_compiler_output}" \
         "${_upload_method}" \
         "${_target_networks[@]}"
-    elif [[ "${_upload_method}" == "standalone" ]]; then
-      _msg=(
-        "The 'standalone' upload method"
-        "is currently supported only"
-        "for single chain publishing."
-      )
-      _msg_error \
-        "${_msg[*]}" \
-        1
     elif [[ "${_upload_method}" == "simulate" ]]; then
       echo \
         "$(_publishing_address_get)"
@@ -1496,7 +1554,7 @@ _evmfs_publish() {
         "${_msg[*]}" \
         1
     fi
-  fi
+  done
 }
 
 _set_overrides() {
@@ -1829,27 +1887,20 @@ if (( $# < 1 )); then
   _usage \
     1
 fi
-if (( 0 < $# )); then
-  if [[ ! -e "${1}" ]]; then
+for _file in "$@"; do
+  if [[ ! -e "${_file}" ]]; then
     _msg=(
-      "file '${1}' does not exists."
+      "file '${_file}' does not exists."
     )
     _msg_error \
       "${_msg[*]}" \
       1
   fi
-  _set \
-    "target" \
-    "file" \
+  target_files+=(
     "$(realpath \
          "${1}")"
-fi
-shift \
-  1 || \
-  true
-command_args+=(
-  "$@"
-)
+  )
+done
 _set_overrides
 _show_config
 app_opts=(
@@ -1870,8 +1921,8 @@ app_opts=(
   "${lock_only}"
   "${tasks_parallel}"
   "${cache_dir}"
-  "${target_file}"
   "${target_networks[@]}"
+  "${target_files[@]}"
 )
 _evmfs_publish \
   "${app_opts[@]}"
