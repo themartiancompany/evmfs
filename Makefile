@@ -61,16 +61,18 @@ _INSTALL_CONTRACTS_TARGETS_ALL:=\
   install-contracts-deployments-solc \
   install-contracts-deployments-config \
   install-contracts-sources
-_INSTALL_TARGETS:=\
+_INSTALL_DOC_TARGETS:=\
   install-doc \
+  install-man
+_INSTALL_TARGETS:=\
+  $(_INSTALL_DOC_TARGETS) \
   $(_INSTALL_CONTRACTS_TARGETS) \
   install-scripts
 _INSTALL_TARGETS_ALL:=\
   install \
-  install-doc \
+  $(_INSTALL_DOC_TARGETS) \
   $(_INSTALL_CONTRACTS_TARGETS_ALL) \
-  install-scripts \
-  man
+  install-scripts
 _PHONY_TARGETS:=\
   $(_BUILD_TARGETS_ALL) \
   $(_CHECK_TARGETS_ALL) \
@@ -201,7 +203,7 @@ install-scripts:
 	  "$(_PROJECT)/$(_PROJECT)" \
 	  "$(BIN_DIR)/$(_PROJECT)"
 
-man:
+install-man:
 
 	install \
 	  -vdm755 \
