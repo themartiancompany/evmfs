@@ -26,6 +26,7 @@ _PROJECT=evmfs
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib/$(_PROJECT)
+MAN_DIR?=$(DESTDIR)$(PREFIX)/share/man
 BUILD_DIR=build
 
 DOC_FILES=\
@@ -68,7 +69,8 @@ _INSTALL_TARGETS_ALL:=\
   install \
   install-doc \
   $(_INSTALL_CONTRACTS_TARGETS_ALL) \
-  install-scripts
+  install-scripts \
+  man
 _PHONY_TARGETS:=\
   $(_BUILD_TARGETS_ALL) \
   $(_CHECK_TARGETS_ALL) \
@@ -198,5 +200,20 @@ install-scripts:
 	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/$(_PROJECT)" \
 	  "$(BIN_DIR)/$(_PROJECT)"
+
+man:
+
+	install \
+	  -vdm755 \
+	  "$(MAN_DIR)/man1"
+	rst2man \
+	  "man/$(_PROJECT).1.rst" \
+	  "$(MAN_DIR)/man1/$(_PROJECT).1"
+	rst2man \
+	  "man/$(_PROJECT)-publish.1.rst" \
+	  "$(MAN_DIR)/man1/$(_PROJECT)-publish.1"
+	rst2man \
+	  "man/$(_PROJECT)-publish.1.rst" \
+	  "$(MAN_DIR)/man1/$(_PROJECT)-get.1"
 
 .PHONY: $(_PHONY_TARGETS)
