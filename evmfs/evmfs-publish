@@ -1889,7 +1889,7 @@ _display_target_files() {
       _publishing_address_get \
         "${_file}")"
     _msg_info "                     File:   ${_file}"
-    _msg_info "       Publishing address:   ${address}"
+    _msg_info "       Publishing address:   ${_address}"
   done
 }
 
