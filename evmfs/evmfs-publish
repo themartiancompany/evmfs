@@ -904,10 +904,13 @@ _chunks_publish_standalone() {
     _index_end="${3}" \
     _chunk \
     _index \
-    _msg=()
-  _index=0
+    _msg=() \
+    _chunks_total_run
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" ))"
+  _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]}"; do
+    in "${_publish_queue[@]:${_index_start}:${_index_end}}"; do
     _chunk_publish_opts=(
       "${_fs_address}"
       "${_namespace}"
@@ -921,8 +924,8 @@ _chunks_publish_standalone() {
       _index + 1))"
   done
   _msg=(
-    "all '${_chunks_total}' chunks"
-    "correctly published"
+    "All '${_chunks_total_run}' chunks"
+    "correctly published."
   )
   _msg_info \
     "${_msg[*]}"
@@ -930,15 +933,22 @@ _chunks_publish_standalone() {
 
 _chunks_verify_standalone() {
   local \
+    _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _index \
     _chunk \
-    _msg=()
-  _index=0
+    _msg=() \
+    _chunks_total_run
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" ))"
+  _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]}"; do
+    in "${_publish_queue[@]:${_index_start}:${_index_end}}"; do
     _msg=(
-      "verifying chunk '${_chunk}'"
-      "of ${_chunks_total}"
+      "Verifying chunk '${_chunk}'"
+      "($(( "${_index}" + 1 ))"
+      "of ${_chunks_total_run})."
     )
     _msg_info \
       "${_msg[*]}"
@@ -953,9 +963,9 @@ _chunks_verify_standalone() {
       _chunk_verify \
         "${_chunk_verify_opts[@]}"
       _msg=(
-        "verified chunk '${_chunk}'"
-        "$(( "${_index}" + 1 ))"
-        "of ${_chunks_total}"
+        "Verified chunk '${_chunk}'"
+        "($(( "${_index}" + 1 ))"
+        "of ${_chunks_total_run})."
       )
       _msg_info \
         "${_msg[*]}"
@@ -963,17 +973,18 @@ _chunks_verify_standalone() {
         _index + 1))"
     elif [[ "${_verify_queue["${_index}"]}" == "false" ]]; then
       _msg=(
-        "chunk '${_chunk}'"
-        "of ${_chunks_total}"
-        "already verified"
+        "Chunk '${_chunk}'"
+        "($(( "${_index}" + 1 ))"
+        "of ${_chunks_total_run})"
+        "already verified."
       )
       _msg_info \
         "${_msg[*]}"
     fi
   done
   _msg=(
-    "all '${_chunks_total}' chunks"
-    "correctly verified"
+    "All '${_chunks_total_run}' chunks"
+    "correctly verified."
   )
   _msg_info \
     "${_msg[*]}"
@@ -982,6 +993,8 @@ _chunks_verify_standalone() {
 _chunks_lock_new() {
   local \
     _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _index \
     _chunk \
     _pendings=()
@@ -1048,17 +1061,22 @@ _chunks_lock_new() {
 _chunks_lock_standalone() {
   local \
     _tasks_parallel="${1}" \
+    _index_start="${2}" \
+    _index_end="${3}" \
     _index \
     _chunk \
     _locked \
-    _msg=()
-  _index=0
+    _msg=() \
+    _chunks_total_run
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" ))"
+  _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]}"; do
+    in "${_publish_queue[@]:${_index_start}:${_index_end}}"; do
     _msg=(
-      "locking chunk '${_chunk}'"
-      "$(( "${_index}" + 1))"
-      "of ${_chunks_total}"
+      "Locking chunk '${_chunk}'"
+      "($(( "${_index}" + 1))"
+      "of ${_chunks_total})."
     )
     _msg_info \
       "${_msg[*]}"
@@ -1071,7 +1089,7 @@ _chunks_lock_standalone() {
       _index + 1))"
   done
   _msg=(
-    "all '${_chunks_total}' chunks"
+    "All '${_chunks_total}' chunks"
     "correctly locked."
   )
   _msg_info \
@@ -1300,7 +1318,8 @@ _index_publish_bulk() {
     _checkpoint_index_file_path \
     _index_start \
     _index_end \
-    _checkpoint
+    _checkpoint \
+    _chunks_total_run
   _checkpoint_index_file_path="${_tmp_dir}/checkpoint.index"
   _chunks_total_run="$(( \
     "${_index_end}" - "${_index_start}" ))"
