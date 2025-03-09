@@ -1434,7 +1434,7 @@ _file_upload() {
   _file_encode
   _queue_setup
   _chunks_network_assignment 
-  if (( 1 < "${_network_amounts}" )); then
+  if (( 1 < "${_networks_amount}" )); then
     _contract_artifacts_auto_detect \
     "${_deployments_dir}" \
     "${_target_networks[0]}" \
@@ -1520,7 +1520,7 @@ _evmfs_publish() {
     _wallet_path="${8}" \
     _wallet_password="${9}" \
     _wallet_seed="${10}" \
-    _network_amount="${11}" \
+    _networks_amount="${11}" \
     _api_key_path="${12}" \
     _upload_method="${13}" \
     _retries_max="${14}" \
@@ -1602,7 +1602,7 @@ _set_overrides() {
   _deployments_dir_auto_detect \
     "evmfs" \
     "${user_level}"
-  network_amounts="${#target_networks[@]}"
+  networks_amount="${#target_networks[@]}"
   if (( "${networks_amount}" < 1 )); then
     _network_auto_detect \
       "FileSystem" \
@@ -1612,7 +1612,7 @@ _set_overrides() {
       "${target_network}"
     )
     target_network=""
-    network_amounts="${#target_networks[@]}"
+    networks_amount="${#target_networks[@]}"
   fi
   _set_override \
     "wallet" \
