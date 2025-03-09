@@ -184,6 +184,7 @@ _chunk_verify() {
     _verify_dir \
     _local_sum \
     _remote_sum \
+    _publishing_address \
     _msg=()
   _verify_dir="${_cache_dir}/${_sum}/verify"
   _remote="${_verify_dir}/${_index}"
@@ -205,12 +206,15 @@ _chunk_verify() {
     _file_hash \
       "${_remote}")"
   if [[ "${_local_sum}" != "${_remote_sum}" ]]; then
+    _publishing_address=$( \
+      _publishing_address_get \
+        "${_file}")
     _msg=(
-      "somehow local chunk '${_chunk}',"
+      "Somehow local chunk '${_chunk}',"
       "corresponding to chunk having"
       "index '${_index}' on the blockchain"
       "has not been written correctly"
-      "on the blockchain at address '$(_publishing_address_get)'"
+      "on the blockchain at address '${_publishing_address}'."
     )
     _msg_error \
       "${_msg[*]}" \
@@ -1219,7 +1223,8 @@ _file_upload_old() {
     _lock_call_opts=() \
     _length_call_opts=() \
     _length_lock_call_opts=() \
-    _chunk_publish_opts=()
+    _chunk_publish_opts=() \
+    _publishing_address
   _contract_call_opts_setup
   _msg=(
     "Re-evaluating file hashsum."
@@ -1252,10 +1257,13 @@ _file_upload_old() {
   _chunks_length_lock \
     "${_fs_address}" \
     "${_chunks_total}"
+  _publishing_address="$( \
+    _publishing_address_get \
+      "${_file}")"
   _msg=(
     "File '${_file}' uploaded and"
     "available at URI"
-    "'$(_publishing_address_get)'."
+    "'${_publishing_address}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -1416,7 +1424,8 @@ _file_upload() {
     _verify_call_opts=() \
     _lock_call_opts=() \
     _chunk_publish_opts=() \
-    _msg=()
+    _msg=() \
+    _publishing_address
   shift \
     4
   _target_networks+=(
@@ -1499,10 +1508,13 @@ _file_upload() {
   _chunks_length_lock \
     "${_chunks_total}" \
     "${_target_ll_fs_address}"
+  _publishing_address="$( \
+    _publishing_address_get \
+      "${_file}")"
   _msg=(
     "File '${_file}' uploaded and"
     "available at URI"
-    "'$(_publishing_address_get)'."
+    "'${_publishing_address}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -1562,8 +1574,8 @@ _evmfs_publish() {
         "${_upload_method}" \
         "${_target_networks[@]}"
     elif [[ "${_upload_method}" == "simulate" ]]; then
-      echo \
-        "$(_publishing_address_get)"
+      _publishing_address_get \
+        "${_target_file}"
     else
       _msg=(
         "Unknown upload"
@@ -1795,6 +1807,7 @@ ENDUSAGETEXT
 
 _publishing_address_get() {
   local \
+    _file="${1}" \
     _network \
     _fs_address \
     _namespace \
@@ -1806,7 +1819,6 @@ _publishing_address_get() {
     _fs_address="${ccfs_address}"
   fi
   _namespace="${wallet_address}"
-  _file="${target_file}"
   _sum="$( \
     _file_hash \
       "${_file}")"
@@ -1848,8 +1860,29 @@ _show_config() {
   _msg_info "                Lock only:   ${lock_only}"
   _msg_info "           Tasks parallel:   ${tasks_parallel}"
   _msg_info "          Cache directory:   ${cache_dir}"
-  _msg_info "              Target file:   ${target_file}"
-  _msg_info "       Publishing address:   $(_publishing_address_get)"
+  _msg_info "             Target files:"
+  _display_target_files                   "${target_files[@]}"
+}
+
+_display_target_files() {
+_display_flags() {
+  local \
+    _target_files=() \
+    _file \
+    _address
+  _target_files+=(
+    "$@"
+  )
+  for _file \
+    in "${_target_files[@]}"; do
+    _address="$( \
+      _publishing_address_get \
+        "${_file}")"
+    _msg_info "                     File:   ${_file}"
+    _msg_info "       Publishing address:   ${address}"
+  done
+}
+
 }
 
 _globals
