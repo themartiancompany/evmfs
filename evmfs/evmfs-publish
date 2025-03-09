@@ -1292,7 +1292,7 @@ _index_publish_bulk() {
     _target_network="${2}" \
     _fs_address="${3}" \
     _index_start="${4}" \
-    _index_end="${5}"
+    _index_end="${5}" \
     _index \
     _index_args=() \
     _backend \
