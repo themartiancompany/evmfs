@@ -911,10 +911,10 @@ _chunks_publish_standalone() {
     _msg=() \
     _chunks_total_run
   _chunks_total_run="$(( \
-    "${_index_end}" - "${_index_start}" ))"
+    "${_index_end}" - "${_index_start}" + 1))"
   _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]:${_index_start}:${_index_end}}"; do
+    in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
     _chunk_publish_opts=(
       "${_fs_address}"
       "${_namespace}"
@@ -948,7 +948,7 @@ _chunks_verify_standalone() {
     "${_index_end}" - "${_index_start}" ))"
   _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]:${_index_start}:${_index_end}}"; do
+    in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
     _msg=(
       "Verifying chunk '${_chunk}'"
       "($(( "${_index}" + 1 ))"
@@ -1076,7 +1076,7 @@ _chunks_lock_standalone() {
     "${_index_end}" - "${_index_start}" ))"
   _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]:${_index_start}:${_index_end}}"; do
+    in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
     _msg=(
       "Locking chunk '${_chunk}'"
       "($(( "${_index}" + 1))"
@@ -1484,7 +1484,11 @@ _file_upload() {
       "_fs" \
       "${_fs_version}"
     _contract_call_opts_setup
-    if (( ! "${_index_end}" < "${_index_start}" )); then
+    _msg_info \
+      "index start: ${_index_start}"
+     _msg_info \
+      "index end: ${_index_end}"
+    if ! (( "${_index_end}" < "${_index_start}" )); then
       if [[ "${_lock_only}" == "n" ]]; then
         "_chunks_publish_${_upload_method}" \
           "${_tasks_parallel}" \
@@ -1860,7 +1864,7 @@ _show_config() {
   _msg_info "              Wallet path:   ${wallet_path}"
   _msg_info "          Wallet password:   ${wallet_password}"
   _msg_info "              Wallet seed:   ${wallet_seed}"
-  _msg_info "           Target network:   ${target_network}"
+  _msg_info "          Target networks:   ${target_networks[*]}"
   _msg_info "                  API key:   ${api_key}"
   _msg_info "            Upload method:   ${upload_method}"
   _msg_info "          Maximum retries:   ${retries_max}"
