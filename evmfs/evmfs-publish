@@ -1876,7 +1876,6 @@ _show_config() {
 }
 
 _display_target_files() {
-_display_flags() {
   local \
     _target_files=() \
     _file \
@@ -1892,8 +1891,6 @@ _display_flags() {
     _msg_info "                     File:   ${_file}"
     _msg_info "       Publishing address:   ${address}"
   done
-}
-
 }
 
 _globals
