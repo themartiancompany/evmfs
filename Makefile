@@ -123,6 +123,8 @@ install-contracts-sources:
 	    "$(BUILD_DIR)" \
 	  -o \
 	    "$(LIB_DIR)" \
+	  -l \
+	    "n" \
 	  install_sources
 
 install-contracts-deployments-config:
@@ -137,6 +139,8 @@ install-contracts-deployments-config:
 	    "$(BUILD_DIR)" \
 	  -o \
 	    "$(LIB_DIR)" \
+	  -l \
+	    "n" \
 	  install_deployments_config
 
 install-contracts-deployments-solc:
@@ -151,6 +155,8 @@ install-contracts-deployments-solc:
 	    "$(BUILD_DIR)" \
 	  -o \
 	    "$(LIB_DIR)" \
+	  -l \
+	    "n" \
 	  install_deployments
 
 install-contracts-deployments-hardhat:
@@ -165,6 +171,8 @@ install-contracts-deployments-hardhat:
 	    "$(BUILD_DIR)" \
 	  -o \
 	    "$(LIB_DIR)" \
+	  -l \
+	    "n" \
 	  install_deployments
 
 install-doc:
