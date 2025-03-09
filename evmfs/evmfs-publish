@@ -1871,7 +1871,7 @@ while \
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
-    n) target_network+=(
+    n) target_networks+=(
          "${OPTARG}"
        ) ;;
     k) override_api_key="${OPTARG}" ;;

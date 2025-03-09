@@ -190,7 +190,7 @@ _evmfs() {
     )
   else
     _msg=(
-      "command '${_target_command}' not known"
+      "Command '${_target_command}' not known."
     )
     _msg_error \
       "${_msg[*]}" \
