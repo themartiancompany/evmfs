@@ -1700,19 +1700,19 @@ _set_overrides() {
     "FileSystem" \
     "fs" \
     "${target_networks[0]}"
+  if [[ "${fs_version}" == "1.0" ]]; then
+    _contract_address_auto_detect \
+      "evmfs" \
+      "LengthLock" \
+      "ll" \
+      "${target_networks[0]}" \
+      "${fs_version}" \
+      "${user_level}" \
+      "${deployments_dir}"
+  fi
   if [[ "${networks_amount}" == 1 ]]; then
     _api_key_auto_detect \
       "${target_networks[0]}"
-    if [[ "${fs_version}" == "1.0" ]]; then
-      _contract_address_auto_detect \
-        "evmfs" \
-        "LengthLock" \
-        "ll" \
-        "${target_networks[0]}" \
-        "${fs_version}" \
-        "${user_level}" \
-        "${deployments_dir}"
-    fi
     _contract_address_auto_detect \
       "evmfs" \
       "FileSystem" \
@@ -1734,12 +1734,6 @@ _set_overrides() {
       "${fs_version}" \
       "${user_level}" \
       "${deployments_dir}"
-    if [[ "${fs_version}" == "1.0" ]]; then
-      _set_override \
-        "ll" \
-        "address" \
-        ""
-    fi
     _set_override \
       "fs" \
       "address" \
