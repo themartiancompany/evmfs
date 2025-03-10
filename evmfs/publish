@@ -313,7 +313,6 @@ async function
     _chunks_total,
     _chunks_files_paths_prefix,
     _chunks_unverified = [],
-    _index,
     _indexes_unverified = [],
     _method_base_args,
     _progress,
@@ -369,7 +368,7 @@ async function
     1;
   _cursor =
     0;
-  for ( _index = _index_start;
+  for ( var _index = _index_start;
         _index <= _index_end;
         _index++ ) {
     _msg_info_chunk_publish(
