@@ -89,7 +89,7 @@ function
     _msg,
     _template;
   _template =
-    "Verifying chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Verifying chunk '{_index}' ('{_progress}' of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -224,12 +224,13 @@ async function
     _chunks_corrupted,
     _chunks_total,
     _correct,
-    _cursor,
     _index,
     _progress;
   _chunks_total =
     _chunks_indexes.length;
-  for ( _cursor in _chunks_indexes ) {
+  for ( var _cursor = 0;
+        _cursor < _chunks_total;
+        _cursor++ ) {
     _progress =
       _cursor + 1;
     _index =
