@@ -1869,7 +1869,7 @@ _display_flags() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "                   Publish date:   ${publish_date}"
-  _msg_info "Cross-chain file system address:   ${fs_address}"
+  _msg_info "Cross-chain file system address:   ${ccfs_address}"
   _msg_info "            File system address:   ${fs_address}"
   _msg_info "            File system version:   ${fs_version}"
   _msg_info "             LengthLock address:   ${ll_address}"
