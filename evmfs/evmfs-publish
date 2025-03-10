@@ -617,7 +617,7 @@ _node_network_setup() {
   fi
   _msg=(
     "Selected RPC address"
-    "'${_rpc}'"
+    "'${_rpc}'."
   )
   _msg_info \
     "${_msg[*]}"

@@ -29,10 +29,8 @@ _cmdline_check =
   _libcrash._cmdline_check;
 _echo =
   _libcrash._echo;
-_file_read =
-  _libcrash._file_read;
 _file_write =
-  _libcrash._file_read;
+  _libcrash._file_write;
 _file_exists =
   _libcrash._file_exists;
 _path_join =

@@ -248,6 +248,7 @@ async function
     _checkpoint_file_path
   ) {
   let
+    _checkpoint_index,
     _chunks_total,
     _lock_call_base_opts,
     _lock_call_opts,
@@ -329,9 +330,11 @@ async function
         _progress,
         _chunks_total);
     }
+    _checkpoint_index =
+      (_index + 1).toString();
     _file_write(
       _checkpoint_file_path,
-      _index + 1);
+      _checkpoint_index);
     _progress =
       _progress + 1;
   }
