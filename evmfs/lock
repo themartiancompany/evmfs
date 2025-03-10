@@ -331,7 +331,7 @@ async function
         _chunks_total);
     }
     _checkpoint_index =
-      (_index + 1).toString();
+      _index.toString();
     _file_write(
       _checkpoint_file_path,
       _checkpoint_index);
