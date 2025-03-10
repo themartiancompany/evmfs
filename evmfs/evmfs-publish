@@ -1408,6 +1408,12 @@ _target_ll_fs_address_get() {
   elif (( 1 < "${_networks_amount}" )); then
     _target_ll_fs_address="${_ccfs_address}"
   fi
+  _msg=(
+    "Target length lock fs is"
+    "${_target_ll_fs_address}"
+  )
+  _msg_info \
+    "${_msg[*]}"
 }
 
 _file_upload() {
@@ -1533,8 +1539,8 @@ _file_upload() {
   _target_network="${_target_networks[0]}"
   _contract_call_opts_setup
   _chunks_length_lock \
-    "${_chunks_total}" \
-    "${_target_ll_fs_address}"
+    "${_target_ll_fs_address}" \
+    "${_chunks_total}"
   _publishing_address="$( \
     _publishing_address_get \
       "${_file}")"
