@@ -221,11 +221,15 @@ async function
   let
     _chunk,
     _chunk_file_path,
+    _chunks_checked,
+    _chunks_checked_total,
     _chunks_corrupted,
     _chunks_total,
     _correct,
     _index,
     _progress;
+  _chunks_checked =
+    [];
   _chunks_total =
     _chunks_indexes.length;
   for ( var _cursor = 0;
@@ -248,7 +252,7 @@ async function
     _chunk_file_path_check(
       _chunk_file_path);
     try {
-      _correct = await
+      _chunks_checked = await
         _check(
           _retries_max,
           _api_key_path,
@@ -267,12 +271,14 @@ async function
         "Error running check routine.");
       throw e;
     }
-    if ( _correct == true ) {
+    _chunks_checked_total =
+      _chunks_checked.length;
+    if ( _chunks_checked_total > 0 ) {
       _file_write(
         _checkpoint_file_path,
         _progress);
     }
-    else if ( _correct == false ) {
+    else if ( _chunks_checked_total == 0 ) {
       // Temporary
       _msg_error_chunk_corrupted(
         _index,
