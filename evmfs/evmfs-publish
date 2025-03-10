@@ -923,7 +923,7 @@ _chunks_publish_standalone() {
     "${_index_end}" - "${_index_start}" + 1))"
   _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
+    in "${_publish_queue[@]:${_index_start}:${_chunks_total_run}}"; do
     _chunk_publish_opts=(
       "${_fs_address}"
       "${_namespace}"
@@ -957,7 +957,7 @@ _chunks_verify_standalone() {
     "${_index_end}" - "${_index_start}" + 1))"
   _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
+    in "${_publish_queue[@]:${_index_start}:${_chunks_total_run}}"; do
     _msg=(
       "Verifying '${_chunks_total_run}' published"
       "chunks going from index '${_index_start}'"
@@ -1085,7 +1085,7 @@ _chunks_lock_standalone() {
     "${_index_end}" - "${_index_start}" + 1 ))"
   _index="${_index_start}"
   for _chunk \
-    in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
+    in "${_publish_queue[@]:${_index_start}:${_chunks_total_run}}"; do
     _msg=(
       "Locking chunk '${_chunk}'"
       "($(( "${_index}" + 1))"
