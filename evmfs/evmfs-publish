@@ -770,7 +770,7 @@ _chunks_verify_bulk() {
       "${_sum}"
       "${_checkpoint_verify_file_path}"
       "${_chunk_prefix}"
-      "${_publish_queue[@]:${_checkpoint}:$((${_index_end} + 1))}"
+      $(seq "${_checkpoint}" "${_index_end}")
     )
     _node_run \
       "${retries_max}" \
