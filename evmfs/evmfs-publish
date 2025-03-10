@@ -688,6 +688,9 @@ _chunks_publish_bulk() {
       )
       _msg_info \
         "${_msg[*]}"
+      rm \
+        -rf \
+        "${_checkpoint_publish_file_path}"
       break
     fi
     _msg_info \
@@ -754,6 +757,9 @@ _chunks_verify_bulk() {
       )
       _msg_info \
         "${_msg[*]}"
+      rm \
+        -rf \
+        "${_checkpoint_verify_file_path}"
       break
     fi
     _verify_args=(
@@ -815,6 +821,9 @@ _chunks_lock_bulk() {
       )
       _msg_info \
         "${_msg[*]}"
+      rm \
+        -rf \
+        "${_checkpoint_lock_file_path}"
       break
     fi
     _lock_args=(
@@ -1286,11 +1295,11 @@ _index_network_get() {
     _index_start="$(( \
       "${_index_end}" + 1))"
   fi
-  if (( "${_network}" < \
-        "${_chunks_remainder_network}" )); then
-    _index_end="$(( \
-      "${_index_start}" + \
-      "${_chunks_total_network}"))"
+  if ! (( "${_chunks_remainder_network}" < \
+          "${_network}" )); then
+      _index_end="$(( \
+        "${_index_start}" + \
+        "${_chunks_total_network}"))"
   else
     _index_end="$(( \
       "${_index_start}" + \
@@ -1362,6 +1371,9 @@ _index_publish_bulk() {
       )
       _msg_info \
         "${_msg[*]}"
+      rm \
+        -rf \
+        "${_checkpoint_index_file_path}"
       break
     fi
     _msg_info \
