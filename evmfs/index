@@ -211,6 +211,10 @@ async function
     _progress,
     _tx,
     _wallet_password;
+  _index_start =
+    Number(_index_start);
+  _index_end =
+    Number(_index_end);
   _wallet_password =
     "";
   _index_call_base_opts = [
