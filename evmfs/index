@@ -473,6 +473,14 @@ function
           _value;
       }
       if ( _index == 15 ) {
+        chunk_chain_id =
+          _value;
+      }
+      if ( _index == 16 ) {
+        chunk_fs_address =
+          _value;
+      }
+      if ( _index == 17 ) {
         checkpoint_file_path =
           _value;
       }
