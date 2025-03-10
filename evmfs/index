@@ -197,7 +197,6 @@ async function
     _file_hash,
     _index_start,
     _index_end,
-    _index_start,
     _chunk_chain_id,
     _chunk_fs_address,
     _checkpoint_file_path
@@ -237,6 +236,8 @@ async function
   ];
   _chunks_total =
     _index_end - index_start + 1;
+  console.log(
+    _chunks_total);
   _input_data_check(
     _chunks_total);
   _progress =
