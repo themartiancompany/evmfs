@@ -514,7 +514,7 @@ if ( _cmdline_check(
     file_hash,
     checkpoint_file_path,
     chunks_files_paths_prefix,
-    chunk_indexes,
+    chunks_indexes,
   ];
   _verify.apply(
     null,
