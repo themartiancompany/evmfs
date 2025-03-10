@@ -227,6 +227,7 @@ async function
     _chunks_total,
     _correct,
     _cursor,
+    _index,
     _progress;
   _chunks_total =
     _chunks_indexes.length;

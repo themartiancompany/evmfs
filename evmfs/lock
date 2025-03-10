@@ -249,7 +249,6 @@ async function
   ) {
   let
     _chunks_total,
-    _index,
     _lock_call_base_opts,
     _lock_call_opts,
     _locked,
@@ -296,7 +295,7 @@ async function
     _chunks_total);
   _progress =
     1;
-  for ( _index = _index_start;
+  for ( var _index = _index_start;
         _index <= _index_end;
         _index++ ) {
     _msg_info_chunk_lock(
