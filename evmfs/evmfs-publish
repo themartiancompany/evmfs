@@ -759,7 +759,6 @@ _chunks_verify_bulk() {
     _verify_args=(
       "${quiet}"
       "${_retries_max}"
-      "${_wallet_seed}"
       "${_api_key_path}"
       "${_backend}"
       "${_fs_address}"
