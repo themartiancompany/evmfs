@@ -666,7 +666,7 @@ _chunks_publish_bulk() {
     _chunks_total_run
   _checkpoint_publish_file_path="${_tmp_dir}/checkpoint.publish"
   _chunks_total_run="$(( \
-    "${_index_end}" - "${_index_start}" ))"
+    "${_index_end}" - "${_index_start}" + 1))"
   _msg=(
     "Publishing '${_chunks_total_run}'"
     "chunks from '${_index_start}'"
@@ -732,7 +732,7 @@ _chunks_verify_bulk() {
     _checkpoint
   _checkpoint_verify_file_path="${_tmp_dir}/checkpoint.verify"
   _chunks_total_run="$(( \
-    "${_index_end}" - "${_index_start}" ))"
+    "${_index_end}" - "${_index_start}" + 1))"
   _msg=(
     "Verifying '${_chunks_total_run}' published"
     "chunks going from index '${_index_start}'"
@@ -793,7 +793,7 @@ _chunks_lock_bulk() {
     _checkpoint
   _checkpoint_lock_file_path="${_tmp_dir}/checkpoint.lock"
   _chunks_total_run="$(( \
-    "${_index_end}" - "${_index_start}" ))"
+    "${_index_end}" - "${_index_start}" + 1))"
   _msg=(
     "Locking '${_chunks_total_run}' verified"
     "chunks going from index '${_index_start}'"
@@ -945,7 +945,7 @@ _chunks_verify_standalone() {
     _msg=() \
     _chunks_total_run
   _chunks_total_run="$(( \
-    "${_index_end}" - "${_index_start}" ))"
+    "${_index_end}" - "${_index_start}" + 1))"
   _index="${_index_start}"
   for _chunk \
     in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
@@ -1073,7 +1073,7 @@ _chunks_lock_standalone() {
     _msg=() \
     _chunks_total_run
   _chunks_total_run="$(( \
-    "${_index_end}" - "${_index_start}" ))"
+    "${_index_end}" - "${_index_start}" + 1 ))"
   _index="${_index_start}"
   for _chunk \
     in "${_publish_queue[@]:${_index_start}:$((${_index_end} + 1))}"; do
@@ -1340,7 +1340,7 @@ _index_publish_bulk() {
     _chunks_total_run
   _checkpoint_index_file_path="${_tmp_dir}/checkpoint.index"
   _chunks_total_run="$(( \
-    "${_index_end}" - "${_index_start}" ))"
+    "${_index_end}" - "${_index_start}" + 1))"
   _msg=(
     "Indexing '${_chunks_total_run}' locked"
     "chunks from index '${_index_start}'"
