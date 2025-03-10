@@ -1,6 +1,6 @@
 # Ethereum Virtual Machine File System
 
-Reference implementation for the Ethereum Virtual Machine File System.
+Reference implementation of the Ethereum Virtual Machine File System (EVMFS).
 
 ### Quick overview
 
@@ -33,7 +33,14 @@ evmfs \
 ### Installation
 
 The project can be built and installed with GNU make.
-
+A list of its software dependencies can be found in its
+[Ur](
+  https://github.com/themartiancompany/ur) uncensorable
+user repository and application store universal recipe,
+hosted on the file system itself.
+An HTTP mirror is provided on The Martian Company's
+[Github](
+  https://github.com/themartiancompany/evmfs-ur).
 
 ### Documentation
 
