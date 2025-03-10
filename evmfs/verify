@@ -276,7 +276,7 @@ async function
     if ( _chunks_checked_total > 0 ) {
       _file_write(
         _checkpoint_file_path,
-        _progress);
+        _index.toString());
     }
     else if ( _chunks_checked_total == 0 ) {
       // Temporary
