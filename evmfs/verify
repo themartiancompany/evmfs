@@ -234,8 +234,9 @@ async function
     _progress =
       _cursor + 1;
     _index =
-      _chunks_indexes[
-        _cursor];
+      Number(
+        _chunks_indexes[
+          _cursor]);
     _msg_info_chunk_verify(
       _index,
       _progress,
