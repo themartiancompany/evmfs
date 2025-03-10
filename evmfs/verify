@@ -335,9 +335,9 @@ function
       "{checkpoint_file_path}",
       checkpoint_file_path));
   _text.push(
-    "Chunks files paths prefix: {index_start}".replace(
-      "{index_start}",
-      index_start));
+    "Chunks files paths prefix: {chunks_files_paths_prefix}".replace(
+      "{chunks_files_paths_prefix}",
+      chunks_files_paths_prefix));
   _chunks_indexes =
     chunks_indexes.join(
     " ");
@@ -371,7 +371,6 @@ function
     "    <contract_bytecode_path>",
     "    <contract_compiler_output_path>",
     "    <publication_namespace>",
-    "    <index_start>",
     "    <file_hash>",
     "    <checkpoint_file_path>",
     "    <chunks_files_paths_prefix>",
