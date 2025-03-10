@@ -1110,18 +1110,10 @@ _chunks_length_lock() {
   _length="$(( \
     _chunks_total - 1))"
   _msg=(
-    "Check length lock."
+    "Checking length lock."
   )
   _msg_info \
     "${_msg[*]}"
-  evm-contract-call \
-    -v \
-    "${_length_call_opts[@]}" \
-    "${_ll_address}" \
-    "lock" \
-    "${_fs_address}" \
-    "${_namespace}" \
-    "${_sum}"
   _locked="$( \
     evm-contract-call \
       "${_length_call_opts[@]}" \
@@ -1409,8 +1401,9 @@ _target_ll_fs_address_get() {
     _target_ll_fs_address="${_ccfs_address}"
   fi
   _msg=(
-    "Target length lock fs is"
-    "${_target_ll_fs_address}"
+    "Length lock contract"
+    "target fs address is"
+    "'${_target_ll_fs_address}'."
   )
   _msg_info \
     "${_msg[*]}"
