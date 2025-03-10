@@ -44,7 +44,7 @@ Options
 -w wallet_path          Wallet path.
 -p wallet_password      Wallet password.
 -s wallet_seed          Wallet seed path.
--n network              EVM network name.
+-n network              EVM network chain ID or full name.
 -k api_key              Etherscan-like service key.
 -m upload_method        It can be 'standalone' or 'simulate'.
 -r retries_max          Maximum number of retries before

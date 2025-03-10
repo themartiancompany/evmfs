@@ -1868,26 +1868,27 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Publish date:   ${publish_date}"
-  _msg_info "      File system address:   ${fs_address}"
-  _msg_info "      File system version:   ${fs_version}"
-  _msg_info "       LengthLock address:   ${ll_address}"
-  _msg_info "               User level:   ${user_level}"
-  _msg_info "    Deployments directory:   ${deployments_dir}"
-  _msg_info "                Namespace:   ${wallet_address}"
-  _msg_info "              Wallet name:   ${wallet_name}"
-  _msg_info "              Wallet path:   ${wallet_path}"
-  _msg_info "          Wallet password:   ${wallet_password}"
-  _msg_info "              Wallet seed:   ${wallet_seed}"
-  _msg_info "          Target networks:   ${target_networks[*]}"
-  _msg_info "                  API key:   ${api_key}"
-  _msg_info "            Upload method:   ${upload_method}"
-  _msg_info "          Maximum retries:   ${retries_max}"
-  _msg_info "                Lock only:   ${lock_only}"
-  _msg_info "           Tasks parallel:   ${tasks_parallel}"
-  _msg_info "          Cache directory:   ${cache_dir}"
-  _msg_info "             Target files:"
-  _display_target_files                   "${target_files[@]}"
+  _msg_info "                   Publish date:   ${publish_date}"
+  _msg_info "Cross-chain file system address:   ${fs_address}"
+  _msg_info "            File system address:   ${fs_address}"
+  _msg_info "            File system version:   ${fs_version}"
+  _msg_info "             LengthLock address:   ${ll_address}"
+  _msg_info "                     User level:   ${user_level}"
+  _msg_info "          Deployments directory:   ${deployments_dir}"
+  _msg_info "                      Namespace:   ${wallet_address}"
+  _msg_info "                    Wallet name:   ${wallet_name}"
+  _msg_info "                    Wallet path:   ${wallet_path}"
+  _msg_info "                Wallet password:   ${wallet_password}"
+  _msg_info "                    Wallet seed:   ${wallet_seed}"
+  _msg_info "                Target networks:   ${target_networks[*]}"
+  _msg_info "                        API key:   ${api_key}"
+  _msg_info "                  Upload method:   ${upload_method}"
+  _msg_info "                Maximum retries:   ${retries_max}"
+  _msg_info "                      Lock only:   ${lock_only}"
+  _msg_info "                 Tasks parallel:   ${tasks_parallel}"
+  _msg_info "                Cache directory:   ${cache_dir}"
+  _msg_info "                   Target files:"
+  _display_target_files                        "${target_files[@]}"
 }
 
 _display_target_files() {
@@ -1903,8 +1904,8 @@ _display_target_files() {
     _address="$( \
       _publishing_address_get \
         "${_file}")"
-    _msg_info "                     File:   ${_file}"
-    _msg_info "       Publishing address:   ${_address}"
+    _msg_info "                           File:   ${_file}"
+    _msg_info "             Publishing address:   ${_address}"
   done
 }
 
