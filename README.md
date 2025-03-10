@@ -44,8 +44,38 @@ The EVMFS is a core component of the
 
 ### Installation
 
+The EVMFS has been officially published on the
+[Ur](
+  https://github.com/themartiancompany/ur),
+uncensorable, distributed, permissionless
+Life and DogeOS user repository and application store,
+so it can be seamlessly installed by typing
+
+```bash
+ur evmfs
+```
+
+Since the EVMFS is actually an Ur dependency, if
+you're coming from a system not integrating the
+Ur, you may want to install a binary build from
+the
+[Fur](
+  https://github.com/themartiancompany/fur)
+fallback user repository.
+
+#### Building from source
+
 The project can be built and installed with GNU make.
-A list of its software dependencies can be found in its
+
+```
+cd \
+  evmfs
+make
+make \
+  install
+```
+
+A full list of its software dependencies can be found in its
 [Ur](
   https://github.com/themartiancompany/ur) uncensorable
 user repository and application store universal recipe,
@@ -65,6 +95,10 @@ Upon installation, manual can be consulted by typing:
 
 Notes and other documentation are in the `docs` source
 tree directory and installed onto the `<data_dir>/doc/evmfs`
+directory.
+
+You can consult the manual from an online mirror of this
+repository. The `rst` source files are located in the `man`
 directory.
 
 ## License
