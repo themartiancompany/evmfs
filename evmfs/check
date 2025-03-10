@@ -245,6 +245,8 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
+  _chunks_checked =
+    [];
   _wallet_seed_path =
     '';
   _check_call_base_opts = [
