@@ -710,7 +710,7 @@ _chunks_publish_bulk() {
       "${_checkpoint}"
       "${_index_end}"
       "${_checkpoint_publish_file_path}"
-      "${_publish_queue[@]:${_checkpoint}:$((${_index_end} + 1))}"
+      "${_publish_queue[@]:${_checkpoint}:${_chunks_total_run}}"
     )
     _msg_info \
       "Running node."
