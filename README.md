@@ -38,8 +38,9 @@ tree and are configured into the program at install time.
 Options for user-defined deployments are discussed in
 the documentation.
 
-The EVMFS is a core component of the Human Instrumentality
-Project.
+The EVMFS is a core component of the
+[Human Instrumentality Project](
+  http://www.humaninstrumentalityproject.org).
 
 ### Installation
 
