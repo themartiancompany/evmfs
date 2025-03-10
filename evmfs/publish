@@ -306,6 +306,7 @@ async function
   let
     _check_call_base_opts,
     _check_call_opts,
+    _checkpoint_index,
     _chunk,
     _chunk_check_args,
     _chunk_file_path,
@@ -444,9 +445,11 @@ async function
         _published);
       throw "Unexpected chunk publication status value.";
     }
+    _checkpoint_index =
+      (_index + 1).toString();
     _file_write(
       _checkpoint_file_path,
-      _index + 1);
+      _checkpoint_index);
     _progress =
       _progress + 1;
     _cursor =

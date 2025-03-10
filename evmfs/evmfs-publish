@@ -692,7 +692,7 @@ _chunks_publish_bulk() {
     fi
     _msg_info \
       "Preparing node arguments."
-    _publish_args+=(
+    _publish_args=(
       "${quiet}"
       "${_retries_max}"
       "${_wallet_seed}"
@@ -756,7 +756,7 @@ _chunks_verify_bulk() {
         "${_msg[*]}"
       break
     fi
-    _verify_args+=(
+    _verify_args=(
       "${quiet}"
       "${_retries_max}"
       "${_wallet_seed}"
@@ -818,7 +818,7 @@ _chunks_lock_bulk() {
         "${_msg[*]}"
       break
     fi
-    _lock_args+=(
+    _lock_args=(
       "${quiet}"
       "${_retries_max}"
       "${_wallet_seed}"
@@ -1367,7 +1367,7 @@ _index_publish_bulk() {
     fi
     _msg_info \
       "Preparing node arguments."
-    _index_args+=(
+    _index_args=(
       "${quiet}"
       "${_retries_max}"
       "${_wallet_seed}"
