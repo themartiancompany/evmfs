@@ -22,7 +22,19 @@ as integer mappings to text strings.
 After having been correctly uploaded, the chunks encoded
 strings are locked to avoid tampering.
 
-![Design](media/evmfs.png)
+<figure>
+    <img
+       src="media/evmfs.png"
+       alt="How evmfs-publish writes on FileSystem" />
+    <figcaption>
+      How evmfs-publish writes on FileSystem.
+    </figcaption>
+</figure>
+
+In the picture above, the yellow, blue and red boxes
+respectively represent a FileSystem contract deployment
+(`0x12d...`), an user namespace (`0xd354...`) and the
+checksum of the uploaded `mars.png` file (`f1c220...`).
 
 ### LengthLock 
 
