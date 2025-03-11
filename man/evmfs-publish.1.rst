@@ -28,12 +28,13 @@ consulted using evm-chains-info
 
 Options
 ========
--A application          Set an application name for the ISO.
 
 -A fs_address           Address of the EVM file system
                         on the network.
 -B ll_address           Address of the Length Lock contract
                         on the network.
+-C ccfs_address         Address of the CrossChainFileSystem
+                        contract on the network.
 -V fs_version           Version of the target EVM file
                         system.
 -u                      Whether to retrieve file system
@@ -52,7 +53,7 @@ Options
 -L                      Skip check and publish and only lock
                         the file.
 -P  tasks_parallel      Tasks to perform in parallel.
--C  cache_dir           Work directory
+-W  cache_dir           Work directory
 
 -h                      Display help.
 -c                      Enable color output

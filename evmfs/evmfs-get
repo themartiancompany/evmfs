@@ -47,19 +47,22 @@ _global_variables() {
   wallet_password=""
   wallet_seed=""
   wallet_address=""
-  target_network=""
+  networks_amount=""
+  target_networks=()
   api_key=""
   cache_dir=""
   tasks_parallel=""
   call_method=""
   retries_max=""
+  ccfs_address=""
   fs_address=""
   ll_address=""
   fs_version=""
   deployments_dir=""
   user_level=""
-  target_uri=""
-  output_file=""
+  uris_amount=""
+  target_uris=()
+  output_files=()
   command_args=()
   color=""
   quiet=""
@@ -109,7 +112,7 @@ _network_setup() {
     _msg=(
       "URI network '${_uri_network}'"
       "different from user set network"
-      "'${_target_network}'"
+      "'${_target_network}'."
     )
     _msg_warning \
       "${_msg[*]}"
@@ -117,18 +120,26 @@ _network_setup() {
   _network_backend="${_uri_network}"
 }
 
+_contract_type_get() {
+  local \
+    _contract="{1}"
+}
+
 _contract_setup() {
   local \
-    _contract="${1}" \
+    _contract_address="${1}" \
     _evmfs_address_opts=()
-  if [[ "${_contract}" == "" ]]; then
+  if [[ "${_contract_address}" == "" ]]; then
     _evmfs_address_opts+=(
       -n
         "${_uri_network}"
     )
-    _uri_contract="$( \
+    # TODO: not implemented
+    _uri_contract_address="$( \
       evmfs-address \
         "${_evmfs_address_opts[@]}")"
+  elif [[ "${_contract_address}" != "" ]]; then
+    _contract_type_get
   fi
 }
 
@@ -722,24 +733,30 @@ _resource_get() {
     "${_msg[*]}"
 }
 
+
 _evmfs_get() {
   local \
     _fs_address="${1}" \
     _ll_address="${2}" \
+    _ccfs_address="${2}" \
     _fs_version="${3}" \
     _deployments_dir="${4}" \
     _wallet_name="${5}" \
     _wallet_path="${6}" \
     _wallet_password="${7}" \
     _wallet_seed="${8}" \
-    _target_network="${9}" \
+    _networks_amount="${9}" \
     _api_key_path="${10}" \
     _call_method="${11}" \
     _retries_max="${12}" \
     _tasks_parallel="${13}" \
     _cache_dir="${14}" \
-    _target_uri="${15}" \
-    _output_file="${16}" \
+    _uris_amount="${15}" \
+    _target_networks=() \
+    _uri \
+    _target_uris=() \
+    _file \
+    _output_files=() \
     _evm_contract_call_opts=() \
     _length_call_opts=() \
     _get_call_opts=() \
@@ -753,8 +770,32 @@ _evmfs_get() {
     _uri_network \
     _uri_network_id \
     _uri_contract \
+    _uri_contract_type \
     _uri_namespace \
     _uri_hash
+  shift \
+    15
+  for _network \
+    in $(seq "${_networks_amount}"); do
+    _target_networks+=(
+      "${1}"
+    )
+    shift
+  done
+  for _uri \
+    in $(seq "${_uris_amount}"); do
+    _target_uris+=(
+      "${1}"
+    )
+    shift
+  done
+  for _file \
+    in $(seq "${_uris_amount}"); do
+    _output_files+=(
+      "${1}"
+    )
+    shift
+  done
   _contract_artifacts_auto_detect \
     "${_deployments_dir}" \
     "${_target_network}" \
@@ -861,6 +902,38 @@ _tasks_parallel_auto_detect() {
     "${_tasks_parallel}"
 }
 
+_outputs_files_check() {
+  local \
+    _msg=() \
+    _file \
+    _dir
+  if [[ "${network_amounts}" != "${#output_files[@]}" ]]; 
+    _msg=(
+      "The amount of input URIs is not"
+      "the same as the specified amount"
+      "of output files."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  for _file in "${output_files[@]}"; do
+    _dir="$( \
+      dirname \
+        "${_file}")"
+    if [[ ! -d "${_dir}" ]]; then
+      _msg=(
+        "The parent directory for"
+        "output file '${_file}'"
+        "does not exist."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  done
+}
+
 _set_overrides() {
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -876,6 +949,9 @@ _set_overrides() {
     "get" \
     "date" \
     "$(_get_date_human)"
+  networks_amount="${#target_networks[@]}"
+  uris_amount="${#target_uris[@]}"
+  _output_files_check
   _cache_dir_auto_detect
   _set_override \
     "call" \
@@ -955,6 +1031,14 @@ _set_overrides() {
     "${fs_version}" \
     "${user_level}" \
     "${deployments_dir}"
+  _contract_address_auto_detect \
+    "evmfs" \
+    "CrossChainFileSystem" \
+    "ccfs" \
+    "${target_network}" \
+    "${fs_version}" \
+    "${user_level}" \
+    "${deployments_dir}"
 }
 
 # Show help usage, with an exit status.
@@ -997,6 +1081,9 @@ $(_display_networks \
      -B <ll_address>        Address of the Length Lock contract
                             on the network.
                             Default: ${ll_address}
+     -C <ccfs_address>      Address of the CrossChainFileSystem
+                            contract on the network.
+                            Default: ${ccfs_address}
      -V <fs_version>        Version of the target EVM file
                             system.
                             Default: ${fs_version}
@@ -1025,7 +1112,7 @@ $(_display_networks \
                             Default: ${retries_max}
      -P <tasks_parallel>    Tasks to perform in parallel.
                             Default: ${tasks_parallel}
-     -C <cache_dir>         Location where to temporary store
+     -W <cache_dir>         Location where to temporary store
                             the downloaded resource chunks.
                             Default: ${cache_dir}
 
@@ -1056,24 +1143,25 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "                 Get date:   ${get_date}"
-  _msg_info "      File system address:   ${fs_address}"
-  _msg_info "      Length Lock address:   ${ll_address}"
-  _msg_info "      File system version:   ${fs_version}"
-  _msg_info "               User level:   ${user_level}"
-  _msg_info "    Deployments directory:   ${deployments_dir}"
-  _msg_info "              Wallet name:   ${wallet_name}"
-  _msg_info "              Wallet path:   ${wallet_path}"
-  _msg_info "          Wallet password:   ${wallet_password}"
-  _msg_info "              Wallet seed:   ${wallet_seed}"
-  _msg_info "           Target network:   ${target_network}"
-  _msg_info "                  API key:   ${api_key}"
-  _msg_info "          Cache directory:   ${cache_dir}"
-  _msg_info "              Call method:   ${call_method}"
-  _msg_info "          Maximum retries:   ${retries_max}"
-  _msg_info "           Parallel tasks:   ${tasks_parallel}"
-  _msg_info "          Target resource:   ${target_uri}"
-  _msg_info "              Output file:   ${output_file}"
+  _msg_info "                       Get date:   ${get_date}"
+  _msg_info "Cross-chain File System address:   ${ccfs_address}"
+  _msg_info "            File system address:   ${fs_address}"
+  _msg_info "            Length Lock address:   ${ll_address}"
+  _msg_info "            File system version:   ${fs_version}"
+  _msg_info "                     User level:   ${user_level}"
+  _msg_info "          Deployments directory:   ${deployments_dir}"
+  _msg_info "                    Wallet name:   ${wallet_name}"
+  _msg_info "                    Wallet path:   ${wallet_path}"
+  _msg_info "                Wallet password:   ${wallet_password}"
+  _msg_info "                    Wallet seed:   ${wallet_seed}"
+  _msg_info "                 Target network:   ${target_network}"
+  _msg_info "                        API key:   ${api_key}"
+  _msg_info "                Cache directory:   ${cache_dir}"
+  _msg_info "                    Call method:   ${call_method}"
+  _msg_info "                Maximum retries:   ${retries_max}"
+  _msg_info "                 Parallel tasks:   ${tasks_parallel}"
+  _msg_info "                Target resource:   ${target_uri}"
+  _msg_info "                    Output file:   ${output_file}"
 }
 
 _globals
@@ -1086,13 +1174,16 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'o:A:B:V:ud:N:w:p:s:n:k:m:r:P:C:cvh?' \
+    'o:A:B:C:V:ud:N:w:p:s:n:k:m:r:P:W:cvh?' \
     arg; do
   case \
     "${arg}" in
-    o) override_output_file="${OPTARG}" ;;
+    o) output_files+=(
+         "${OPTARG}"
+       ) ;;
     A) override_fs_address="${OPTARG}" ;;
     B) override_ll_address="${OPTARG}" ;;
+    C) override_ccfs_address="${OPTARG}" ;;
     V) override_fs_version="${OPTARG}" ;;
     u) override_user_level="y" ;;
     d) override_deployments_dir="${OPTARG}" ;;
@@ -1100,12 +1191,14 @@ while \
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
-    n) override_target_network="${OPTARG}" ;;
+    n) target_networks+=(
+         "${OPTARG}"
+       ) ;;
     k) override_api_key="${OPTARG}" ;;
     m) override_call_method="${OPTARG}" ;;
     r) override_retries_max="${OPTARG}" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
-    C) override_cache_dir="${OPTARG}" ;;
+    W) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -1126,37 +1219,47 @@ shift \
   ))
 if (( $# < 1 )); then
   _msg_error \
-    "no URI given" \
+    "No URI given." \
     0
   _set_overrides
   _usage \
     1
 fi
-if (( 0 < $# )); then
-  _set \
-    "target" \
-    "uri" \
-    "${1}"
-fi
+for _uri in "$@"; do
+  if [[ ! -e "${_uri}" != "evmfs://"* ]]; then
+    _msg=(
+      "Input URI '${_uri}' is not an EVMFS URI."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  target_uris+=(
+    "${_uri}"
+  )
+done
 _set_overrides
 _show_config
 app_opts=(
   "${fs_address}"
   "${ll_address}"
+  "${ccfs_address}"
   "${fs_version}"
   "${deployments_dir}"
   "${wallet_name}"
   "${wallet_path}"
   "${wallet_password}"
   "${wallet_seed}"
-  "${target_network}"
+  "${networks_amount}"
   "${api_key}"
   "${call_method}"
   "${retries_max}"
   "${tasks_parallel}"
   "${cache_dir}"
-  "${target_uri}"
-  "${output_file}"
+  "${uris_amount}"
+  "${target_networks[@]}"
+  "${target_uris[@]}"
+  "${output_files[@]}"
 )
 _evmfs_get \
   "${app_opts[@]}"

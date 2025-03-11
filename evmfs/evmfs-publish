@@ -1709,12 +1709,15 @@ $(_display_networks \
      "${_networks[*]}")
 
   options:
-     -A <fs_address>        Address of the EVM file system
+     -A <fs_address>        Address of the FileSystem contract
                             on the network.
                             Default: ${fs_address}
-     -B <ll_address>        Address of the Length Lock contract
+     -B <ll_address>        Address of the LengthLock contract
                             on the network.
                             Default: ${ll_address}
+     -C <ccfs_address>      Address of the CrossChainFileSystem
+                            contract on the network.
+                            Default: ${ccfs_address}
      -V <fs_version>        Version of the target EVM file
                             system.
                             Default: ${fs_version}
@@ -1746,7 +1749,7 @@ $(_display_networks \
                             Default: ${lock_only}
      -P <tasks_parallel>    Tasks to perform in parallel.
                             Default: ${tasks_parallel}
-     -C <cache_dir>         Work directory
+     -W <cache_dir>         Work directory
                             Default: ${cache_dir}
 
      -h                     This message.
@@ -1844,12 +1847,13 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:V:ud:N:w:p:s:n:k:m:r:LP:C:cvh?' \
+    'A:B:C:V:ud:N:w:p:s:n:k:m:r:LP:W:cvh?' \
     arg; do
   case \
     "${arg}" in
     A) override_fs_address="${OPTARG}" ;;
     B) override_ll_address="${OPTARG}" ;;
+    C) override_ccfs_address="${OPTARG}" ;;
     V) override_fs_version="${OPTARG}" ;;
     u) override_user_level="y" ;;
     d) override_deployments_dir="${OPTARG}" ;;
@@ -1865,7 +1869,7 @@ while \
     r) override_retries_max="${OPTARG}" ;;
     L) override_lock_only="y" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
-    C) override_cache_dir="${OPTARG}" ;;
+    W) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -1873,7 +1877,7 @@ while \
            0 ;;
     *)
     _msg_error \
-      "Invalid argument '${arg}'" \
+      "Invalid argument '${arg}'." \
       0
     _usage \
       1
@@ -1886,7 +1890,7 @@ shift \
   ))
 if (( $# < 1 )); then
   _msg_error \
-    "no file given" \
+    "No input file given." \
     0
   _set_overrides
   _usage \
@@ -1895,7 +1899,7 @@ fi
 for _file in "$@"; do
   if [[ ! -e "${_file}" ]]; then
     _msg=(
-      "file '${_file}' does not exists."
+      "File '${_file}' does not exists."
     )
     _msg_error \
       "${_msg[*]}" \
