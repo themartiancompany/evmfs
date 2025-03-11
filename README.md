@@ -93,9 +93,11 @@ Upon installation, manual can be consulted by typing:
     evmfs
 ```
 
-Notes and other documentation are in the `docs` source
-tree directory and installed onto the `<data_dir>/doc/evmfs`
-directory.
+Notes and other documentation are in the
+[`docs`](
+  docs)
+source tree directory and installed onto the
+`<data_dir>/doc/evmfs` directory.
 
 You can consult the manual from an online mirror of this
 repository. The `rst` source files are located in the `man`
