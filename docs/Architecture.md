@@ -33,9 +33,10 @@ strings are locked to avoid tampering.
 </p>
 
 In the picture above, the yellow, blue and red boxes
-respectively represent a FileSystem contract deployment
-(`0x12d...`), an user namespace (`0xd354...`) and the
-checksum of the uploaded `mars.png` file (`f1c220...`).
+respectively represent
+- a FileSystem contract deployment (`0x12d...`),
+- an user namespace (`0xd354...`) and
+- the checksum of the uploaded `mars.png` file (`f1c220...`).
 
 ### LengthLock 
 
