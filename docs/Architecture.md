@@ -26,7 +26,11 @@ strings are locked to avoid tampering.
     <img
        src="media/evmfs.png"
        alt="How evmfs-publish writes on FileSystem" />
-    <figcaption>How evmfs-publish writes on FileSystem.</figcaption>
+    <center>
+      <figcaption>
+        How evmfs-publish writes on FileSystem.
+      </figcaption>
+    </center>
 </figure>
 
 In the picture above, the yellow, blue and red boxes
