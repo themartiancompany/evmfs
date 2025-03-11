@@ -56,12 +56,12 @@ ur evmfs
 ```
 
 Since the EVMFS is actually an Ur dependency, if
-you're coming from a system not integrating the
-Ur, you may want to install a binary build from
-the
+you're coming from a system not integrating
+or packaging the Ur, you may want to install
+a binary build from the
 [Fur](
-  https://github.com/themartiancompany/fur)
-fallback user repository.
+  https://github.com/themartiancompany/fur),
+the fallback user repository.
 
 #### Building from source
 
