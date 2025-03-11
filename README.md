@@ -47,7 +47,7 @@ The EVMFS is a core component of the
 The EVMFS has been officially published on the
 [Ur](
   https://github.com/themartiancompany/ur),
-uncensorable, distributed, permissionless
+the uncensorable, distributed, permissionless
 Life and DogeOS user repository and application store,
 so it can be seamlessly installed by typing
 
