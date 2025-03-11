@@ -31,7 +31,7 @@
      inkscape:window-x="43"
      inkscape:window-y="24"
      inkscape:window-maximized="0"
-     inkscape:current-layer="g15" />
+     inkscape:current-layer="layer1" />
   <defs
      id="defs1">
     <marker
@@ -404,7 +404,8 @@
     <g
        id="g15"
        inkscape:label="fs"
-       transform="translate(17.38397,53.670241)">
+       transform="translate(17.38397,53.670241)"
+       inkscape:connector-avoid="true">
       <rect
          style="fill:#f4f8b2;fill-opacity:1;stroke:#000000;stroke-width:6.36494;stroke-linecap:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:15.874;stroke-opacity:1"
          id="rect11-3"
