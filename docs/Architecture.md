@@ -27,7 +27,7 @@ strings are locked to avoid tampering.
     <img
       src="media/evmfs.png"
       alt="How evmfs-publish writes on FileSystem" />
-    How evmfs-publish writes on FileSystem.
+    *How evmfs-publish writes on FileSystem.*
 </p>
 
 In the picture above, the yellow, blue and red boxes
