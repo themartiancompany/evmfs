@@ -122,13 +122,73 @@ _network_setup() {
 
 _contract_type_get() {
   local \
-    _contract="{1}"
+    _contract_address="{1}" \
+    _address \
+    _address_lower \
+    _fs_addresses=() \
+    _ccfs_addresses=() \
+    _evm_contract_deployment_address_opts=() \
+    _type_fs \
+    _type_ccfs
+    _msg=()
+  _type_fs="false"
+  _type_ccfs="false"
+  _evm_contract_deployment_address_opts+=(
+    -a
+      "evmfs"
+  )
+  _fs_addresses+=( $( \
+    evm-contract-deployment-address \
+      "${_emfs_contract_deployment_address[@]}" \
+      "FileSystem")
+  )
+  _ccfs_addresses+=( $( \
+    evm-contract-deployment-address \
+      "${_emfs_contract_deployment_address[@]}" \
+      "CrossChainFileSystem")
+  )
+  for _address in \
+    "${_fs_addresses}"; do
+    _address_lower="$( \
+      _lower \
+        "${_address}")"
+    if [[ "${_contract_address}" == \
+          "${_address_lower}" ]]; then
+      _type_fs="true"
+      _contract_type="fs"
+      break
+    fi
+  done
+  for _address in \
+    "${_ccfs_addresses}"; do
+    _address_lower="$( \
+      _lower \
+        "${_address}")"
+    if [[ "${_contract_address}" == \
+          "${_address_lower}" ]]; then
+      _type_ccfs="true"
+      _contract_type="ccfs"
+      break
+    fi
+  done
+  if [[ "${_type_fs}" == "true" && \
+        "${_type_ccfs}" == "true" ]]; then
+    _msg=(
+      "Provided contract address"
+      "is valid for both a FileSystem"
+      "and a CrossChainFileSystem,"
+      "assuming it's for the latter."
+    )
+    _msg_warning \
+      "${_msg[*]}"
+  fi
 }
 
 _contract_setup() {
   local \
     _contract_address="${1}" \
-    _evmfs_address_opts=()
+    _evmfs_address_opts=() \
+    _contract_type
   if [[ "${_contract_address}" == "" ]]; then
     _evmfs_address_opts+=(
       -n
@@ -140,6 +200,7 @@ _contract_setup() {
         "${_evmfs_address_opts[@]}")"
   elif [[ "${_contract_address}" != "" ]]; then
     _contract_type_get
+    _uri_contract_type="${_contract_type}"
   fi
 }
 
@@ -190,18 +251,26 @@ _hash_get() {
 
 _namespace_get() {
   local \
-    _uri="${1}"
-  _address_section_get \
-    "${_uri}" \
-    "2"
+    _uri="${1}" \
+    _namespace
+  _namespace="$( \
+    _address_section_get \
+      "${_uri}" \
+      "2")"
+  _lower \
+    "${_namespace}"
 }
 
 _contract_get() {
   local \
-    _uri="${1}"
-  _address_section_get \
-    "${_uri}" \
-    "3"
+    _uri="${1}" \
+    _address
+  _address="$( \
+    _address_section_get \
+      "${_uri}" \
+      "3")"
+  _lower \
+    "${_address}"
 }
 
 _network_id_get() {
@@ -218,7 +287,7 @@ _hash_check() {
     _msg=()
   if [[ "${_hash}" == "" ]]; then
     _msg=(
-      "Invalid URI (empty)"
+      "Invalid URI (empty)."
     )
     _msg_error \
       "${_msg[*]}" \
@@ -636,7 +705,7 @@ _chunks_get_sync() {
            ${_length}); do
     _msg=(
       "Downloading chunk"
-      "'${_chunk}' of '${_length}'"
+      "'${_chunk}' of '${_length}'."
     )
     _msg_info \
       "${_msg[*]}"
@@ -681,7 +750,7 @@ _resource_get() {
     _file_length="$( \
       _resource_length_mutable_get)"
     _msg=(
-      "the file length is not locked,"
+      "The file length is not locked,"
       "the uploader could break"
       "the file at a later time, lock"
       "the length in your namespace to"
@@ -705,8 +774,8 @@ _resource_get() {
         "${_tasks_parallel}"
     else
       _msg=(
-        "invalid value for parallel"
-        "tasks ('${_tasks_parallel}')"
+        "Invalid value for parallel"
+        "tasks ('${_tasks_parallel}')."
       )
       _msg_error \
         "${_msg[*]}" \
@@ -752,10 +821,11 @@ _evmfs_get() {
     _tasks_parallel="${13}" \
     _cache_dir="${14}" \
     _uris_amount="${15}" \
+    _target_network \
     _target_networks=() \
-    _uri \
+    _target_uri \
     _target_uris=() \
-    _file \
+    _output_file \
     _output_files=() \
     _evm_contract_call_opts=() \
     _length_call_opts=() \
@@ -775,21 +845,21 @@ _evmfs_get() {
     _uri_hash
   shift \
     15
-  for _network \
+  for _target_network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
       "${1}"
     )
     shift
   done
-  for _uri \
+  for _target_uri \
     in $(seq "${_uris_amount}"); do
     _target_uris+=(
       "${1}"
     )
     shift
   done
-  for _file \
+  for _output_file \
     in $(seq "${_uris_amount}"); do
     _output_files+=(
       "${1}"
@@ -810,57 +880,59 @@ _evmfs_get() {
       "_ll" \
       "${_fs_version}"
   fi
-  _uri_network_id="$( \
-    _network_id_get \
-      "${_target_uri}")"
-  _network_setup \
-    "${_uri_network_id}"
-  _uri_contract="$( \
-    _contract_get \
-      "${_target_uri}")"
-  _contract_setup \
-    "${_uri_contract}"
-  _uri_namespace="$( \
-    _namespace_get \
-      "${_target_uri}")"
-  _namespace_setup \
-    "${_uri_namespace}"
-  _uri_hash="$( \
-    _hash_get \
-      "${_target_uri}")"
-  _hash_check \
-    "${_uri_hash}"
-  _evm_contract_call_opts+=(
-    -n
-      "${_uri_network}"
-    -t
-      "static"
-    -k
-      "${_api_key_path}"
-  )
-  _get_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
-    -A
-      "${_fs_abi}"
-    -B
-      "${_fs_bytecode}"
-    -C
-      "${_fs_compiler_output}"
-  )
-  _length_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
-    -A
-      "${_ll_abi}"
-    -B
-      "${_ll_bytecode}"
-    -C
-      "${_ll_compiler_output}"
-    -r
-      "10"
-  )
-  _resource_get \
-    "${_call_method}" \
-    "${_tasks_parallel}"
+  for _target_uri in "${_target_uris[@]}"; do
+    _uri_network_id="$( \
+      _network_id_get \
+        "${_target_uri}")"
+    _network_setup \
+      "${_uri_network_id}"
+    _uri_contract="$( \
+      _contract_get \
+        "${_target_uri}")"
+    _contract_setup \
+      "${_uri_contract}"
+    _uri_namespace="$( \
+      _namespace_get \
+        "${_target_uri}")"
+    _namespace_setup \
+      "${_uri_namespace}"
+    _uri_hash="$( \
+      _hash_get \
+        "${_target_uri}")"
+    _hash_check \
+      "${_uri_hash}"
+    _evm_contract_call_opts+=(
+      -n
+        "${_uri_network}"
+      -t
+        "static"
+      -k
+        "${_api_key_path}"
+    )
+    _get_call_opts+=(
+      "${_evm_contract_call_opts[@]}"
+      -A
+        "${_fs_abi}"
+      -B
+        "${_fs_bytecode}"
+      -C
+        "${_fs_compiler_output}"
+    )
+    _length_call_opts+=(
+      "${_evm_contract_call_opts[@]}"
+      -A
+        "${_ll_abi}"
+      -B
+        "${_ll_bytecode}"
+      -C
+        "${_ll_compiler_output}"
+      -r
+        "10"
+    )
+    _resource_get \
+      "${_call_method}" \
+      "${_tasks_parallel}"
+  done
   return \
     0
 }
