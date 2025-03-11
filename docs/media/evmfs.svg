@@ -1,0 +1,729 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="297mm"
+   height="210mm"
+   viewBox="0 0 1122.5197 793.70081"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   sodipodi:docname="evmfs.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.60837199"
+     inkscape:cx="540.78755"
+     inkscape:cy="410.93279"
+     inkscape:window-width="1275"
+     inkscape:window-height="754"
+     inkscape:window-x="43"
+     inkscape:window-y="24"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g15" />
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="marker8"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path8" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker5"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path5" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker4"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path4" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Triangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135" />
+    </marker>
+    <rect
+       x="213.76106"
+       y="352.12578"
+       width="120.96556"
+       height="34.798312"
+       id="rect8" />
+    <rect
+       x="64.704347"
+       y="490.59415"
+       width="85.089253"
+       height="25.999294"
+       id="rect3" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.05824"
+       id="rect3-2" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.058241"
+       id="rect3-2-9" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.058241"
+       id="rect3-2-92" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.058241"
+       id="rect3-2-5" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.058241"
+       id="rect3-2-9-5" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.058241"
+       id="rect3-2-92-4" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.058241"
+       id="rect3-2-5-4" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="126.49214"
+       height="28.058241"
+       id="rect3-2-5-4-8" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="135.42715"
+       height="51.886115"
+       id="rect3-2-5-4-2" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="227.89639"
+       height="53.853643"
+       id="rect3-2-5-4-2-2" />
+    <rect
+       x="213.76106"
+       y="352.12579"
+       width="120.96556"
+       height="34.798313"
+       id="rect8-6" />
+    <rect
+       x="213.76106"
+       y="352.12579"
+       width="120.96556"
+       height="34.798313"
+       id="rect8-6-0" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="85.089256"
+       height="25.999294"
+       id="rect3-20" />
+    <rect
+       x="64.704346"
+       y="490.59415"
+       width="401.16129"
+       height="62.764848"
+       id="rect3-2-5-4-2-2-7" />
+    <rect
+       x="213.76106"
+       y="352.12579"
+       width="137.1603"
+       height="40.68731"
+       id="rect8-6-0-2" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1"
+       width="1114.8889"
+       height="786.19751"
+       x="3.7882645"
+       y="3.7882645"
+       ry="48.480961"
+       inkscape:label="background" />
+    <g
+       id="g17"
+       inkscape:label="files"
+       transform="translate(14.022216,51.429071)">
+      <g
+         id="g12"
+         inkscape:label="file"
+         transform="matrix(1.2687298,0,0,1.2687298,-19.804017,-132.07894)">
+        <rect
+           style="fill:#a4ffea;fill-opacity:1;stroke:#000000;stroke-width:4.8526;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2"
+           width="54.727108"
+           height="67.012787"
+           x="55.337765"
+           y="452.35281"
+           ry="10.610355"
+           rx="8.9350376"
+           inkscape:label="file-box" />
+        <text
+           xml:space="preserve"
+           id="text2"
+           style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.64195805,0,0,0.64195805,23.870349,186.55819)"
+           inkscape:label="file-label"><tspan
+             x="64.705078"
+             y="508.29384"
+             id="tspan4"><tspan
+               style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+               id="tspan3">mars.png</tspan></tspan></text>
+        <ellipse
+           style="fill:#ef2b00;fill-opacity:1;stroke:#000000;stroke-width:2.4263;stroke-dasharray:none;stroke-opacity:1"
+           id="path3"
+           cx="82.86055"
+           cy="480.93533"
+           rx="16.747635"
+           ry="17.864143"
+           inkscape:label="file-icon" />
+      </g>
+      <g
+         id="g14"
+         inkscape:label="seed"
+         transform="matrix(1.2687298,0,0,1.2687298,-21.768821,-19.452232)">
+        <rect
+           style="fill:#ffe8a4;fill-opacity:1;stroke:#000000;stroke-width:4.8526;stroke-dasharray:none;stroke-opacity:1"
+           id="rect2-3"
+           width="54.727108"
+           height="67.012787"
+           x="56.71109"
+           y="36.214329"
+           ry="10.610355"
+           rx="8.9350376"
+           inkscape:label="seed-box" />
+        <text
+           xml:space="preserve"
+           id="text2-7"
+           style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-20);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.64195805,0,0,0.64195805,25.243674,-229.5803)"
+           inkscape:label="seed-label"><tspan
+             x="64.705078"
+             y="508.29384"
+             id="tspan6"><tspan
+               style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+               id="tspan5">seed.txt</tspan></tspan></text>
+        <rect
+           style="fill:#cf671a;fill-opacity:1;stroke:#553a1c;stroke-width:1.88976;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect5"
+           width="40.728146"
+           height="29.867308"
+           x="64.259964"
+           y="46.542057"
+           rx="20.364073"
+           ry="10.610355"
+           inkscape:label="seed-pic" />
+      </g>
+    </g>
+    <g
+       id="g11"
+       transform="matrix(0.78190104,0,0,0.78190104,-0.17853445,167.13112)"
+       inkscape:connector-avoid="true"
+       inkscape:label="encoded-file">
+      <rect
+         style="fill:#b5b5b5;fill-opacity:1;stroke:#000000;stroke-width:4.65461;stroke-linecap:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:15.874;stroke-opacity:1"
+         id="rect10"
+         width="176.6846"
+         height="334.2211"
+         x="371.94733"
+         y="303.84534"
+         rx="11.427325"
+         ry="13.569947"
+         inkscape:label="encoded-file-box" />
+      <g
+         id="g9"
+         inkscape:label="encoded-chunk1">
+        <rect
+           style="fill:#ffd96d;fill-opacity:1;stroke:#000000;stroke-width:3.10308;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9"
+           width="122.11823"
+           height="47.271568"
+           x="402.30289"
+           y="338.33313"
+           rx="11.427325"
+           ry="13.569947"
+           inkscape:label="encoded-chunk1-box" />
+        <text
+           xml:space="preserve"
+           id="text2-1"
+           style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.82102211,0,0,0.82102211,364.47915,-48.421815)"
+           inkscape:label="encoded-chunk1-label"><tspan
+             x="64.705078"
+             y="508.29384"
+             id="tspan17"><tspan
+               style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+               id="tspan7">mars.png.base64.1</tspan></tspan></text>
+      </g>
+      <g
+         id="g7"
+         inkscape:label="encoded-chunk2">
+        <rect
+           style="fill:#ffd96d;fill-opacity:1;stroke:#000000;stroke-width:3.10308;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9-0"
+           width="122.11823"
+           height="47.271568"
+           x="401.62753"
+           y="403.65875"
+           rx="11.427325"
+           ry="13.569947"
+           inkscape:label="encoded-chunk2-box" />
+        <text
+           xml:space="preserve"
+           id="text2-1-2"
+           style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-9);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.82102211,0,0,0.82102211,363.80377,16.903785)"
+           inkscape:label="encoded-chunk2-label"><tspan
+             x="64.705078"
+             y="508.29384"
+             id="tspan26"><tspan
+               style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+               id="tspan25">mars.png.base64.2</tspan></tspan></text>
+      </g>
+      <g
+         id="g6"
+         inkscape:label="encoded-chunkN">
+        <rect
+           style="fill:#ffd96d;fill-opacity:1;stroke:#000000;stroke-width:3.11437;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9-8"
+           width="123.03807"
+           height="47.260277"
+           x="401.58304"
+           y="571.17017"
+           rx="11.513401"
+           ry="13.566706"
+           inkscape:label="encoded-chunkN-box" />
+        <text
+           xml:space="preserve"
+           id="text2-1-9"
+           style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-92);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.82720637,0,0,0.82082597,363.47441,184.50759)"
+           inkscape:label="encoded-chunkN-label"><tspan
+             x="64.705078"
+             y="508.29384"
+             id="tspan28"><tspan
+               style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+               id="tspan27">mars.png.base64.N</tspan></tspan></text>
+      </g>
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.65461;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:4.65461, 18.6185;stroke-dashoffset:13.0329;stroke-opacity:1"
+         d="m 463.04347,571.17017 -0.2982,-120.23985"
+         id="path10"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect9-8"
+         inkscape:connection-end="#rect9-0"
+         inkscape:label="encoded-etc" />
+    </g>
+    <g
+       id="g15"
+       inkscape:label="fs"
+       transform="translate(17.38397,53.670241)">
+      <rect
+         style="fill:#f4f8b2;fill-opacity:1;stroke:#000000;stroke-width:6.36494;stroke-linecap:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:15.874;stroke-opacity:1"
+         id="rect11-3"
+         width="572.71582"
+         height="641.01489"
+         x="459.19656"
+         y="51.904976"
+         rx="17.61622"
+         ry="16.460106"
+         inkscape:connector-avoid="true"
+         inkscape:label="fs-box" />
+      <g
+         id="g8"
+         inkscape:label="namespace"
+         transform="translate(27.212494)">
+        <rect
+           style="fill:#6b5ff1;fill-opacity:1;stroke:#000000;stroke-width:4.43282;stroke-linecap:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:15.874;stroke-opacity:1"
+           id="rect11"
+           width="383.35254"
+           height="502.20828"
+           x="468.68204"
+           y="161.91351"
+           rx="10.882823"
+           ry="12.923349"
+           inkscape:connector-avoid="true"
+           inkscape:label="namespace-box" />
+        <text
+           xml:space="preserve"
+           id="text2-1-93-0-6-1"
+           style="font-size:32.8492px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-5-4-2-2);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(1.380079,0,0,1.3800109,414.45054,-489.63307)"
+           inkscape:label="namespace-label"><tspan
+             x="64.705078"
+             y="526.93337"
+             id="tspan30"><tspan
+               style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+               id="tspan29">0xd354ce745d3...</tspan></tspan></text>
+        <g
+           id="g11-6"
+           transform="matrix(0.78190104,0,0,0.78190104,257.88626,111.68323)"
+           inkscape:label="evmfs-file">
+          <rect
+             style="fill:#ec4021;fill-opacity:1;stroke:#000000;stroke-width:4.43282;stroke-linecap:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:15.874;stroke-opacity:1"
+             id="rect11-6"
+             width="219.58223"
+             height="371.02667"
+             x="508.18335"
+             y="262.3432"
+             rx="10.882823"
+             ry="12.923349"
+             inkscape:label="evmfs-file-box"
+             transform="matrix(1.2789343,0,0,1.2789343,-329.81956,-142.83551)" />
+          <text
+             xml:space="preserve"
+             id="text2-1-93-0-6"
+             style="font-size:24.1739px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-5-4-2);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+             transform="matrix(1.7650303,0,0,1.7649432,245.48278,-632.82506)"
+             inkscape:label="evmfs-file-label"><tspan
+               x="64.705078"
+               y="517.33627"
+               id="tspan32"><tspan
+                 style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+                 id="tspan31">f1c220c6c...</tspan></tspan></text>
+          <g
+             id="g5"
+             inkscape:label="chunks">
+            <rect
+               style="fill:#c5c5c5;fill-opacity:1;stroke:#000000;stroke-width:4.65461;stroke-linecap:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:15.874;stroke-opacity:1"
+               id="rect10-5"
+               width="176.6846"
+               height="334.2211"
+               x="371.94733"
+               y="303.84534"
+               rx="11.427325"
+               ry="13.569947"
+               inkscape:label="chunks-box"
+               transform="translate(-5.0307204e-6)" />
+            <g
+               id="g4"
+               inkscape:label="chunkN"
+               transform="translate(-5.0307204e-6)">
+              <rect
+                 style="fill:#9dff8a;fill-opacity:1;stroke:#000000;stroke-width:3.11437;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+                 id="rect9-8-2"
+                 width="123.03807"
+                 height="47.260277"
+                 x="401.58304"
+                 y="571.17017"
+                 rx="11.513401"
+                 ry="13.566706"
+                 inkscape:label="chunkN-box" />
+              <text
+                 xml:space="preserve"
+                 id="text2-1-93-0-3"
+                 style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-5-4-8);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+                 transform="matrix(1.7650302,0,0,1.7649431,309.08933,-287.78105)"
+                 inkscape:label="chunkN-label"><tspan
+                   x="64.705078"
+                   y="508.29384"
+                   id="tspan34"><tspan
+                     style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+                     id="tspan33">chunk N</tspan></tspan></text>
+            </g>
+            <path
+               style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:4.65461;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:4.65461, 18.6185;stroke-dashoffset:13.0329;stroke-opacity:1"
+               d="m 463.04347,571.17017 -0.2982,-120.23985"
+               id="path10-4"
+               inkscape:connector-type="polyline"
+               inkscape:connector-curvature="0"
+               inkscape:connection-start="#rect9-8-2"
+               inkscape:connection-end="#rect9-0-4"
+               inkscape:label="chunks-etc"
+               transform="translate(-5.0307204e-6)" />
+            <g
+               id="g3"
+               inkscape:label="chunk1">
+              <rect
+                 style="fill:#9dff8a;fill-opacity:1;stroke:#000000;stroke-width:3.10308;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+                 id="rect9-0-4"
+                 width="122.11823"
+                 height="47.271568"
+                 x="401.62753"
+                 y="403.65875"
+                 rx="11.427325"
+                 ry="13.569947"
+                 inkscape:label="chunk1-box" />
+              <text
+                 xml:space="preserve"
+                 id="text2-1-93-0"
+                 style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-5-4);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+                 transform="matrix(1.7650302,0,0,1.7649431,309.59338,-454.87266)"
+                 inkscape:label="chunk1-label"><tspan
+                   x="64.705078"
+                   y="508.29384"
+                   id="tspan36"><tspan
+                     style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+                     id="tspan35">chunk 1</tspan></tspan></text>
+            </g>
+            <g
+               id="g2"
+               inkscape:label="chunk0">
+              <rect
+                 style="fill:#9dff8a;fill-opacity:1;stroke:#000000;stroke-width:3.10308;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+                 id="rect9-6"
+                 width="122.11823"
+                 height="47.271568"
+                 x="402.30289"
+                 y="338.33313"
+                 rx="11.427325"
+                 ry="13.569947"
+                 inkscape:label="chunk0-box" />
+              <text
+                 xml:space="preserve"
+                 id="text2-1-93"
+                 style="font-size:16px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-5);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+                 transform="matrix(1.7650302,0,0,1.7649431,309.06803,-519.89566)"
+                 inkscape:label="chunk0-label"><tspan
+                   x="64.705078"
+                   y="508.29384"
+                   id="tspan38"><tspan
+                     style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+                     id="tspan37">chunk 0</tspan></tspan></text>
+            </g>
+          </g>
+        </g>
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:5.91043;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:5.91043, 17.7313;stroke-dashoffset:11.8209;stroke-opacity:1"
+           d="m 728.28206,450.74913 121.42288,-0.69384"
+           id="path11"
+           inkscape:connector-type="polyline"
+           inkscape:connector-curvature="0"
+           inkscape:label="files-etc" />
+      </g>
+      <path
+         style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.55906;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:7.55906, 22.6772;stroke-dashoffset:11.3386;stroke-opacity:1"
+         d="M 903.51896,480.56733 H 1034.4637"
+         id="path18"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:label="namespaces-etc"
+         transform="translate(-17.38397,-53.670241)" />
+      <text
+         xml:space="preserve"
+         id="text2-1-93-0-6-1-5"
+         style="font-size:38.6461px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-2-5-4-2-2-7);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:7.55906;stroke-dasharray:none;stroke-opacity:1"
+         transform="matrix(1.380079,0,0,1.3800109,398.18154,-606.82054)"
+         inkscape:label="fs-label"><tspan
+           x="64.705078"
+           y="533.34622"
+           id="tspan40"><tspan
+             style="font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern'"
+             id="tspan39">0x12d081a27d83f08908...</tspan></tspan></text>
+    </g>
+    <g
+       id="g16"
+       inkscape:label="functions"
+       transform="translate(17.38397,53.670241)">
+      <g
+         id="g1"
+         inkscape:label="publish">
+        <rect
+           style="fill:#f66dff;fill-opacity:1;stroke:#000000;stroke-width:2.42646;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9-0-5-9"
+           width="95.484367"
+           height="36.961689"
+           x="432.94141"
+           y="529.50452"
+           rx="8.9350376"
+           ry="10.610355"
+           inkscape:label="publish-label-box" />
+        <text
+           xml:space="preserve"
+           id="text8-1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:29.3333px;font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect8-6);display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.377953;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.64195805,0,0,0.64195805,316.08349,311.16855)"
+           inkscape:label="publish-label"><tspan
+             x="213.76172"
+             y="384.57513"
+             id="tspan41">publish</tspan></text>
+        <path
+           style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.58953;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Triangle)"
+           d="m 398.48424,577.78408 177.02223,0.029"
+           id="path12"
+           inkscape:connector-type="polyline"
+           inkscape:connector-curvature="0"
+           inkscape:label="publish-arrow" />
+      </g>
+      <g
+         id="g10"
+         inkscape:label="bin2txt">
+        <rect
+           style="fill:#f66dff;fill-opacity:1;stroke:#000000;stroke-width:2.42646;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9-0-5"
+           width="95.484367"
+           height="36.961689"
+           x="145.97729"
+           y="425.60416"
+           rx="8.9350376"
+           ry="10.610355"
+           inkscape:label="bin2txt-box" />
+        <text
+           xml:space="preserve"
+           id="text8"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:29.3333px;font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect8);display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.377953;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.64195805,0,0,0.64195805,30.02447,208.17328)"
+           inkscape:label="bin2txt-label"><tspan
+             x="213.76172"
+             y="384.57513"
+             id="tspan42">bin2txt</tspan></text>
+        <path
+           style="display:inline;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:3.77953;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker5)"
+           d="m 133.69012,485.15939 108.44824,0.66351"
+           id="path6"
+           inkscape:connector-type="polyline"
+           inkscape:connector-curvature="0"
+           inkscape:label="bin2txt-arrow" />
+      </g>
+      <g
+         id="g13"
+         inkscape:label="sha256sum"
+         transform="translate(24.595123,10.931166)">
+        <rect
+           style="fill:#f66dff;fill-opacity:1;stroke:#000000;stroke-width:2.42646;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9-0-5-9-3"
+           width="107.25028"
+           height="37.866772"
+           x="218.88907"
+           y="243.88907"
+           rx="8.9350376"
+           ry="10.610355"
+           inkscape:label="sha256sum-box" />
+        <text
+           xml:space="preserve"
+           id="text8-1-6"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:29.3333px;font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect8-6-0);display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.377953;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.64195805,0,0,0.64195805,101.87141,26.458186)"
+           inkscape:label="sha256sum-label"><tspan
+             x="213.76172"
+             y="384.57513"
+             id="tspan43">sha256sum</tspan></text>
+        <path
+           style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.77953;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4)"
+           d="M 55.511784,415.00889 H 510.66707 V 302.76454"
+           id="path1"
+           inkscape:connector-type="orthogonal"
+           inkscape:connector-curvature="0"
+           inkscape:label="sha256sum-arrow" />
+      </g>
+      <g
+         id="g13-9"
+         inkscape:label="evm-wallet"
+         transform="translate(12.273166,-90.74092)">
+        <rect
+           style="fill:#f66dff;fill-opacity:1;stroke:#000000;stroke-width:2.42646;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect9-0-5-9-3-3"
+           width="118.59174"
+           height="38.811882"
+           x="214.12796"
+           y="240.24855"
+           rx="8.9350376"
+           ry="10.610355"
+           inkscape:label="evm-wallet-box" />
+        <text
+           xml:space="preserve"
+           id="text8-1-6-6"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:29.3333px;font-family:'DEC Terminal Modern';-inkscape-font-specification:'DEC Terminal Modern';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect8-6-0-2);display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.377953;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+           transform="matrix(0.64195805,0,0,0.64195805,98.175117,22.817652)"
+           inkscape:label="evm-wallet-label"><tspan
+             x="213.76172"
+             y="384.57513"
+             id="tspan44">evm-wallet</tspan></text>
+        <path
+           style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.77953;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker8)"
+           d="M 67.242287,211.70261 H 495.89713 v 95.42901"
+           id="path7"
+           inkscape:connector-type="orthogonal"
+           inkscape:connector-curvature="0"
+           inkscape:label="evm-wallet-arrow" />
+      </g>
+    </g>
+  </g>
+</svg>
