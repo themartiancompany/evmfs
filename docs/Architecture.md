@@ -22,7 +22,8 @@ as integer mappings to text strings.
 After having been correctly uploaded, the chunks encoded
 strings are locked to avoid tampering.
 
-<center>
+<p
+  align="center">
   <figure>
     <img
       src="media/evmfs.png"
@@ -31,7 +32,7 @@ strings are locked to avoid tampering.
       How evmfs-publish writes on FileSystem.
     </figcaption>
   </figure>
-</center>
+</p>
 
 In the picture above, the yellow, blue and red boxes
 respectively represent a FileSystem contract deployment
