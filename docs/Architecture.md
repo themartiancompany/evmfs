@@ -22,16 +22,16 @@ as integer mappings to text strings.
 After having been correctly uploaded, the chunks encoded
 strings are locked to avoid tampering.
 
-<figure>
+<center>
+  <figure>
     <img
-       src="media/evmfs.png"
-       alt="How evmfs-publish writes on FileSystem" />
-    <center>
-      <figcaption>
-        How evmfs-publish writes on FileSystem.
-      </figcaption>
-    </center>
-</figure>
+      src="media/evmfs.png"
+      alt="How evmfs-publish writes on FileSystem" />
+    <figcaption>
+      How evmfs-publish writes on FileSystem.
+    </figcaption>
+  </figure>
+</center>
 
 In the picture above, the yellow, blue and red boxes
 respectively represent a FileSystem contract deployment
