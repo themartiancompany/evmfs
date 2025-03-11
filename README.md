@@ -30,7 +30,7 @@ evmfs \
     <evmfs_uri>
 ```
 
-Public file system's contracts deployments addresses on
+Public file system's contracts' deployment addresses on
 selected blockchain networks can be found in the 
 `contracts/deployments` directory in the source
 tree and are configured into the program at install time.
