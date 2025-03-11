@@ -22,7 +22,7 @@ as integer mappings to text strings.
 After having been correctly uploaded, the chunks encoded
 strings are locked to avoid tampering.
 
-![Design](media/evmfs.svg)
+![Design](media/evmfs.png)
 
 ### LengthLock 
 
