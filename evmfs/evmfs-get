@@ -665,14 +665,14 @@ _chunks_get_async_bulk() {
         "${_bulk_payload[@]}"
       )
       _run \
-        "chunks_get_bulk_${_index_start}_${_index_end}" \
+        "chunks_${_get_type}_bulk_${_index_start}_${_index_end}" \
         "0" \
         "async" \
         "_chunks_${_get_type}_bulk" \
           "${_chunks_get_opts[@]}"
       _pendings+=(
         "$(_get_pid \
-             "chunks_get_bulk_${_index_start}_${_index_end}")"
+             "chunks_${_get_type}_bulk_${_index_start}_${_index_end}")"
       )
       _bulk_payload=(
         "${_piece}"
