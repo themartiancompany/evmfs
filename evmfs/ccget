@@ -172,10 +172,11 @@ function
     0);
 }
 
-_rpc_backend_get(
-  _rpcs,
-  _chain_id,
-  _selection_method) {
+function 
+  _rpc_backend_get(
+    _rpcs,
+    _chain_id,
+    _selection_method) {
   let
     _evm_chains_rpc_backend_opts,
     _rpc;
