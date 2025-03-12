@@ -119,6 +119,7 @@ _network_setup() {
     _msg_warning \
       "${_msg[*]}"
   fi
+  # This variable seems never used.
   _network_backend="${_uri_network}"
 }
 
@@ -139,18 +140,24 @@ _contract_type_get() {
     -a
       "evmfs"
   )
+  if [[ "${_uri_network_id}" == "" ]]; then
+    _evm_contract_deployment_address_opts+=(
+      -i
+        "${_uri_network_id}"
+    )
+  fi
   _fs_addresses+=( $( \
     evm-contract-deployment-address \
-      "${_emfs_contract_deployment_address[@]}" \
+      "${_evm_contract_deployment_address[@]}" \
       "FileSystem")
   )
   _ccfs_addresses+=( $( \
     evm-contract-deployment-address \
-      "${_emfs_contract_deployment_address[@]}" \
+      "${_evm_contract_deployment_address[@]}" \
       "CrossChainFileSystem")
   )
   for _address in \
-    "${_fs_addresses}"; do
+    "${_fs_addresses[@]}"; do
     _address_lower="$( \
       _lower \
         "${_address}")"
@@ -162,7 +169,7 @@ _contract_type_get() {
     fi
   done
   for _address in \
-    "${_ccfs_addresses}"; do
+    "${_ccfs_addresses[@]}"; do
     _address_lower="$( \
       _lower \
         "${_address}")"
@@ -176,10 +183,13 @@ _contract_type_get() {
   if [[ "${_type_fs}" == "true" && \
         "${_type_ccfs}" == "true" ]]; then
     _msg=(
-      "Provided contract address"
+      "Since network has not been specified,"
+      "it has been found that the given"
+      "contract address"
       "is valid for both a FileSystem"
-      "and a CrossChainFileSystem,"
-      "assuming it's for the latter."
+      "and a CrossChainFileSystem."
+      "Assuming the URI points to"
+      "the latter."
     )
     _msg_warning \
       "${_msg[*]}"
@@ -196,7 +206,11 @@ _contract_setup() {
       -n
         "${_uri_network}"
     )
-    # TODO: not implemented
+    # TODO: not implemented,
+    #       but really this would just be
+    #       a composition of
+    #       'evm-contract-deployment-something's
+    #       if a check isn't implemented.
     _uri_contract_address="$( \
       evmfs-address \
         "${_evmfs_address_opts[@]}")"
@@ -414,7 +428,7 @@ _checkpoint_get() {
   fi
 }
 
-_chunk_ccget_bulk() {
+_chunks_ccget_bulk() {
   local \
     _ccfs_address="${1}" \
     _namespace="${2}" \
@@ -498,7 +512,7 @@ _chunk_ccget_bulk() {
 }
 
 
-_chunk_get_bulk() {
+_chunks_get_bulk() {
   local \
     _fs_address="${1}" \
     _namespace="${2}" \
@@ -585,11 +599,17 @@ _chunks_get_async_bulk() {
     _index \
     _index_start \
     _index_end \
-    _chunk_get_opts=() \
+    _chunks_get_opts=() \
     _pendings=() \
     _bulk_index_amount \
     _bulk_payload \
-    _msg=()
+    _msg=() \
+    _get_type
+  if [[ "${_uri_contract_type}" == "fs" ]]; then
+    _get_type="get"
+  elif [[ "${_uri_contract_type}" == "ccfs" ]]; then
+    _get_type="ccget"
+  fi
   _index=0
   _index_start="${_index}"
   _bulk_payload=()
@@ -621,7 +641,7 @@ _chunks_get_async_bulk() {
         "${_msg[*]}"
       _index_end="$(( \
         _index))"
-      _chunk_get_opts=(
+      _chunks_get_opts=(
         "${_uri_contract}"
         "${_uri_namespace}"
         "${_uri_hash}"
@@ -630,14 +650,14 @@ _chunks_get_async_bulk() {
         "${_bulk_payload[@]}"
       )
       _run \
-        "chunk_get_bulk_${_index_start}_${_index_end}" \
+        "chunks_get_bulk_${_index_start}_${_index_end}" \
         "0" \
         "async" \
-        _chunk_get_bulk \
-          "${_chunk_get_opts[@]}"
+        "_chunks_${_get_type}_bulk" \
+          "${_chunks_get_opts[@]}"
       _pendings+=(
         "$(_get_pid \
-             "chunk_get_bulk_${_index_start}_${_index_end}")"
+             "chunks_get_bulk_${_index_start}_${_index_end}")"
       )
       _bulk_payload=(
         "${_piece}"
@@ -652,7 +672,7 @@ _chunks_get_async_bulk() {
       _index + 1 ))"
     if [[ "${#_pendings[@]}" == "${_tasks_parallel}" ]]; then 
       _msg_info \
-        "waiting for a task to complete"
+        "Waiting for a task to complete."
       wait \
 	-f \
 	-p \
