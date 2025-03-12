@@ -980,6 +980,7 @@ _evmfs_get() {
     _uris_amount="${17}" \
     _target_network \
     _target_networks=() \
+    _cursor \
     _target_uri \
     _target_uris=() \
     _output_file \
@@ -1014,7 +1015,11 @@ _evmfs_get() {
     )
     shift
   done
-  for _target_uri in "${_target_uris[@]}"; do
+  for _cursor \
+    in $(seq 0 \
+             "$((${_uris_amount} - 1))"); do
+    _target_uri="${_target_uris["${_cursor}"]}"
+    _output_file="${_output_files["${_cursor}"]}"
     _uri_network_id="$( \
       _network_id_get \
         "${_target_uri}")"
