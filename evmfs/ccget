@@ -298,7 +298,6 @@ async function
     _read_fs_args,
     _rpcs,
     _rpc_backend,
-    _rpc_selection,
     _progress,
     _value,
     _wallet_seed_path;
