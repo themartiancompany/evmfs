@@ -457,12 +457,21 @@ _chunks_ccget_bulk() {
     _rpc_selection \
     _node_run_opts=() \
     _checkpoint_get_file_path \
-    _chunks_total_run
+    _chunks_total_run \
+    _ccfs_abi \
+    _ccfs_bytecode \
+    _ccfs_compiler_output
   shift \
     5
   _chunks=(
     "$@"
   )
+  _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_uri_network_id}" \
+    "CrossChainFileSystem" \
+    "_ccfs" \
+    "${_fs_version}"
   _rpc_selection="kirsh"
   _node_run_opts+=(
     -r
@@ -507,9 +516,9 @@ _chunks_ccget_bulk() {
       "${_fs_version}"
       "${_rpc_selection}"
       "${_uri_contract}"
-      "${_fs_abi}"
-      "${_fs_bytecode}"
-      "${_fs_compiler_output}"
+      "${_ccfs_abi}"
+      "${_ccfs_bytecode}"
+      "${_ccfs_compiler_output}"
       "${_uri_namespace}"
       "${_uri_hash}"
       "${_index_start}"
@@ -860,7 +869,6 @@ _resource_get() {
     _max_retries="${3}" \
     _chunks=() \
     _evm_contract_call_opts=() \
-    _length_call_opts=() \
     _get_call_opts=() \
     _fs_abi \
     _fs_bytecode \
@@ -879,12 +887,6 @@ _resource_get() {
       -d \
       -p \
         "${_cache_dir}/${_uri_hash}")"
-  _contract_artifacts_auto_detect \
-    "${_deployments_dir}" \
-    "${_uri_network_id}" \
-    "FileSystem" \
-    "_fs" \
-    "${_fs_version}"
   _evm_contract_call_opts+=(
     -n
       "${_uri_network_id}"
@@ -893,15 +895,23 @@ _resource_get() {
     -k
       "${_api_key_path}"
   )
-  _get_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
-    -A
-      "${_fs_abi}"
-    -B
-      "${_fs_bytecode}"
-    -C
-      "${_fs_compiler_output}"
-  )
+  if [[ "${_uri_contract_type}" == "fs" ]]; then
+    _contract_artifacts_auto_detect \
+      "${_deployments_dir}" \
+      "${_uri_network_id}" \
+      "FileSystem" \
+      "_fs" \
+      "${_fs_version}"
+    _get_call_opts+=(
+      "${_evm_contract_call_opts[@]}"
+      -A
+        "${_fs_abi}"
+      -B
+        "${_fs_bytecode}"
+      -C
+        "${_fs_compiler_output}"
+    )
+  fi
   if [[ "${_fs_version}" == "1.0" ]]; then
     _chunks_total_get
   fi
