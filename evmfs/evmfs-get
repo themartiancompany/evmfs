@@ -479,7 +479,7 @@ _chunks_ccget_bulk() {
   _msg_info \
     "${_msg[*]}"
   _rpc_backend_get \
-    "${_target_network}"
+    "${_uri_network_id}"
   _ccget="$( \
     _get_lib)/evmfs/get"
   while true; do
@@ -561,7 +561,7 @@ _chunks_get_bulk() {
   _msg_info \
     "${_msg[*]}"
   _rpc_backend_get \
-    "${_target_network}"
+    "${_uri_network_id}"
   _get="$( \
     _get_lib)/evmfs/get"
   while true; do
@@ -810,7 +810,7 @@ _chunks_total_get() {
     _length_call_opts=()
   _contract_artifacts_auto_detect \
     "${_deployments_dir}" \
-    "${_target_network}" \
+    "${_uri_network_id}" \
     "LengthLock" \
     "_ll" \
     "${_fs_version}"
@@ -872,7 +872,7 @@ _resource_get() {
         "${_cache_dir}/${_uri_hash}")"
   _contract_artifacts_auto_detect \
     "${_deployments_dir}" \
-    "${_target_network}" \
+    "${_uri_network_id}" \
     "FileSystem" \
     "_fs" \
     "${_fs_version}"
