@@ -1184,7 +1184,7 @@ _set_overrides() {
       "evmfs" \
       "LengthLock" \
       "ll" \
-      "${target_network}" \
+      "${target_networks[0]}" \
       "${fs_version}" \
       "${user_level}" \
       "${deployments_dir}"
@@ -1193,7 +1193,7 @@ _set_overrides() {
     "evmfs" \
     "FileSystem" \
     "fs" \
-    "${target_network}" \
+    "${target_networks[0]}" \
     "${fs_version}" \
     "${user_level}" \
     "${deployments_dir}"
@@ -1201,7 +1201,7 @@ _set_overrides() {
     "evmfs" \
     "CrossChainFileSystem" \
     "ccfs" \
-    "${target_network}" \
+    "${target_network[0]}" \
     "${fs_version}" \
     "${user_level}" \
     "${deployments_dir}"
