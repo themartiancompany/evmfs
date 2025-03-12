@@ -1063,21 +1063,21 @@ _output_files_check() {
         "${_msg[*]}" \
         1
     elif [[ "${_output_files_amount}" == 0 ]]; then
-    fi
-    _msg=(
-      "No output files paths specified,"
-      "the URIs will be downloaded in the current"
-      "directory named same as their hashes."
-    )
-    _msg_warning \
-      "${_msg[*]}"
-    for _uri in "${target_uris[@]}"; do
-      output_files+=(
-        "$(pwd)/$( \
-          _hash_get \
-            "${_uri}")"
+      _msg=(
+        "No output files paths specified,"
+        "the URIs will be downloaded in the current"
+        "directory named same as their hashes."
       )
-    done
+      _msg_warning \
+        "${_msg[*]}"
+      for _uri in "${target_uris[@]}"; do
+        output_files+=(
+          "$(pwd)/$( \
+            _hash_get \
+              "${_uri}")"
+        )
+      done
+    fi
   elif [[ "${uris_amount}" == "${_output_files_amount}" ]]; then
     for _file in "${output_files[@]}"; do
       _dir="$( \
