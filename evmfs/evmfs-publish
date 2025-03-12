@@ -617,7 +617,7 @@ _chunks_publish_bulk() {
     _msg_info \
       "Running node."
     node-run \
-      "${_node_run[@]}" \
+      "${_node_run_opts[@]}" \
       "${_publish}" \
       "${_publish_args[@]}"
   done
