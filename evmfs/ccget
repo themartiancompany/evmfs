@@ -373,7 +373,7 @@ async function
     // now we just select the kirsh
     // one.
     _reference =
-      "0";
+      0;
     _read_chain_id_args =
       _read_chain_id_base_args.concat(
         [_index.toString(),
