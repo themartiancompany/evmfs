@@ -127,6 +127,7 @@ _network_setup() {
 _contract_type_get() {
   local \
     _contract_address="{1}" \
+    _contract_address_lower \
     _address \
     _address_lower \
     _fs_addresses=() \
@@ -135,6 +136,7 @@ _contract_type_get() {
     _type_fs \
     _type_ccfs
     _msg=()
+  _contract_type=""
   _type_fs="false"
   _type_ccfs="false"
   _evm_contract_deployment_address_opts+=(
@@ -157,6 +159,9 @@ _contract_type_get() {
       "${_evm_contract_deployment_address_opts[@]}" \
       "CrossChainFileSystem")
   )
+  _contract_address_lower="$( \
+    lower \
+      "${_contract_address}")"
   for _address in \
     "${_fs_addresses[@]}"; do
     _address_lower="$( \
@@ -194,6 +199,15 @@ _contract_type_get() {
     )
     _msg_warning \
       "${_msg[*]}"
+  fi
+  if [[ "${_contract_type}" == "" ]]; then
+    _msg=(
+      "Contract address not found"
+      "among local deployments,"
+      "assuming it's for a cross-chain"
+      "file system."
+    )
+    _contract_type="ccfs"
   fi
 }
 
