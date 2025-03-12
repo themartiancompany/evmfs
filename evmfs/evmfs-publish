@@ -622,8 +622,6 @@ _chunks_publish_bulk() {
       "${_publish}" \
       "${_publish_args[@]}"
   done
-  rm \
-    "${_checkpoint_publish_file_path}"
 }
 
 _chunks_verify_bulk() {
@@ -696,8 +694,6 @@ _chunks_verify_bulk() {
       "${_verify}" \
       "${_verify_args[@]}"
   done
-  rm \
-    "${_checkpoint_verify_file_path}"
 }
 
 _chunks_lock_bulk() {
@@ -770,8 +766,6 @@ _chunks_lock_bulk() {
       "${_lock}" \
       "${_lock_args[@]}"
   done
-  rm \
-    "${_checkpoint_lock_file_path}"
 }
 
 # NOTE: This parallel processes method
@@ -1258,8 +1252,6 @@ _index_publish_bulk() {
       "${_index}" \
       "${_index_args[@]}"
   done
-  rm \
-    "${_checkpoint_index_file_path}"
 }
 
 _target_ll_fs_address_get() {
