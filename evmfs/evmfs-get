@@ -414,6 +414,90 @@ _checkpoint_get() {
   fi
 }
 
+_chunk_ccget_bulk() {
+  local \
+    _ccfs_address="${1}" \
+    _namespace="${2}" \
+    _sum="${3}" \
+    _index_start="${4}" \
+    _index_end="${5}" \
+    _chunks=() \
+    _ccget \
+    _ccget_args=() \
+    _rpc_backend \
+    _rpc_selection \
+    _node_run_opts=() \
+    _checkpoint_get_file_path \
+    _chunks_total_run
+  shift \
+    5
+  _chunks=(
+    "$@"
+  )
+  _rpc_selection="kirsh"
+  _node_run_opts+=(
+    -r
+      "${_retries_max}"
+  )
+  _checkpoint_get_file_path="${_tmp_dir}/checkpoint.get"
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" + 1))"
+  _msg=(
+    "Getting '${_chunks_total_run}'"
+    "chunks from '${_index_start}'"
+    "to '${_index_end}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _rpc_backend_get \
+    "${_target_network}"
+  _ccget="$( \
+    _get_lib)/evmfs/get"
+  while true; do
+    _checkpoint_get \
+      "${_checkpoint_get_file_path}"
+    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+      _msg=(
+        "All '${_chunks_total_run}' chunks retrieved."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      rm \
+        -rf \
+        "${_checkpoint_get_file_path}"
+      break
+    fi
+    _msg_info \
+      "Preparing node arguments."
+    _ccget_args=(
+      "${quiet}"
+      "${_retries_max}"
+      "${_api_key_path}"
+      "${_rpc_backend}"
+      "${_deployments_dir}"
+      "${_fs_version}"
+      "${_rpc_selection}"
+      "${_uri_contract}"
+      "${_fs_abi}"
+      "${_fs_bytecode}"
+      "${_fs_compiler_output}"
+      "${_uri_namespace}"
+      "${_uri_hash}"
+      "${_index_start}"
+      "${_index_end}"
+      "${_checkpoint_get_file_path}"
+      "${_chunks[@]}"
+    )
+    _msg_info \
+      "Running node."
+    node-run \
+      "${_node_run_opts[@]}" \
+      "${_ccget}" \
+      "${_ccget_args[@]}"
+  done
+}
+
+
 _chunk_get_bulk() {
   local \
     _fs_address="${1}" \
@@ -927,10 +1011,7 @@ _tasks_parallel_auto_detect() {
   local \
     _call_method \
     _tasks_parallel
-  _call_method="$( \
-    _get \
-      "call" \
-      "method")"
+  _call_method="${call_method}"
   if [[ "${_call_method}" == "standalone" ]]; then
     _tasks_parallel=200
   elif [[ "${_call_method}" == "bulk" ]]; then
@@ -1208,9 +1289,7 @@ _globals
 _global_variables
 _requirements
 _config_user_init \
-  "$(_get \
-       "app" \
-       "name")"
+  "${app_name}"
 # shellcheck disable=SC2034
 while \
   getopts \
