@@ -219,7 +219,7 @@ _contract_setup() {
   if [[ "${_contract_address}" == "" ]]; then
     _evmfs_address_opts+=(
       -n
-        "${_uri_network}"
+        "${_uri_network_id}"
     )
     # TODO: not implemented,
     #       but really this would just be
@@ -878,7 +878,7 @@ _resource_get() {
     "${_fs_version}"
   _evm_contract_call_opts+=(
     -n
-      "${_uri_network}"
+      "${_uri_network_id}"
     -t
       "static"
     -k
