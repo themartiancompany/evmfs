@@ -399,97 +399,35 @@ _node_run() {
   _args=(
     "$@"
   )
-  _retry=
+  _retry=1
   _lib="$( \
     _get_lib)"
   _node_path="${_lib}/node_modules" 
   export \
     NODE_PATH="${_node_path}"
-  NODE_PATH="${_node_path}" \
-     node \
-       "${_cmd}" \
-       "${_args[@]}"
-  return
-  # for _retry \
-  #   in $(seq "${_retries_max}"); do
-  #   if NODE_PATH="${_node_path}" \
-  #      node \
-  #        "${_cmd}" \
-  #        "${_args[@]}" 2>/dev/null; then
-  #     return
-  #   else
-  #     _msg=(
-  #       "contract calling error,"
-  #       "retry '${_retry}' out of"
-  #       "'${_retries_max}'"
-  #     )
-  #     _msg_error \
-  #       "${_msg[*]}" \
-  #       "0"
-  #   fi
-  # done
-  # return \
-  #   1
-}
-
-_node_network_setup() {
-  local \
-    _chain="${1}" \
-    _chain_name \
-    _chain_id \
-    _rpc \
-    _msg=()
-  _msg=(
-    "looking for info on EVM blockchain"
-    "'${_chain}'"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _chain_id="$( \
-    evm-chains-info \
-      -o \
-        "id" \
-      "${_chain}")"
-  if [[ "${_chain_id}" != "" ]]; then
-    _chain_name="$( \
-      evm-chains-info \
-        -o \
-          "name" \
-        "${_chain}" 2>/dev/null || \
-        true)"
-    _msg=(
-      "Found blockchain '${_chain_name}'"
-      "with id '${_chain_id}'"
-      "Selecting RPC address with"
-      "criterion 'kirsh'"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _rpc="$( \
-      evm-chains-info \
-        -o \
-          "rpc" \
-        -s \
-          "kirsh" \
-        "${_chain}")"
-  elif [[ "${_chain_id}" == "" ]]; then
-    _msg=(
-      "Found no known blockchain for input"
-      "'${_chain}', interpreting given input"
-      "as an rpc address for the selected"
-      "network."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _rpc="${_chain}"
-  fi
-  _msg=(
-    "Selected RPC address"
-    "'${_rpc}'"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _backend="${_rpc}"
+  for _retry \
+    in $(seq "${_retries_max}"); do
+    node \
+      "${_cmd}" \
+      "${_args[@]}"
+    if [ $? -eq 0 ]; then
+      _msg_info \
+        "Node exited gracefully."
+      return \
+        0
+    else
+      _msg=(
+        "Contract calling error,"
+        "retry '${_retry}' out of"
+        "'${_retries_max}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        "0"
+    fi
+  done
+  return \
+    1
 }
 
 _chunk_get_bulk() {
@@ -508,7 +446,7 @@ _chunk_get_bulk() {
   _chunks=(
     "$@"
   )
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_network}"
   _cmd="$( \
     _get_lib)/evmfs/get"
@@ -516,7 +454,7 @@ _chunk_get_bulk() {
     "${quiet}"
     "${_retries_max}"
     "${_api_key_path}"
-    "${_backend}"
+    "${_rpc_backend}"
     "${_uri_contract}"
     "${_fs_abi}"
     "${_fs_bytecode}"
@@ -727,7 +665,17 @@ _resource_get() {
   local \
     _call_method="${1}" \
     _tasks_parallel="${2}" \
+    _max_retries="${3}" \
     _chunks=() \
+    _evm_contract_call_opts=() \
+    _length_call_opts=() \
+    _get_call_opts=() \
+    _fs_abi \
+    _fs_bytecode \
+    _fs_compiler_output \
+    _ll_abi \
+    _ll_bytecode \
+    _ll_compiler_output \
     _length \
     _file_length \
     _tmp_dir \
@@ -735,7 +683,6 @@ _resource_get() {
     _attempt \
     _retries \
     _msg=()
-  _retries="4"
   mkdir \
     -p \
     "${_cache_dir}/${_uri_hash}/get"
@@ -744,6 +691,48 @@ _resource_get() {
       -d \
       -p \
         "${_cache_dir}/${_uri_hash}")"
+  _evm_contract_call_opts+=(
+    -n
+      "${_uri_network}"
+    -t
+      "static"
+    -k
+      "${_api_key_path}"
+  )
+  _get_call_opts+=(
+    "${_evm_contract_call_opts[@]}"
+    -A
+      "${_fs_abi}"
+    -B
+      "${_fs_bytecode}"
+    -C
+      "${_fs_compiler_output}"
+  )
+  _length_call_opts+=(
+    "${_evm_contract_call_opts[@]}"
+    -A
+      "${_ll_abi}"
+    -B
+      "${_ll_bytecode}"
+    -C
+      "${_ll_compiler_output}"
+    -r
+      "10"
+  )
+  _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_target_network}" \
+    "FileSystem" \
+    "_fs" \
+    "${_fs_version}"
+  if [[ "${_fs_version}" == "1.0" ]]; then
+    _contract_artifacts_auto_detect \
+      "${_deployments_dir}" \
+      "${_target_network}" \
+      "LengthLock" \
+      "_ll" \
+      "${_fs_version}"
+  fi
   _file_length="$( \
     _resource_length_get)"
   if [[ "${_file_length}" == "" ]]; then
@@ -762,7 +751,7 @@ _resource_get() {
   _length="$(( \
     _file_length + 1))"
   _attempt=1
-  while (( "${_attempt}" < "${_retries}" )); do
+  while (( "${_attempt}" < "${_retries_max}" )); do
     if (( 1 < "${_tasks_parallel}" )) || \
        [[ "${_call_method}" == "bulk" ]]; then
       "_chunks_get_async_${_call_method}" \
@@ -827,15 +816,6 @@ _evmfs_get() {
     _target_uris=() \
     _output_file \
     _output_files=() \
-    _evm_contract_call_opts=() \
-    _length_call_opts=() \
-    _get_call_opts=() \
-    _fs_abi \
-    _fs_bytecode \
-    _fs_compiler_output \
-    _ll_abi \
-    _ll_bytecode \
-    _ll_compiler_output \
     _network_backend \
     _uri_network \
     _uri_network_id \
@@ -866,20 +846,6 @@ _evmfs_get() {
     )
     shift
   done
-  _contract_artifacts_auto_detect \
-    "${_deployments_dir}" \
-    "${_target_network}" \
-    "FileSystem" \
-    "_fs" \
-    "${_fs_version}"
-  if [[ "${_fs_version}" == "1.0" ]]; then
-    _contract_artifacts_auto_detect \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "LengthLock" \
-      "_ll" \
-      "${_fs_version}"
-  fi
   for _target_uri in "${_target_uris[@]}"; do
     _uri_network_id="$( \
       _network_id_get \
@@ -901,37 +867,10 @@ _evmfs_get() {
         "${_target_uri}")"
     _hash_check \
       "${_uri_hash}"
-    _evm_contract_call_opts+=(
-      -n
-        "${_uri_network}"
-      -t
-        "static"
-      -k
-        "${_api_key_path}"
-    )
-    _get_call_opts+=(
-      "${_evm_contract_call_opts[@]}"
-      -A
-        "${_fs_abi}"
-      -B
-        "${_fs_bytecode}"
-      -C
-        "${_fs_compiler_output}"
-    )
-    _length_call_opts+=(
-      "${_evm_contract_call_opts[@]}"
-      -A
-        "${_ll_abi}"
-      -B
-        "${_ll_bytecode}"
-      -C
-        "${_ll_compiler_output}"
-      -r
-        "10"
-    )
     _resource_get \
       "${_call_method}" \
-      "${_tasks_parallel}"
+      "${_tasks_parallel}" \
+      "${_retries_max}"
   done
   return \
     0

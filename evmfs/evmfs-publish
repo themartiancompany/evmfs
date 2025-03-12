@@ -133,6 +133,8 @@ _node_run() {
     if [ $? -eq 0 ]; then
       _msg_info \
         "Node exited gracefully."
+        "Or crashed, it's not like"
+        "it really tells you."
       return \
         0
     else
@@ -564,66 +566,6 @@ _verify_skip() {
   _verify_queue["${_index}"]="false"
 }
 
-_node_network_setup() {
-  local \
-    _chain="${1}" \
-    _chain_name \
-    _chain_id \
-    _rpc \
-    _msg=()
-  _msg=(
-    "looking for info on EVM blockchain"
-    "'${_chain}'"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _chain_id="$( \
-    evm-chains-info \
-      -o \
-        "id" \
-      "${_chain}")"
-  if [[ "${_chain_id}" != "" ]]; then
-    _chain_name="$( \
-      evm-chains-info \
-        -o \
-          "name" \
-        "${_chain}" 2>/dev/null || \
-        true)"
-    _msg=(
-      "Found blockchain '${_chain_name}'"
-      "with id '${_chain_id}'"
-      "Selecting RPC address with"
-      "criterion 'kirsh'"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _rpc="$( \
-      evm-chains-info \
-        -o \
-          "rpc" \
-        -s \
-          "kirsh" \
-        "${_chain}")"
-  elif [[ "${_chain_id}" == "" ]]; then
-    _msg=(
-      "Found no known blockchain for input"
-      "'${_chain}', interpreting given input"
-      "as an rpc address for the selected"
-      "network."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _rpc="${_chain}"
-  fi
-  _msg=(
-    "Selected RPC address"
-    "'${_rpc}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _backend="${_rpc}"
-}
-
 _checkpoint_get() {
   local \
     _checkpoint_file_path="${1}" \
@@ -658,7 +600,7 @@ _chunks_publish_bulk() {
     _index_end="${3}" \
     _publish \
     _publish_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_publish_file_path \
     _index_start \
@@ -675,7 +617,7 @@ _chunks_publish_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_network}"
   _publish="$( \
     _get_lib)/evmfs/publish"
@@ -700,7 +642,7 @@ _chunks_publish_bulk() {
       "${_retries_max}"
       "${_wallet_seed}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_fs_address}"
       "${_fs_abi}"
       "${_fs_bytecode}"
@@ -728,7 +670,7 @@ _chunks_verify_bulk() {
     _index_end="${3}" \
     _verify \
     _verify_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_verify_file_path \
     _index_start \
@@ -744,7 +686,7 @@ _chunks_verify_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_network}"
   _verify="$( \
     _get_lib)/evmfs/verify"
@@ -766,7 +708,7 @@ _chunks_verify_bulk() {
       "${quiet}"
       "${_retries_max}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_fs_address}"
       "${_fs_abi}"
       "${_fs_bytecode}"
@@ -791,7 +733,7 @@ _chunks_lock_bulk() {
     _index_end="${3}" \
     _lock \
     _lock_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_lock_file_path \
     _index_start \
@@ -807,7 +749,7 @@ _chunks_lock_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_network}"
   _lock="$( \
     _get_lib)/evmfs/lock"
@@ -831,7 +773,7 @@ _chunks_lock_bulk() {
       "${_retries_max}"
       "${_wallet_seed}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_fs_address}"
       "${_fs_abi}"
       "${_fs_bytecode}"
@@ -1263,7 +1205,7 @@ _index_publish_bulk() {
     _index_end="${5}" \
     _index \
     _index_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_index_file_path \
     _index_start \
@@ -1280,7 +1222,7 @@ _index_publish_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_networks[0]}"
   _index="$( \
     _get_lib)/evmfs/index"
@@ -1306,7 +1248,7 @@ _index_publish_bulk() {
       "${_retries_max}"
       "${_wallet_seed}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_ccfs_address}"
       "${_ccfs_abi}"
       "${_ccfs_bytecode}"
