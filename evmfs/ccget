@@ -189,13 +189,13 @@ function
       _selection_method,
       // _evm_chains_db_path
     ];
-    rpcs[
+    _rpcs[
       _chain_id] =
       _evm_chains_rpc_backend_get.apply(
 	null,
 	_evm_chains_rpc_backend_opts);
   }
-  return rpcs;
+  return _rpcs;
 }
 
 async function
@@ -417,7 +417,6 @@ async function
       _index,
       _progress,
       _chunks_total);
-    console.log(_contract_abi_get);
     _fs_contract_abi_path =
       _contract_abi_get(
         _deployments_dir,
