@@ -930,20 +930,20 @@ _evmfs_get() {
   local \
     _fs_address="${1}" \
     _ll_address="${2}" \
-    _ccfs_address="${2}" \
-    _fs_version="${3}" \
-    _deployments_dir="${4}" \
-    _wallet_name="${5}" \
-    _wallet_path="${6}" \
-    _wallet_password="${7}" \
-    _wallet_seed="${8}" \
-    _networks_amount="${9}" \
-    _api_key_path="${10}" \
-    _call_method="${11}" \
-    _retries_max="${12}" \
-    _tasks_parallel="${13}" \
-    _cache_dir="${14}" \
-    _uris_amount="${15}" \
+    _ccfs_address="${3}" \
+    _fs_version="${4}" \
+    _deployments_dir="${5}" \
+    _wallet_name="${6}" \
+    _wallet_path="${7}" \
+    _wallet_password="${8}" \
+    _wallet_seed="${9}" \
+    _networks_amount="${10}" \
+    _api_key_path="${11}" \
+    _call_method="${12}" \
+    _retries_max="${13}" \
+    _tasks_parallel="${14}" \
+    _cache_dir="${15}" \
+    _uris_amount="${16}" \
     _target_network \
     _target_networks=() \
     _target_uri \
@@ -958,7 +958,7 @@ _evmfs_get() {
     _uri_namespace \
     _uri_hash
   shift \
-    15
+    16
   for _target_network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
