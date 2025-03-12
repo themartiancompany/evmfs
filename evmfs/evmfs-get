@@ -160,7 +160,7 @@ _contract_type_get() {
       "CrossChainFileSystem")
   )
   _contract_address_lower="$( \
-    lower \
+    _lower \
       "${_contract_address}")"
   for _address in \
     "${_fs_addresses[@]}"; do
