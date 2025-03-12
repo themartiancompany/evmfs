@@ -371,7 +371,9 @@ async function
     // multiple references for
     // redundancy though, but for
     // now we just select the kirsh
-    // one.
+    // one. This capability will be
+    // needed when implementing
+    // the crowd-sourced upload
     _reference =
       0;
     _read_chain_id_args =
