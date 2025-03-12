@@ -107,11 +107,11 @@ _network_setup() {
     )
     _msg_info \
       "${_msg[*]}"
-    _uri_network="${_target_network}"
+    _uri_network_id="${_target_network}"
   elif [[ "${_uri_network_id}" == "100" ]]; then
-    _uri_network="100"
+    _uri_network_id="100"
   fi
-  if [[ "${_uri_network}" != "${_target_network}" ]]; then
+  if [[ "${_uri_network_id}" != "${_target_network}" ]]; then
     _msg=(
       "URI network '${_uri_network}'"
       "different from user set network"
@@ -121,7 +121,7 @@ _network_setup() {
       "${_msg[*]}"
   fi
   # This variable seems never used.
-  _network_backend="${_uri_network}"
+  _network_backend="${_uri_network_id}"
 }
 
 _contract_type_get() {
