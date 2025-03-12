@@ -113,7 +113,7 @@ _network_setup() {
   fi
   if [[ "${_uri_network_id}" != "${_target_networks[0]}" ]]; then
     _msg=(
-      "URI network '${_uri_network}'"
+      "URI network '${_uri_network_id}'"
       "different from user set network"
       "'${_target_networks[0]}'."
     )
