@@ -53,16 +53,28 @@ _contract_compiler_output_get =
   _libevm_module._contract_compiler_output_get
 _evm_chains_rpc_backend_get =
   _libevm_module._rpc_backend_get
+const
+  _get_module =
+    require(
+      "./get");
+_get =
+  _get_module._get;
 
 function
   _global_variables() {
   app_name =
     "ccget";
   retries_max =
-    '';
+    "";
   api_key_path =
     "";
   target_network =
+    "";
+  deployments_dir =
+    "";
+  fs_version =
+    "";
+  rpc_selection =
     "";
   contract_address =
     "";
@@ -89,7 +101,7 @@ function
 }
 
 function
-  _msg_info_chunk_get(
+  _msg_info_chunk_dereference(
     _index,
     _progress,
     _total) {
@@ -97,7 +109,7 @@ function
     _msg,
     _template;
   _template =
-    "Downloading chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Dereferencing chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -115,7 +127,7 @@ function
 }
 
 function
-  _msg_info_chunk_got(
+  _msg_info_chunk_dereferenced(
     _index,
     _progress,
     _total) {
@@ -123,7 +135,7 @@ function
     _msg,
     _template;
   _template =
-    "Downloaded chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Derefereced chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -246,23 +258,6 @@ function
     "Input data checked.");
 }
 
-function
-  _chunk_file_path_check(
-    _path,
-    _index,
-    _cursor) {
-  if ( _path == undefined ) {
-    console.error(
-      "Chunk file for index",
-      _index,
-      "and cursor",
-      _cursor,
-      "undefined.");
-    process.exit(
-      1);
-  }
-}
-
 async function
   _ccget(
     _retries_max,
@@ -316,7 +311,7 @@ async function
   _get_opts =
     [];
   _wallet_seed_path =
-    '';
+    "";
   _read_chain_id_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
@@ -365,16 +360,12 @@ async function
   for ( var _index = _index_start;
 	_index <= _index_end;
 	_index++ ) {
-    _msg_info_chunk_get(
+    _msg_info_chunk_dereference(
       _index,
       _progress,
       _chunks_total);
     _chunk_file_path =
       _chunks_files_paths[_cursor];
-    _chunk_file_path_check(
-      _chunk_file_path,
-      _index,
-      _cursor);
     _read_chain_id_args =
       _read_chain_id_base_args.concat(
         [_index.toString(),
@@ -412,6 +403,10 @@ async function
         0);
       throw e;
     }
+    _msg_info_chunk_dereferenced(
+      _index,
+      _progress,
+      _chunks_total);
     _fs_contract_abi_path =
       _contract_abi_get(
         _deployments_dir,
@@ -456,14 +451,18 @@ async function
     _get.apply(
       null,
       _get_opts);
-    _msg_info_chunk_got(
-      _index,
-      _progress,
-      _chunks_total);
     _progress =
       _progress + 1;
     _cursor =
       _cursor + 1;
+  }
+}
+
+function
+  _overrides_set() {
+  if ( rpc_selection == "" ) {
+    rpc_selection =
+      "kirsh";
   }
 }
 
@@ -487,6 +486,18 @@ function
     "           Target network: {target_network}".replace(
       "{target_network}",
       target_network));
+  _text.push(
+    "          Deployments dir: {deployments_dir}".replace(
+      "{deployments_dir}",
+      deployments_dir));
+  _text.push(
+    "      File System version: {fs_version}".replace(
+      "{fs_version}",
+      fs_version));
+  _text.push(
+    "            RPC selection: {rpc_selection}".replace(
+      "{rpc_selection}",
+      rpc_selection));
   _text.push(
     "         Contract address: {contract_address}".replace(
       "{contract_address}",
@@ -551,6 +562,9 @@ function
     "    <retries_max>",
     "    <api_key_path>",
     "    <target_network>",
+    "    <deployments_dir>",
+    "    <fs_version>",
+    "    <rpc_selection>",
     "    <contract_address>",
     "    <contract_abi_path>",
     "    <contract_bytecode_path>",
@@ -572,6 +586,12 @@ function
     "                                   contract ABI provider service.",
     "  <target_network>                 Network on which the contract",
     "                                   resides.",
+    "  <deployments_dir>                Contracts deployments directory.",
+    "  <fs_version>                     Version of the target file",
+    "                                   system contract.",
+    "                                   Default: 1.0",
+    "  <rpc_selection>                  RPC selection method.",
+    "                                   Default: kirsh",
     "  <contract_address>               Address of the contract.",
     "  <contract_abi_path>              Contract ABI path.",
     "  <contract_bytecode_path>         Path for the contract bytecode.",
@@ -622,42 +642,54 @@ function
           _value;
       }
       if ( _index == 6 ) {
-        contract_address =
+        deployments_dir =
           _value;
       }
       if ( _index == 7 ) {
-        contract_abi_path =
+        fs_version =
           _value;
       }
       if ( _index == 8 ) {
-        contract_bytecode_path =
+        rpc_selection =
           _value;
       }
       if ( _index == 9 ) {
-        contract_compiler_output_path =
+        contract_address =
           _value;
       }
       if ( _index == 10 ) {
-        publication_namespace =
+        contract_abi_path =
           _value;
       }
       if ( _index == 11 ) {
-        file_hash =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 12 ) {
-        index_start =
+        contract_compiler_output_path =
           _value;
       }
       if ( _index == 13 ) {
-        index_end =
+        publication_namespace =
           _value;
       }
       if ( _index == 14 ) {
+        file_hash =
+          _value;
+      }
+      if ( _index == 15 ) {
+        index_start =
+          _value;
+      }
+      if ( _index == 16 ) {
+        index_end =
+          _value;
+      }
+      if ( _index == 17 ) {
         checkpoint_file_path =
           _value;
       }
-      if ( 14 < _index ) {
+      if ( 17 < _index ) {
 	chunks_files_paths.push(
           _value);
       }
@@ -675,14 +707,18 @@ function
 }
 
 if ( _cmdline_check(
-       "get") ) {
+       "ccget") ) {
   _global_variables();
   _cmdline_parse();
+  _overrides_set();
   _config_show();
   app_opts = [
     retries_max,
     api_key_path,
     target_network,
+    deployments_dir,
+    fs_version,
+    rpc_selection,
     contract_address,
     contract_abi_path,
     contract_bytecode_path,
@@ -700,8 +736,6 @@ if ( _cmdline_check(
 }
 
 module.exports = {
-  _chunk_get:
-    _chunk_get,
-  _get:
-    _get
+  _ccget:
+    _ccget
 };
