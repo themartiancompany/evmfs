@@ -1317,8 +1317,27 @@ _show_config() {
   _msg_info "                    Call method:   ${call_method}"
   _msg_info "                Maximum retries:   ${retries_max}"
   _msg_info "                 Parallel tasks:   ${tasks_parallel}"
-  _msg_info "                Target resource:   ${target_uri}"
-  _msg_info "                    Output file:   ${output_file}"
+  _msg_info "               Target resources:"
+  _display_target_uris                         "${uris_amount}"
+}
+
+_display_target_uris() {
+  local \
+    _uris_amount="${1}" \
+    _cursor \
+    _uris=() \
+    _target_uri \
+    _output_file
+  _uris=( $( \
+    seq 0 \
+        "$(("${_uris_amount}" - 1))")
+  )
+  for _cursor in "${_uris[@]}"; do
+    _target_uri="${target_uris["${_cursor}"]}"
+    _output_file="${output_files["${_cursor}"]}"
+    _msg_info "                            URI:   ${_target_uri}"
+    _msg_info "                    Output file:   ${_output_file}"
+  done
 }
 
 _globals
