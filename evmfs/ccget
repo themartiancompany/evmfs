@@ -219,6 +219,9 @@ async function
       await _contract_call_static.apply(
         null,
         _read_chain_id_call_opts);
+    if ( _value == 0 ) {
+      throw "Chunk not indexed."
+    }
   } catch (e) {
     _msg_error(
       "Error retrieving chainID for chunk.",
