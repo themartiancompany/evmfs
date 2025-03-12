@@ -149,12 +149,12 @@ _contract_type_get() {
   fi
   _fs_addresses+=( $( \
     evm-contract-deployment-address \
-      "${_evm_contract_deployment_address[@]}" \
+      "${_evm_contract_deployment_address_opts[@]}" \
       "FileSystem")
   )
   _ccfs_addresses+=( $( \
     evm-contract-deployment-address \
-      "${_evm_contract_deployment_address[@]}" \
+      "${_evm_contract_deployment_address_opts[@]}" \
       "CrossChainFileSystem")
   )
   for _address in \
