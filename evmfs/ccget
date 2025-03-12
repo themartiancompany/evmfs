@@ -38,21 +38,21 @@ _msg_error =
 const
   _evm_contract_call_module =
     require(
-      '../evm-contracts-tools/evm-contract-call-static');
+      "../evm-contracts-tools/evm-contract-call-static");
 _contract_call_static =
-  _evm_contract_call_module._contract_call_static
+  _evm_contract_call_module._contract_call_static;
 const
   _libevm_module =
     require(
-      '../libevm/libevm-js');
+      "../libevm/libevm-js");
 _contract_abi_get =
-  _libevm_module._contract_abi_get
+  _libevm_module._contract_abi_get;
 _contract_bytecode_get =
-  _libevm_module._contract_bytecode_get
+  _libevm_module._contract_bytecode_get;
 _contract_compiler_output_get =
-  _libevm_module._contract_compiler_output_get
+  _libevm_module._contract_compiler_output_get;
 _evm_chains_rpc_backend_get =
-  _libevm_module._rpc_backend_get
+  _libevm_module._rpc_backend_get;
 const
   _get_module =
     require(
@@ -417,6 +417,7 @@ async function
       _index,
       _progress,
       _chunks_total);
+    console.log(_contract_abi_get);
     _fs_contract_abi_path =
       _contract_abi_get(
         _deployments_dir,
