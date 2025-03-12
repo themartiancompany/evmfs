@@ -1354,7 +1354,7 @@ _show_config() {
   _msg_info "                    Wallet path:   ${wallet_path}"
   _msg_info "                Wallet password:   ${wallet_password}"
   _msg_info "                    Wallet seed:   ${wallet_seed}"
-  _msg_info "                 Target network:   ${target_network}"
+  _msg_info "                Target networks:   ${target_networks[*]}"
   _msg_info "                        API key:   ${api_key}"
   _msg_info "                Cache directory:   ${cache_dir}"
   _msg_info "                    Call method:   ${call_method}"
