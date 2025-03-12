@@ -1,3 +1,24 @@
+[comment]: <> (SPDX-License-Identifier: AGPL-3.0)
+
+[comment]: <> (-------------------------------------------------------------)
+[comment]: <> (Copyright © 2024, 2025  Pellegrino Prevete)
+[comment]: <> (All rights reserved)
+[comment]: <> (-------------------------------------------------------------)
+
+[comment]: <> (This program is free software: you can redistribute)
+[comment]: <> (it and/or modify it under the terms of the GNU Affero)
+[comment]: <> (General Public License as published by the Free)
+[comment]: <> (Software Foundation, either version 3 of the License.)
+
+[comment]: <> (This program is distributed in the hope that it will be useful,)
+[comment]: <> (but WITHOUT ANY WARRANTY; without even the implied warranty of)
+[comment]: <> (MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the)
+[comment]: <> (GNU Affero General Public License for more details.)
+
+[comment]: <> (You should have received a copy of the GNU Affero General Public)
+[comment]: <> (License along with this program.)
+[comment]: <> (If not, see <https://www.gnu.org/licenses/>.)
+
 # Ethereum Virtual Machine File System
 
 Reference implementation of the Ethereum Virtual Machine File System (EVMFS).
@@ -30,7 +51,7 @@ evmfs \
     <evmfs_uri>
 ```
 
-Public file system's contracts deployments addresses on
+Public file system's contracts' deployment addresses on
 selected blockchain networks can be found in the 
 `contracts/deployments` directory in the source
 tree and are configured into the program at install time.
@@ -47,7 +68,7 @@ The EVMFS is a core component of the
 The EVMFS has been officially published on the
 [Ur](
   https://github.com/themartiancompany/ur),
-uncensorable, distributed, permissionless
+the uncensorable, distributed, permissionless
 Life and DogeOS user repository and application store,
 so it can be seamlessly installed by typing
 
@@ -56,12 +77,12 @@ ur evmfs
 ```
 
 Since the EVMFS is actually an Ur dependency, if
-you're coming from a system not integrating the
-Ur, you may want to install a binary build from
-the
+you're coming from a system not integrating
+or packaging the Ur, you may want to install
+a binary build from the
 [Fur](
-  https://github.com/themartiancompany/fur)
-fallback user repository.
+  https://github.com/themartiancompany/fur),
+the fallback user repository.
 
 #### Building from source
 
@@ -93,9 +114,11 @@ Upon installation, manual can be consulted by typing:
     evmfs
 ```
 
-Notes and other documentation are in the `docs` source
-tree directory and installed onto the `<data_dir>/doc/evmfs`
-directory.
+Notes and other documentation are in the
+[`docs`](
+  docs)
+source tree directory and installed onto the
+`<data_dir>/doc/evmfs` directory.
 
 You can consult the manual from an online mirror of this
 repository. The `rst` source files are located in the `man`
