@@ -152,7 +152,7 @@ _evmfs() {
       "${_api_key_path}"
     -P
       "${_tasks_parallel}"
-    -C
+    -W
       "${_cache_dir}"
     -m
       "${_call_method}"
@@ -439,7 +439,7 @@ $(_display_networks \
      -P <tasks_paralell>    How many calls tasks perform at any
                             given time
                             Default: ${tasks_parallel}
-     -C <cache_dir>         Work directory
+     -W <cache_dir>         Work directory
                             Default: ${cache_dir}
 
      -h                     This message.
@@ -500,7 +500,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:o:ud:N:w:p:s:n:k:m:r:LP:C:cvh?' \
+    'A:V:o:ud:N:w:p:s:n:k:m:r:LP:W:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -519,7 +519,7 @@ while \
     r) override_retries_max="${OPTARG}" ;;
     L) override_lock_only="y" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
-    C) override_cache_dir="${OPTARG}" ;;
+    W) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
