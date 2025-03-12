@@ -623,6 +623,49 @@ _chunks_get_sync() {
   done
 }
 
+_chunks_total_get() {
+  local \
+    _resource_length \
+    _ll_abi \
+    _ll_bytecode \
+    _ll_compiler_output \
+    _length_call_opts=()
+  _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_target_network}" \
+    "LengthLock" \
+    "_ll" \
+    "${_fs_version}"
+  _length_call_opts+=(
+    "${_evm_contract_call_opts[@]}"
+    -A
+      "${_ll_abi}"
+    -B
+      "${_ll_bytecode}"
+    -C
+      "${_ll_compiler_output}"
+    -r
+      "${_retries_max}"
+  )
+  _resource_length="$( \
+    _resource_length_get)"
+  if [[ "${_resource_length}" == "" ]]; then
+    _resource_length="$( \
+      _resource_length_mutable_get)"
+    _msg=(
+      "The file length is not locked,"
+      "the uploader could break"
+      "the file at a later time, lock"
+      "the length in your namespace to"
+      "avoid it."
+    )
+    _msg_warning \
+      "${_msg[*]}"
+  fi
+  _chunks_total="$(( \
+    _resource_length + 1))"
+}
+
 _resource_get() {
   local \
     _call_method="${1}" \
@@ -635,11 +678,7 @@ _resource_get() {
     _fs_abi \
     _fs_bytecode \
     _fs_compiler_output \
-    _ll_abi \
-    _ll_bytecode \
-    _ll_compiler_output \
-    _length \
-    _file_length \
+    _chunks_total \
     _tmp_dir \
     _check \
     _attempt \
@@ -670,17 +709,6 @@ _resource_get() {
     -C
       "${_fs_compiler_output}"
   )
-  _length_call_opts+=(
-    "${_evm_contract_call_opts[@]}"
-    -A
-      "${_ll_abi}"
-    -B
-      "${_ll_bytecode}"
-    -C
-      "${_ll_compiler_output}"
-    -r
-      "${_retries_max}"
-  )
   _contract_artifacts_auto_detect \
     "${_deployments_dir}" \
     "${_target_network}" \
@@ -688,40 +716,18 @@ _resource_get() {
     "_fs" \
     "${_fs_version}"
   if [[ "${_fs_version}" == "1.0" ]]; then
-    _contract_artifacts_auto_detect \
-      "${_deployments_dir}" \
-      "${_target_network}" \
-      "LengthLock" \
-      "_ll" \
-      "${_fs_version}"
+    _chunks_total_get
   fi
-  _file_length="$( \
-    _resource_length_get)"
-  if [[ "${_file_length}" == "" ]]; then
-    _file_length="$( \
-      _resource_length_mutable_get)"
-    _msg=(
-      "The file length is not locked,"
-      "the uploader could break"
-      "the file at a later time, lock"
-      "the length in your namespace to"
-      "avoid it."
-    )
-    _msg_warning \
-      "${_msg[*]}"
-  fi
-  _length="$(( \
-    _file_length + 1))"
   _attempt=1
   while (( "${_attempt}" < "${_retries_max}" )); do
     if (( 1 < "${_tasks_parallel}" )) || \
        [[ "${_call_method}" == "bulk" ]]; then
       "_chunks_get_async_${_call_method}" \
-        "${_length}" \
+        "${_chunks_total}" \
         "${_tasks_parallel}"
     elif [[ 1 == "${_tasks_parallel}" ]]; then
       _chunks_get_sync \
-        "${_length}" \
+        "${_chunks_total}" \
         "${_tasks_parallel}"
     else
       _msg=(
@@ -752,7 +758,6 @@ _resource_get() {
   _msg_info \
     "${_msg[*]}"
 }
-
 
 _evmfs_get() {
   local \
