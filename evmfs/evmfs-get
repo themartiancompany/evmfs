@@ -1043,7 +1043,7 @@ _tasks_parallel_auto_detect() {
     "${_tasks_parallel}"
 }
 
-_outputs_files_check() {
+_output_files_check() {
   local \
     _msg=() \
     _file \
