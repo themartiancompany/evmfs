@@ -397,7 +397,7 @@ async function
     _read_fs_args =
       _read_fs_base_args.concat(
         [_index.toString(),
-         0.toString(),
+         _reference.toString(),
 	 _chunk_chain_id]
       );
     _read_fs_call_opts =
