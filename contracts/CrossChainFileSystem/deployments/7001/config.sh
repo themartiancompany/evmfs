@@ -13,5 +13,5 @@ evm_version=(
   ["1.0"]="istanbul"
 )
 contract_address=(
-  ["1.0"]="0x78bf4b05035bdbeee1c2048920e85bba424be188"
+  ["1.0"]="0xB737a6A6DC2D144feD2f901A5677d1A542099e9B"
 )
