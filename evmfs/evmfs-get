@@ -103,19 +103,19 @@ _network_setup() {
   if [[ "${_uri_network_id}" == "" ]]; then
     _msg=(
       "URI does not specify a network,"
-      "assuming user set '${_target_network}'."
+      "assuming user set '${_target_networks[0]}'."
     )
     _msg_info \
       "${_msg[*]}"
-    _uri_network_id="${_target_network}"
+    _uri_network_id="${_target_networks[0]}"
   elif [[ "${_uri_network_id}" == "100" ]]; then
     _uri_network_id="100"
   fi
-  if [[ "${_uri_network_id}" != "${_target_network}" ]]; then
+  if [[ "${_uri_network_id}" != "${_target_networks[0]}" ]]; then
     _msg=(
       "URI network '${_uri_network}'"
       "different from user set network"
-      "'${_target_network}'."
+      "'${_target_networks[0]}'."
     )
     _msg_warning \
       "${_msg[*]}"
