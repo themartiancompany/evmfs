@@ -490,7 +490,7 @@ _chunks_ccget_bulk() {
   _rpc_backend_get \
     "${_uri_network_id}"
   _ccget="$( \
-    _get_lib)/evmfs/get"
+    _get_lib)/evmfs/ccget"
   while true; do
     _checkpoint_get \
       "${_checkpoint_get_file_path}"
