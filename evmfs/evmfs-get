@@ -1048,7 +1048,7 @@ _output_files_check() {
     _msg=() \
     _file \
     _dir
-  if [[ "${network_amounts}" != "${#output_files[@]}" ]]; then
+  if [[ "${networks_amount}" != "${#output_files[@]}" ]]; then
     _msg=(
       "The amount of input URIs is not"
       "the same as the specified amount"
