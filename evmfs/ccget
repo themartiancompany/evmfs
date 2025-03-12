@@ -427,7 +427,7 @@ async function
     _msg_info_chunk_dereferenced(
       _index,
       _chunk_chain_id,
-      _chunk_fs_address,
+      _chunk_fs,
       _progress,
       _chunks_total);
     _fs_contract_abi_path =
