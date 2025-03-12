@@ -1048,32 +1048,53 @@ _output_files_check() {
   local \
     _msg=() \
     _file \
-    _dir
-  if [[ "${uris_amount}" != "${#output_files[@]}" ]]; then
-    _msg=(
-      "The amount of input URIs is not"
-      "the same as the specified amount"
-      "of output files."
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-  for _file in "${output_files[@]}"; do
-    _dir="$( \
-      dirname \
-        "${_file}")"
-    if [[ ! -d "${_dir}" ]]; then
+    _dir \
+    _output_files_amount \
+    _uri
+  _output_files_amount="${#output_files[@]}"
+  if [[ "${uris_amount}" != "${_output_files_amount}" ]]; then
+    if (( 0 < "${_output_files_amount}" )); then
       _msg=(
-        "The parent directory for"
-        "output file '${_file}'"
-        "does not exist."
+        "The amount of input URIs is not"
+        "the same as the specified amount"
+        "of output files."
       )
       _msg_error \
         "${_msg[*]}" \
         1
+    elif [[ "${_output_files_amount}" == 0 ]]; then
     fi
-  done
+    _msg=(
+      "No output files paths specified,"
+      "the URIs will be downloaded in the current"
+      "directory named same as their hashes."
+    )
+    _msg_warning \
+      "${_msg[*]}"
+    for _uri in "${target_uris[@]}"; do
+      output_files+=(
+        "$(pwd)/$( \
+          _hash_get \
+            "${_uri}")"
+      )
+    done
+  elif [[ "${uris_amount}" == "${_output_files_amount}" ]]; then
+    for _file in "${output_files[@]}"; do
+      _dir="$( \
+        dirname \
+          "${_file}")"
+      if [[ ! -d "${_dir}" ]]; then
+        _msg=(
+          "The parent directory for"
+          "output file '${_file}'"
+          "does not exist."
+        )
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      fi
+    done
+  fi
 }
 
 _set_overrides() {
@@ -1144,12 +1165,6 @@ _set_overrides() {
          get \
            "${wallet_name}" \
            "address")"
-  _set_override \
-    "output" \
-    "file" \
-    "$(pwd)/$( \
-      _hash_get \
-        "${target_uri}")"
   _contract_version_auto_detect \
     "${deployments_dir}" \
     "FileSystem" \
