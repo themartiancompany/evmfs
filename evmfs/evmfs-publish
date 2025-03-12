@@ -586,7 +586,7 @@ _chunks_publish_bulk() {
       "${_checkpoint_publish_file_path}"
     if [[ "${_checkpoint}" == "${_index_end}" ]]; then
       _msg=(
-        "All '${_chunks_total_run}' indexes published."
+        "All '${_chunks_total_run}' chunks published."
       )
       _msg_info \
         "${_msg[*]}"

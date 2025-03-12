@@ -387,6 +387,33 @@ _resource_validate() {
   fi
 }
 
+_checkpoint_get() {
+  local \
+    _checkpoint_file_path="${1}" \
+    _msg=()
+  if [[ -e "${_checkpoint_file_path}" ]]; then
+    _checkpoint="$( \
+      cat \
+        "${_checkpoint_file_path}")"
+    _msg=(
+      "Checkpoint is '${_checkpoint}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  else
+    _msg=(
+      "Checkpoint file does not exist."
+      "Setting checkpoint to '${_index_start}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _checkpoint="${_index_start}"
+    echo \
+      "${_checkpoint}" > \
+      "${_checkpoint_file_path}"
+  fi
+}
+
 _chunk_get_bulk() {
   local \
     _fs_address="${1}" \
@@ -395,10 +422,12 @@ _chunk_get_bulk() {
     _index_start="${4}" \
     _index_end="${5}" \
     _chunks=() \
-    _cmd \
-    _cmd_args=() \
+    _get \
+    _get_args=() \
     _rpc_backend \
-    _node_run_opts=()
+    _node_run_opts=() \
+    _checkpoint_get_file_path \
+    _chunks_total_run
   shift \
     5
   _chunks=(
@@ -408,29 +437,59 @@ _chunk_get_bulk() {
     -r
       "${_retries_max}"
   )
+  _checkpoint_get_file_path="${_tmp_dir}/checkpoint.get"
+  _chunks_total_run="$(( \
+    "${_index_end}" - "${_index_start}" + 1))"
+  _msg=(
+    "Getting '${_chunks_total_run}'"
+    "chunks from '${_index_start}'"
+    "to '${_index_end}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _rpc_backend_get \
     "${_target_network}"
-  _cmd="$( \
+  _get="$( \
     _get_lib)/evmfs/get"
-  _cmd_args+=(
-    "${quiet}"
-    "${_retries_max}"
-    "${_api_key_path}"
-    "${_rpc_backend}"
-    "${_uri_contract}"
-    "${_fs_abi}"
-    "${_fs_bytecode}"
-    "${_fs_compiler_output}"
-    "${_uri_namespace}"
-    "${_uri_hash}"
-    "${_index_start}"
-    "${_index_end}"
-    "${_chunks[@]}"
-  )
-  node-run \
-    "${_node_run_opts[@]}" \
-    "${_cmd}" \
-    "${_cmd_args[@]}"
+  while true; do
+    _checkpoint_get \
+      "${_checkpoint_get_file_path}"
+    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+      _msg=(
+        "All '${_chunks_total_run}' chunks retrieved."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      rm \
+        -rf \
+        "${_checkpoint_get_file_path}"
+      break
+    fi
+    _msg_info \
+      "Preparing node arguments."
+    _get_args=(
+      "${quiet}"
+      "${_retries_max}"
+      "${_api_key_path}"
+      "${_rpc_backend}"
+      "${_uri_contract}"
+      "${_fs_abi}"
+      "${_fs_bytecode}"
+      "${_fs_compiler_output}"
+      "${_uri_namespace}"
+      "${_uri_hash}"
+      "${_index_start}"
+      "${_index_end}"
+      "${_checkpoint_get_file_path}"
+      "${_chunks[@]}"
+    )
+    _msg_info \
+      "Running node."
+    node-run \
+      "${_node_run_opts[@]}" \
+      "${_get}" \
+      "${_get_args[@]}"
+  done
 }
 
 _chunks_get_async_bulk() {
