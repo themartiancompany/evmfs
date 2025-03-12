@@ -87,6 +87,8 @@ _requirements() {
   _check_cmd \
     'txt2bin' \
     'encoding-tools'
+  _check_cmd \
+    'node-run'
 }
 
 _get_conf_dir_path() {
@@ -103,51 +105,6 @@ _cache_dir_auto_detect() {
   _dir="${HOME}/.cache/evmfs"
   echo \
     "${_dir}"
-}
-
-_node_run() {
-  local \
-    _retries_max="${1}" \
-    _cmd="${2}" \
-    _args=() \
-    _node_path \
-    _lib \
-    _retry \
-    _msg=()
-  shift \
-    2
-  _args=(
-    "$@"
-  )
-  _retry=1
-  _lib="$( \
-    _get_lib)"
-  _node_path="${_lib}/node_modules" 
-  export \
-    NODE_PATH="${_node_path}"
-  for _retry \
-    in $(seq "${_retries_max}"); do
-    node \
-      "${_cmd}" \
-      "${_args[@]}"
-    if [ $? -eq 0 ]; then
-      _msg_info \
-        "Node exited gracefully."
-      return \
-        0
-    else
-      _msg=(
-        "Contract calling error,"
-        "retry '${_retry}' out of"
-        "'${_retries_max}'."
-      )
-      _msg_error \
-        "${_msg[*]}" \
-        "0"
-    fi
-  done
-  return \
-    1
 }
 
 _file_size_check() {
@@ -564,66 +521,6 @@ _verify_skip() {
   _verify_queue["${_index}"]="false"
 }
 
-_node_network_setup() {
-  local \
-    _chain="${1}" \
-    _chain_name \
-    _chain_id \
-    _rpc \
-    _msg=()
-  _msg=(
-    "looking for info on EVM blockchain"
-    "'${_chain}'"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _chain_id="$( \
-    evm-chains-info \
-      -o \
-        "id" \
-      "${_chain}")"
-  if [[ "${_chain_id}" != "" ]]; then
-    _chain_name="$( \
-      evm-chains-info \
-        -o \
-          "name" \
-        "${_chain}" 2>/dev/null || \
-        true)"
-    _msg=(
-      "Found blockchain '${_chain_name}'"
-      "with id '${_chain_id}'"
-      "Selecting RPC address with"
-      "criterion 'kirsh'"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _rpc="$( \
-      evm-chains-info \
-        -o \
-          "rpc" \
-        -s \
-          "kirsh" \
-        "${_chain}")"
-  elif [[ "${_chain_id}" == "" ]]; then
-    _msg=(
-      "Found no known blockchain for input"
-      "'${_chain}', interpreting given input"
-      "as an rpc address for the selected"
-      "network."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _rpc="${_chain}"
-  fi
-  _msg=(
-    "Selected RPC address"
-    "'${_rpc}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _backend="${_rpc}"
-}
-
 _checkpoint_get() {
   local \
     _checkpoint_file_path="${1}" \
@@ -658,13 +555,18 @@ _chunks_publish_bulk() {
     _index_end="${3}" \
     _publish \
     _publish_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_publish_file_path \
     _index_start \
     _index_end \
     _checkpoint \
-    _chunks_total_run
+    _chunks_total_run \
+    _node_run_opts=()
+  _node_run_opts+=(
+    -r
+      "${_retries_max}"
+  )
   _checkpoint_publish_file_path="${_tmp_dir}/checkpoint.publish"
   _chunks_total_run="$(( \
     "${_index_end}" - "${_index_start}" + 1))"
@@ -675,7 +577,7 @@ _chunks_publish_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_network}"
   _publish="$( \
     _get_lib)/evmfs/publish"
@@ -700,7 +602,7 @@ _chunks_publish_bulk() {
       "${_retries_max}"
       "${_wallet_seed}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_fs_address}"
       "${_fs_abi}"
       "${_fs_bytecode}"
@@ -714,8 +616,8 @@ _chunks_publish_bulk() {
     )
     _msg_info \
       "Running node."
-    _node_run \
-      "${retries_max}" \
+    node-run \
+      "${_node_run[@]}" \
       "${_publish}" \
       "${_publish_args[@]}"
   done
@@ -728,12 +630,17 @@ _chunks_verify_bulk() {
     _index_end="${3}" \
     _verify \
     _verify_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_verify_file_path \
     _index_start \
     _index_end \
-    _checkpoint
+    _checkpoint \
+    _node_run_opts=()
+  _node_run_opts+=(
+    -r
+      "${_retries_max}"
+  )
   _checkpoint_verify_file_path="${_tmp_dir}/checkpoint.verify"
   _chunks_total_run="$(( \
     "${_index_end}" - "${_index_start}" + 1))"
@@ -744,7 +651,7 @@ _chunks_verify_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_network}"
   _verify="$( \
     _get_lib)/evmfs/verify"
@@ -766,7 +673,7 @@ _chunks_verify_bulk() {
       "${quiet}"
       "${_retries_max}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_fs_address}"
       "${_fs_abi}"
       "${_fs_bytecode}"
@@ -775,10 +682,12 @@ _chunks_verify_bulk() {
       "${_sum}"
       "${_checkpoint_verify_file_path}"
       "${_chunk_prefix}"
-      $(seq "${_checkpoint}" "${_index_end}")
+      $(seq \
+          "${_checkpoint}" \
+          "${_index_end}")
     )
-    _node_run \
-      "${retries_max}" \
+    node-run \
+      "${_node_run_opts[@]}" \
       "${_verify}" \
       "${_verify_args[@]}"
   done
@@ -791,12 +700,17 @@ _chunks_lock_bulk() {
     _index_end="${3}" \
     _lock \
     _lock_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_lock_file_path \
     _index_start \
     _index_end \
-    _checkpoint
+    _checkpoint \
+    _node_run_opts=()
+  _node_run_opts+=(
+    -r
+      "${_retries_max}"
+  )
   _checkpoint_lock_file_path="${_tmp_dir}/checkpoint.lock"
   _chunks_total_run="$(( \
     "${_index_end}" - "${_index_start}" + 1))"
@@ -807,7 +721,7 @@ _chunks_lock_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_network}"
   _lock="$( \
     _get_lib)/evmfs/lock"
@@ -831,7 +745,7 @@ _chunks_lock_bulk() {
       "${_retries_max}"
       "${_wallet_seed}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_fs_address}"
       "${_fs_abi}"
       "${_fs_bytecode}"
@@ -842,8 +756,8 @@ _chunks_lock_bulk() {
       "${_index_end}"
       "${_checkpoint_lock_file_path}"
     )
-    _node_run \
-      "${_retries_max}" \
+    node-run \
+      "${_node_run_opts[@]}" \
       "${_lock}" \
       "${_lock_args[@]}"
   done
@@ -1340,13 +1254,18 @@ _index_publish_bulk() {
     _index_end="${5}" \
     _index \
     _index_args=() \
-    _backend \
+    _rpc_backend \
     _msg=() \
     _checkpoint_index_file_path \
     _index_start \
     _index_end \
     _checkpoint \
-    _chunks_total_run
+    _chunks_total_run \
+    _node_run_opts=()
+  _node_run_opts+=(
+    -r
+      "${_retries_max}"
+  )
   _checkpoint_index_file_path="${_tmp_dir}/checkpoint.index"
   _chunks_total_run="$(( \
     "${_index_end}" - "${_index_start}" + 1))"
@@ -1357,7 +1276,7 @@ _index_publish_bulk() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_network_setup \
+  _rpc_backend_get \
     "${_target_networks[0]}"
   _index="$( \
     _get_lib)/evmfs/index"
@@ -1383,7 +1302,7 @@ _index_publish_bulk() {
       "${_retries_max}"
       "${_wallet_seed}"
       "${_api_key_path}"
-      "${_backend}"
+      "${_rpc_backend}"
       "${_ccfs_address}"
       "${_ccfs_abi}"
       "${_ccfs_bytecode}"
@@ -1398,8 +1317,8 @@ _index_publish_bulk() {
     )
     _msg_info \
       "Running node."
-    _node_run \
-      "${retries_max}" \
+    node-run \
+      "${_node_run_opts[@]}" \
       "${_index}" \
       "${_index_args[@]}"
   done

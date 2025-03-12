@@ -68,9 +68,6 @@ _requirements() {
     'libevm'
   libevm-requirements
   _check_cmd \
-    'evm-contract-call' \
-    'evm-contracts-tools'
-  _check_cmd \
     'evm-contract-deployment-networks' \
     'evm-contracts-tools'
   _check_cmd \
@@ -399,7 +396,7 @@ Usage:
 
   networks:
 $(_display_networks \
-     "${_networks[@]}")
+    "${_networks[@]}")
 
   options:
      -A <fs_address>        Address of the EVM file system
