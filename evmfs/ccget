@@ -296,6 +296,7 @@ async function
     _read_fs_call_opts,
     _read_fs_base_args,
     _read_fs_args,
+    _reference,
     _rpcs,
     _rpc_backend,
     _progress,
@@ -366,10 +367,17 @@ async function
       _chunks_total);
     _chunk_file_path =
       _chunks_files_paths[_cursor];
+    // Users can provide
+    // multiple references for
+    // redundancy though, but for
+    // now we just select the kirsh
+    // one.
+    _reference =
+      "0";
     _read_chain_id_args =
       _read_chain_id_base_args.concat(
         [_index.toString(),
-         0.toString()]
+         _reference.toString()]
       );
     _read_chain_id_call_opts =
       _read_chain_id_call_base_opts.concat(
