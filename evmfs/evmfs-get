@@ -394,6 +394,11 @@ _resource_validate() {
     _check="${1}" \
     _sum \
     _msg=()
+  _msg=(
+    "Validating integrity of merged file."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _sum="$( \
     sha256sum \
       "${_check}" | \
@@ -937,7 +942,7 @@ _resource_get() {
     fi
     _check="${_tmp_dir}/${_uri_hash}.check"
     _msg=(
-      "Got '${#_chunks[@]}' chunks."
+      "Got '${#_chunks[@]}' chunks. Merging."
     )
     _msg_info \
       "${_msg[*]}"
