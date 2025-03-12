@@ -458,9 +458,16 @@ async function
       _checkpoint_file_path,
       [_chunk_file_path]
     ];
-    _get.apply(
-      null,
-      _get_opts);
+    try {
+      _get.apply(
+        null,
+        _get_opts);
+    } catch (e) {
+      _msg_error(
+        "Error retrieving chunk.",
+	0);
+      throw e;
+    }
     _progress =
       _progress + 1;
     _cursor =
