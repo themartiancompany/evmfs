@@ -740,7 +740,7 @@ if ( _cmdline_check(
     checkpoint_file_path,
     chunks_files_paths,
   ];
-  _get.apply(
+  _ccget.apply(
     null,
     app_opts);
 }
