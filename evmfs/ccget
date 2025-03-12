@@ -157,20 +157,37 @@ function
 }
 
 async function
-  _chunk_get(
-    _read_call_opts) {
+  _chunk_chain_id_get(
+    _read_chain_id_call_opts) {
   let
-    _passed,
-    _retry,
     _value;
   try {
     _value = 
       await _contract_call_static.apply(
         null,
-        _read_call_opts);
+        _read_chain_id_call_opts);
   } catch (e) {
     _msg_error(
-      "Error retrieving chunk.",
+      "Error retrieving chainID for chunk.",
+      0);
+    throw e;
+  }
+  return _value.toString();
+}
+
+async function
+  _chunk_fs_get(
+    _read_fs_call_opts) {
+  let
+    _value;
+  try {
+    _value = 
+      await _contract_call_static.apply(
+        null,
+        _read_fs_call_opts);
+  } catch (e) {
+    _msg_error(
+      "Error retrieving fs address for chunk.",
       0);
     throw e;
   }
@@ -222,6 +239,8 @@ async function
     _retries_max,
     _api_key_path,
     _target_network,
+    _deployments_dir,
+    _fs_version,
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
@@ -233,19 +252,28 @@ async function
     _chunks_files_paths
   ) {
   let
+    _chunk_chain_id,
     _chunk_file_path,
+    _chunk_fs,
     _chunks_total,
     _cursor,
-    _read_call_base_opts,
-    _read_call_opts,
-    _method_base_args,
-    _method_args,
+    _fs_contract_abi_path,
+    _fs_contract_bytecode_path,
+    _fs_contract_compiler_output_path,
+    _read_chain_id_call_base_opts,
+    _read_chain_id_call_opts,
+    _read_chain_id_base_args,
+    _read_chain_id_args,
+    _read_fs_call_base_opts,
+    _read_fs_call_opts,
+    _read_fs_base_args,
+    _read_fs_args,
     _progress,
     _value,
     _wallet_seed_path;
   _wallet_seed_path =
     '';
-  _read_call_base_opts = [
+  _read_chain_id_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
     _api_key_path,
@@ -254,9 +282,24 @@ async function
     _contract_bytecode_path,
     _contract_compiler_output_path,
     _contract_address,
-    "readChunk",
+    "chunksChainId",
   ];
-  _method_base_args = [
+  _read_chain_id_base_args = [
+    _publication_namespace,
+    _file_hash
+  ];
+  _read_fs_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _contract_address,
+    "chunksFs",
+  ];
+  _read_fs_base_args = [
     _publication_namespace,
     _file_hash
   ];
@@ -288,22 +331,78 @@ async function
       _chunk_file_path,
       _index,
       _cursor);
-    _method_args =
-      _method_base_args.concat(
-        [_index.toString()]
+    _read_chain_id_args =
+      _read_chain_id_base_args.concat(
+        [_index.toString(),
+         0.toString()]
       );
-    _read_call_opts =
-      _read_call_base_opts.concat(
-        [_method_args]);
+    _read_chain_id_call_opts =
+      _read_chain_id_call_base_opts.concat(
+        [_read_chain_id_args]);
     try {
-      _value = await
-        _chunk_get(
-          _read_call_opts);
+      _chunk_chain_id = await
+        _chunk_chain_id_get(
+          _read_chain_id_call_opts);
     } catch (e) {
-      console.error(
-        "Error retrieving chunk.");
+      _msg_error(
+        "Error retrieving chunk's ChainId.",
+        0);
       throw e;
     }
+    _read_fs_args =
+      _read_fs_base_args.concat(
+        [_index.toString(),
+         0.toString(),
+	 _chunk_chain_id]
+      );
+    _read_fs_call_opts =
+      _read_fs_call_base_opts.concat(
+        [_read_fs_args]);
+    try {
+      _chunk_fs = await
+        _chunk_fs_get(
+          _read_fs_call_opts);
+    } catch (e) {
+      _msg_error(
+        "Error retrieving chunk's fs address.",
+        0);
+      throw e;
+    }
+    _fs_contract_abi_path =
+      _contract_abi_get(
+        _deployments_dir,
+        "FileSystem",
+        _chunk_chain_id,
+        _fs_version);
+    _fs_contract_bytecode_path =
+      _contract_bytecode_get(
+        _deployments_dir,
+        "FileSystem",
+        _chunk_chain_id,
+        _fs_version);
+    _fs_contract_compiler_output_path =
+      _contract_compiler_output_get(
+        _deployments_dir,
+        "FileSystem",
+        _chunk_chain_id,
+        _fs_version);
+    _get_opts = [
+      _retries_max,
+      _api_key_path,
+      _target_network,
+      _chunk_fs,
+      _fs_contract_abi_path,
+      _fs_contract_bytecode_path,
+      _fs_contract_compiler_output_path,
+      _publication_namespace,
+      _file_hash,
+      _index,
+      _index,
+      [_chunk_file_path]
+    ];
+    _get.apply(
+      null,
+      _get_opts);
     _msg_info_chunk_got(
       _index,
       _progress,
