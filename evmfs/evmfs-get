@@ -1400,7 +1400,7 @@ if (( $# < 1 )); then
     1
 fi
 for _uri in "$@"; do
-  if [[ ! "${_uri}" != "evmfs://"* ]]; then
+  if [[ "${_uri}" != "evmfs://"* ]]; then
     _msg=(
       "Input URI '${_uri}' is not an EVMFS URI."
     )
