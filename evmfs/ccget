@@ -51,6 +51,8 @@ _contract_bytecode_get =
   _libevm_module._contract_bytecode_get
 _contract_compiler_output_get =
   _libevm_module._contract_compiler_output_get
+_evm_chains_rpc_backend_get =
+  _libevm_module._rpc_backend_get
 
 function
   _global_variables() {
@@ -156,6 +158,31 @@ function
     0);
 }
 
+_rpc_backend_get(
+  _rpcs,
+  _chain_id,
+  _selection_method) {
+  let
+    _evm_chains_rpc_backend_opts,
+    _rpc;
+  _rpc =
+    _rpcs[
+      _chain_id];
+  if ( _rpc == undefined ) {
+    _evm_chains_rpc_backend_opts = [
+      _chain_id,
+      _selection_method,
+      // _evm_chains_db_path
+    ];
+    rpcs[
+      _chain_id] =
+      _evm_chains_rpc_backend_get.apply(
+	null,
+	_evm_chains_rpc_backend_opts);
+  }
+  return rpcs;
+}
+
 async function
   _chunk_chain_id_get(
     _read_chain_id_call_opts) {
@@ -241,6 +268,7 @@ async function
     _target_network,
     _deployments_dir,
     _fs_version,
+    _rpc_selection,
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
@@ -268,9 +296,19 @@ async function
     _read_fs_call_opts,
     _read_fs_base_args,
     _read_fs_args,
+    _rpcs,
+    _rpc_backend,
+    _rpc_selection,
     _progress,
     _value,
     _wallet_seed_path;
+  if ( _rpc_selection == "" || \
+       _rpc_selection == undefined ) {
+    _rpc_selection =
+      "kirsh"
+  }
+  _rpcs =
+    {};
   _wallet_seed_path =
     '';
   _read_chain_id_call_base_opts = [
@@ -386,10 +424,18 @@ async function
         "FileSystem",
         _chunk_chain_id,
         _fs_version);
+    _rpcs =
+      _rpc_backend_get(
+        _rpcs,
+        _chunk_chain_id,
+        _rpc_selection);
+    _rpc_backend =
+      _rpcs[
+        _chunk_chain_id];
     _get_opts = [
       _retries_max,
       _api_key_path,
-      _target_network,
+      _rpc_backend,
       _chunk_fs,
       _fs_contract_abi_path,
       _fs_contract_bytecode_path,
