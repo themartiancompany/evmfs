@@ -39,8 +39,13 @@ contract CrossChainFileSystem {
       address => mapping(
         string => mapping(
           uint256 => mapping(
+            uint256 => uint256 ) ) ) ) public chunksChainId;
+    mapping(
+      address => mapping(
+        string => mapping(
+          uint256 => mapping(
             uint256 => mapping(
-              uint256 => address ) ) ) ) ) public chunks;
+              uint256 => address ) ) ) ) ) public chunksFs;
     mapping(
       address => mapping(
         string => mapping(
@@ -83,7 +88,13 @@ contract CrossChainFileSystem {
           _namespace][
             _hash][
               _index];
-      chunks[
+      chunksChainId[
+        _namespace][
+          _hash][
+            _index][
+              _currentChunk] =
+        _chainId;
+      chunksFs[
         _namespace][
           _hash][
             _index][

@@ -453,7 +453,7 @@ _chunks_get_async_bulk() {
   _bulk_indexes_amount="$(( \
     _length / _tasks_parallel + 1))"
   _msg_info \
-    "bulk async downloading"
+    "Bulk async download."
   while \
     [ "${_index}" -le "$((_length - 1))" ] && \
     [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
@@ -471,7 +471,7 @@ _chunks_get_async_bulk() {
         )
       fi
       _msg=(
-        "dumping a bulk payload of '${#_bulk_payload[@]}' items"
+        "Dumping a bulk payload of '${#_bulk_payload[@]}' items"
         "up to index ${_index}."
       )
       _msg_info \
@@ -692,6 +692,12 @@ _resource_get() {
       -d \
       -p \
         "${_cache_dir}/${_uri_hash}")"
+  _contract_artifacts_auto_detect \
+    "${_deployments_dir}" \
+    "${_target_network}" \
+    "FileSystem" \
+    "_fs" \
+    "${_fs_version}"
   _evm_contract_call_opts+=(
     -n
       "${_uri_network}"
@@ -709,12 +715,6 @@ _resource_get() {
     -C
       "${_fs_compiler_output}"
   )
-  _contract_artifacts_auto_detect \
-    "${_deployments_dir}" \
-    "${_target_network}" \
-    "FileSystem" \
-    "_fs" \
-    "${_fs_version}"
   if [[ "${_fs_version}" == "1.0" ]]; then
     _chunks_total_get
   fi
@@ -739,8 +739,11 @@ _resource_get() {
         1
     fi
     _check="${_tmp_dir}/${_uri_hash}.check"
+    _msg=(
+      "Got '${#_chunks[@]}' chunks."
+    )
     _msg_info \
-      "got '${#_chunks[@]}' chunks."
+      "${_msg[*]}"
     txt2bin \
       "${_check}" \
       "${_chunks[@]}"
