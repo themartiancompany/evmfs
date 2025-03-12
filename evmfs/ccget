@@ -9,8 +9,8 @@
 //    ----------------------------------------------------------------------
 //
 //    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License as published
-//    by the Free Software Foundation, either version 3 of the License, or
+//    it under the terms of the GNU Affero General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
 //    This program is distributed in the hope that it will be useful,
@@ -24,30 +24,40 @@
 const
   _libcrash =
     require(
-      "../libcrash-js/crash-js");
-_dirname =
-  _libcrash._dirname;
+      '../libcrash-js/crash-js');
+_cmdline_check =
+  _libcrash._cmdline_check;
 _file_write =
   _libcrash._file_write;
+_path_join =
+  _libcrash._path_join;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =
   _libcrash._msg_error;
 const
-  _evm_contract_call_dynamic_module =
+  _evm_contract_call_module =
     require(
-      '../evm-contracts-tools/evm-contract-call-dynamic');
-_contract_run =
-  _evm_contract_call_dynamic_module._contract_run;
+      '../evm-contracts-tools/evm-contract-call-static');
+_contract_call_static =
+  _evm_contract_call_module._contract_call_static
+const
+  _libevm_module =
+    require(
+      '../libevm/libevm-js');
+_contract_abi_get =
+  _libevm_module._contract_abi_get
+_contract_bytecode_get =
+  _libevm_module._contract_bytecode_get
+_contract_compiler_output_get =
+  _libevm_module._contract_compiler_output_get
 
 function
   _global_variables() {
   app_name =
-    "index";
+    "ccget";
   retries_max =
-    "";
-  wallet_seed_path =
-    "";
+    '';
   api_key_path =
     "";
   target_network =
@@ -68,18 +78,14 @@ function
     "";
   index_end =
     "";
-  chunk_chain_id =
-    "";
-  chunk_fs_address =
-    "";
-  checkpoint_file_path =
-    "";
+  chunks_files_paths =
+    [];
   quiet =
     "";
 }
 
 function
-  _msg_info_chunk_index(
+  _msg_info_chunk_get(
     _index,
     _progress,
     _total) {
@@ -87,7 +93,7 @@ function
     _msg,
     _template;
   _template =
-    "Indexing chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Downloading chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -105,7 +111,7 @@ function
 }
 
 function
-  _msg_info_chunk_indexed(
+  _msg_info_chunk_got(
     _index,
     _progress,
     _total) {
@@ -113,7 +119,7 @@ function
     _msg,
     _template;
   _template =
-    "Indexed chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Downloaded chunk '{_index}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -135,56 +141,85 @@ function
     error) {
   let
     _message;
-  if ( "error" in error &&
-       error["error"] != undefined &&
-       "message" in error["error"] ) {
+  if ( 'error' in error && 
+       error['error'] != undefined &&
+       'message' in error['error'] ) {
     _message =
-      error["error"]["message"];
+      error['error']['message'];
   }
-  else if ( "shortMessage" in error ) {
+  else if ( 'shortMessage' in error ) {
     _message =
-      error["shortMessage"];
+      error['shortMessage'];
   }
   _msg_error(
     _message,
     0);
 }
 
+async function
+  _chunk_get(
+    _read_call_opts) {
+  let
+    _passed,
+    _retry,
+    _value;
+  try {
+    _value = 
+      await _contract_call_static.apply(
+        null,
+        _read_call_opts);
+  } catch (e) {
+    _msg_error(
+      "Error retrieving chunk.",
+      0);
+    throw e;
+  }
+  return _value.toString();
+}
+
 function
   _input_data_check(
-    _chunks_total) {
-  if ( _chunks_total < 1 ) {
+    _index_start,
+    _index_end,
+    _total_files) {
+  let
+    _total_indexes;
+  _total_indexes =
+    _index_end - _index_start + 1;
+  if ( _total_files > _total_indexes ) {
     _msg_error(
-      "Upper chunk index lower than lower chunk index.",
+      "More files to save into than indexes to download.",
+      1);
+  }
+  if ( _total_files < _total_indexes ) {
+    _msg_error(
+      "More indexes downloads than files to save into.",
       1);
   }
   _msg_info(
     "Input data checked.");
 }
 
-async function
-  _chunk_index(
-    _contract_run_opts) {
-  let
-    _tx;
-  try {
-    _tx = await
-      _contract_run.apply(
-        null,
-        _contract_run_opts);
-  } catch(e) {
-    _msg_error(
-      "Error indexing chunk.",
-      0);
-    throw e;
+function
+  _chunk_file_path_check(
+    _path,
+    _index,
+    _cursor) {
+  if ( _path == undefined ) {
+    console.error(
+      "Chunk file for index",
+      _index,
+      "and cursor",
+      _cursor,
+      "undefined.");
+    process.exit(
+      1);
   }
-  return _tx;
 }
 
 async function
-  _index(
+  _ccget(
     _retries_max,
-    _wallet_seed_path,
     _api_key_path,
     _target_network,
     _contract_address,
@@ -195,103 +230,106 @@ async function
     _file_hash,
     _index_start,
     _index_end,
-    _chunk_chain_id,
-    _chunk_fs_address,
-    _checkpoint_file_path
+    _chunks_files_paths
   ) {
   let
-    _checkpoint_index,
+    _chunk_file_path,
     _chunks_total,
-    _index_call_base_opts,
-    _index_call_opts,
+    _cursor,
+    _read_call_base_opts,
+    _read_call_opts,
+    _method_base_args,
     _method_args,
     _progress,
-    _tx,
-    _wallet_password;
-  _index_start =
-    Number(_index_start);
-  _index_end =
-    Number(_index_end);
-  _wallet_password =
-    "";
-  _index_call_base_opts = [
-    _retries_max,
+    _value,
+    _wallet_seed_path;
+  _wallet_seed_path =
+    '';
+  _read_call_base_opts = [
     _wallet_seed_path,
-    _wallet_password,
+    _retries_max,
     _api_key_path,
-    0,
-    "ether",
     _target_network,
-    _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
-    "publishCrossChainChunk"
+    _contract_address,
+    "readChunk",
   ];
   _method_base_args = [
     _publication_namespace,
     _file_hash
   ];
   _chunks_total =
-    _index_end - index_start + 1;
-  console.log(
-    _chunks_total);
+    _chunks_files_paths.length;
+  if ( _chunks_total == 0 ) {
+    _msg_error(
+      "file chunks list empty",
+      1);
+  }
   _input_data_check(
+    _index_start,
+    _index_end,
     _chunks_total);
   _progress =
     1;
+  _cursor =
+    0;
   for ( var _index = _index_start;
-        _index <= _index_end;
-        _index++ ) {
-    _msg_info_chunk_index(
+	_index <= _index_end;
+	_index++ ) {
+    _msg_info_chunk_get(
       _index,
       _progress,
       _chunks_total);
+    _chunk_file_path =
+      _chunks_files_paths[_cursor];
+    _chunk_file_path_check(
+      _chunk_file_path,
+      _index,
+      _cursor);
     _method_args =
       _method_base_args.concat(
-        [_index.toString(),
-	 _chunk_chain_id,
-	 _chunk_fs_address]);
-    _index_call_opts =
-      _index_call_base_opts.concat(
+        [_index.toString()]
+      );
+    _read_call_opts =
+      _read_call_base_opts.concat(
         [_method_args]);
-    _tx = await
-      _chunk_index(
-        _index_call_opts);
-    _msg_info_chunk_indexed(
+    try {
+      _value = await
+        _chunk_get(
+          _read_call_opts);
+    } catch (e) {
+      console.error(
+        "Error retrieving chunk.");
+      throw e;
+    }
+    _msg_info_chunk_got(
       _index,
       _progress,
       _chunks_total);
-    _checkpoint_index =
-      _index.toString();
     _file_write(
-      _checkpoint_file_path,
-      _checkpoint_index);
+      _chunk_file_path,
+      _value);
     _progress =
       _progress + 1;
+    _cursor =
+      _cursor + 1;
   }
-  _msg_info(
-    "All chunks correcly indexed.");
 }
 
 function
   _config_show() {
   let
+    _chunks_files_paths,
     _line,
     _text;
-  _text =
+  _text = 
     [];
-  _text.push(
-    " Index configuration:"
-  );
   _text.push(
     "          Maximum retries: {retries_max}".replace(
       "{retries_max}",
       retries_max));
-  _text.push(
-    "              Wallet seed: {wallet_seed_path}".replace(
-      "{wallet_seed_path}",
-      wallet_seed_path));
   _text.push(
     "                  API Key: {api_key_path}".replace(
       "{api_key_path}",
@@ -332,18 +370,13 @@ function
     "                Index end: {index_end}".replace(
       "{index_end}",
       index_end));
+  _chunks_files_paths =
+    chunks_files_paths.join(
+    " ");
   _text.push(
-    "           Chunk chain ID: {chunk_chain_id}".replace(
-      "{chunk_chain_id}",
-      chunk_chain_id));
-  _text.push(
-    "         Chunk FS address: {chunk_fs_address}".replace(
-      "{chunk_fs_address}",
-      chunk_fs_address));
-  _text.push(
-    "     Checkpoint file path: {checkpoint_file_path}".replace(
-      "{checkpoint_file_path}",
-      checkpoint_file_path));
+    "              File chunks: {_chunks_files_paths}".replace(
+      "{_chunks_files_paths}",
+      _chunks_files_paths));
   for ( _line in _text ) {
     _msg_info(
       _text[_line]);
@@ -357,10 +390,10 @@ function
     _line,
     _text;
   _text = [
-    "Index cross-chain chunks of an EVMFS file.",
+    "Downloads chunks of an EVMFS file.",
     "",
     "Usage:",
-    "  index",
+    "  get",
     "    <quiet>",
     "    <retries_max>",
     "    <api_key_path>",
@@ -374,15 +407,13 @@ function
     "    <file_hash>",
     "    <index_start>",
     "    <index_end>",
-    "    <chunk_chain_id>",
-    "    <chunk_fs_address>",
-    "    <checkpoint_file_path>",
+    "    [chunk_file_path]",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
     "                                   Default: y",
     "  <retries_max>                    Maximum number of retries before",
-    "                                   failing.",
+    "                                   failing (not implemented).",
     "  <api_key_path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
     "  <target_network>                 Network on which the contract",
@@ -392,18 +423,12 @@ function
     "  <contract_bytecode_path>         Path for the contract bytecode.",
     "  <contract_compiler_output_path>  Path for the contract compiler",
     "                                   output path (the hardhat artifact).",
-    "  <publication_namespace>          Namespace in which the file is being",
+    "  <publication_namespace>          Namespace in which the file will be",
     "                                   published.",
     "  <file_hash>                      Hash of the file to publish.",
     "  <index_start>                    Chunk index from where to start.",
-    "  <index_end>                      Final chunk index to index.",
-    "  <chunk_chain_id>                 Chain ID of the network on which",
-    "                                   the chunk has been published.",
-    "  <chunk_fs_address>               File system address on which",
-    "                                   the chunk has been published.",
-    "  <checkpoint_file_path>           Checkpoint file on which latest",
-    "                                   downloaded chunk index is saved",
-    "                                   in case node was to crash.",
+    "  <index_end>                      Final chunk index to download.",
+    "  [chunk_file_path]                Files in which to write the chunks.",
   ];
   for ( _line of _text ) {
     _msg_info(
@@ -414,9 +439,9 @@ function
 }
 
 
-function
+function 
   _cmdline_parse() {
-  quiet =
+  quiet = 
     "y";
   process.argv.forEach(
     function (
@@ -432,87 +457,69 @@ function
           _value;
       }
       if ( _index == 4 ) {
-        wallet_seed_path =
-          _value;
-      }
-      if ( _index == 5 ) {
         api_key_path =
           _value;
       }
-      if ( _index == 6 ) {
+      if ( _index == 5 ) {
         target_network =
           _value;
       }
-      if ( _index == 7 ) {
+      if ( _index == 6 ) {
         contract_address =
           _value;
       }
-      if ( _index == 8 ) {
+      if ( _index == 7 ) {
         contract_abi_path =
           _value;
       }
-      if ( _index == 9 ) {
+      if ( _index == 8 ) {
         contract_bytecode_path =
           _value;
       }
-      if ( _index == 10 ) {
+      if ( _index == 9 ) {
         contract_compiler_output_path =
           _value;
       }
-      if ( _index == 11 ) {
+      if ( _index == 10 ) {
         publication_namespace =
           _value;
       }
-      if ( _index == 12 ) {
+      if ( _index == 11 ) {
         file_hash =
           _value;
       }
-      if ( _index == 13 ) {
+      if ( _index == 12 ) {
         index_start =
           _value;
       }
-      if ( _index == 14 ) {
+      if ( _index == 13 ) {
         index_end =
           _value;
       }
-      if ( _index == 15 ) {
-        chunk_chain_id =
-          _value;
-      }
-      if ( _index == 16 ) {
-        chunk_fs_address =
-          _value;
-      }
-      if ( _index == 17 ) {
-        checkpoint_file_path =
-          _value;
+      if ( 13 < _index ) {
+	chunks_files_paths.push(
+          _value);
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
-        quiet =
-          "n";
         _usage(
-          0);
+	  0);
       }
   });
   if ( file_hash == "" ||
        publication_namespace == "" ) {
-    quiet =
-      "n";
     _usage(
       1);
   }
 }
 
-
 if ( _cmdline_check(
-       "index") == true ) {
+       "get") ) {
   _global_variables();
   _cmdline_parse();
   _config_show();
   app_opts = [
     retries_max,
-    wallet_seed_path,
     api_key_path,
     target_network,
     contract_address,
@@ -523,16 +530,16 @@ if ( _cmdline_check(
     file_hash,
     index_start,
     index_end,
-    chunk_chain_id,
-    chunk_fs_address,
-    checkpoint_file_path
+    chunks_files_paths,
   ];
-  _index.apply(
+  _get.apply(
     null,
     app_opts);
 }
 
 module.exports = {
-  _index:
-    _index,
+  _chunk_get:
+    _chunk_get,
+  _get:
+    _get
 };

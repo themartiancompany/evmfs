@@ -31,8 +31,6 @@ _echo =
   _libcrash._echo;
 _file_read =
   _libcrash._file_read;
-_path_join =
-  _libcrash._path_join;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =

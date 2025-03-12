@@ -33,8 +33,6 @@ _file_write =
   _libcrash._file_write;
 _file_exists =
   _libcrash._file_exists;
-_path_join =
-  _libcrash._path_join;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =

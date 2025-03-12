@@ -31,7 +31,6 @@ BUILD_DIR=build
 
 DOC_FILES=\
   $(wildcard *.rst) \
-  $(wildcard *.md) \
   $(wildcard docs/*.md)
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
@@ -180,6 +179,12 @@ install-doc:
 	$(_INSTALL_FILE) \
 	  $(DOC_FILES) \
 	  -t $(DOC_DIR)
+	mv \
+	  "$(DOC_DIR)/README.md" \
+	  "$(DOC_DIR)/docs.README.md"
+	$(_INSTALL_FILE) \
+	  "README.md" \
+	  "$(DOC_DIR)/README.md"
 
 install-scripts:
 

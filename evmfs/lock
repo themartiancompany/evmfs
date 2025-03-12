@@ -29,8 +29,6 @@ _dirname =
   _libcrash._dirname;
 _file_write =
   _libcrash._file_write;
-_path_join =
-  _libcrash._path_join;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =

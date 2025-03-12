@@ -37,8 +37,6 @@ _msg_info =
   _libcrash._msg_info;
 _msg_error =
   _libcrash._msg_error;
-_path_join =
-  _libcrash._path_join;
 const
   _evm_contract_call_dynamic_module =
     require(
