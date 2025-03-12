@@ -129,17 +129,28 @@ function
 function
   _msg_info_chunk_dereferenced(
     _index,
+    _chain_id,
+    _fs_address,
     _progress,
     _total) {
   let
     _msg,
     _template;
   _template =
-    "Derefereced chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Derefereced chunk '{_index}' with chainId '{_chain_id}'" +
+    "and fs address '{_fs_address}' ('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
       _index);
+  _msg =
+    _msg.replaceAll(
+      "{_chain_id}",
+      _chain_id);
+  _msg =
+    _msg.replaceAll(
+      "{_fs_address}",
+      _fs_address);
   _msg =
     _msg.replaceAll(
       "{_progress}",
@@ -192,8 +203,8 @@ function
     _rpcs[
       _chain_id] =
       _evm_chains_rpc_backend_get.apply(
-	null,
-	_evm_chains_rpc_backend_opts);
+        null,
+        _evm_chains_rpc_backend_opts);
   }
   return _rpcs;
 }
@@ -415,6 +426,8 @@ async function
     }
     _msg_info_chunk_dereferenced(
       _index,
+      _chunk_chain_id,
+      _chunk_fs_address,
       _progress,
       _chunks_total);
     _fs_contract_abi_path =
