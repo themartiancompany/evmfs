@@ -301,7 +301,7 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
-  if ( _rpc_selection == "" || \
+  if ( _rpc_selection == "" ||
        _rpc_selection == undefined ) {
     _rpc_selection =
       "kirsh"
