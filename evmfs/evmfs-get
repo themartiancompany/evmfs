@@ -48,6 +48,7 @@ _global_variables() {
   wallet_seed=""
   wallet_address=""
   networks_amount=""
+  target_network=""
   target_networks=()
   api_key=""
   cache_dir=""
