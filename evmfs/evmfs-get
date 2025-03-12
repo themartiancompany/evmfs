@@ -1136,12 +1136,21 @@ _set_overrides() {
   _deployments_dir_auto_detect \
     "evmfs" \
     "${user_level}"
-  _network_auto_detect \
-    "FileSystem" \
-    "${deployments_dir}" \
-    "${user_level}"
-  _api_key_auto_detect \
-    "${target_network}"
+  if (( "${networks_amount}" < 1 )); then
+    _network_auto_detect \
+      "FileSystem" \
+      "${deployments_dir}" \
+      "${user_level}"
+    target_networks+=(
+      "${target_network}"
+    )
+    target_network=""
+    networks_amount="${#target_networks[@]}"
+  fi
+  if [[ "${networks_amount}" == 1 ]]; then
+    _api_key_auto_detect \
+      "${target_networks[0]}"
+  fi 
   _set_override \
     "wallet" \
     "path" \
