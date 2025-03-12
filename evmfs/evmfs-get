@@ -1201,7 +1201,7 @@ _set_overrides() {
     "evmfs" \
     "CrossChainFileSystem" \
     "ccfs" \
-    "${target_network[0]}" \
+    "${target_networks[0]}" \
     "${fs_version}" \
     "${user_level}" \
     "${deployments_dir}"
