@@ -126,7 +126,7 @@ _network_setup() {
 
 _contract_type_get() {
   local \
-    _contract_address="{1}" \
+    _contract_address="${1}" \
     _contract_address_lower \
     _address \
     _address_lower \
