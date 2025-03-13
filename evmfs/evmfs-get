@@ -437,6 +437,7 @@ _checkpoint_get() {
     )
     _msg_info \
       "${_msg[*]}"
+    _run_once="true"
   else
     _msg=(
       "Checkpoint file does not exist."
@@ -445,9 +446,7 @@ _checkpoint_get() {
     _msg_info \
       "${_msg[*]}"
     _checkpoint="${_index_start}"
-    echo \
-      "${_checkpoint}" > \
-      "${_checkpoint_file_path}"
+    _run_once="false"
   fi
 }
 
@@ -468,7 +467,8 @@ _chunks_ccget_bulk() {
     _chunks_total_run \
     _ccfs_abi \
     _ccfs_bytecode \
-    _ccfs_compiler_output
+    _ccfs_compiler_output \
+    _run_once
   shift \
     5
   _chunks=(
@@ -502,7 +502,8 @@ _chunks_ccget_bulk() {
   while true; do
     _checkpoint_get \
       "${_checkpoint_get_file_path}"
-    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+    if [[ "${_checkpoint}" == "${_index_end}" && \
+          "${_run_once}" == "true" ]]; then
       _msg=(
         "All '${_chunks_total_run}' chunks retrieved."
       )
@@ -557,7 +558,8 @@ _chunks_get_bulk() {
     _rpc_backend \
     _node_run_opts=() \
     _checkpoint_get_file_path \
-    _chunks_total_run
+    _chunks_total_run \
+    _run_once
   shift \
     5
   _chunks=(
@@ -584,7 +586,8 @@ _chunks_get_bulk() {
   while true; do
     _checkpoint_get \
       "${_checkpoint_get_file_path}"
-    if [[ "${_checkpoint}" == "${_index_end}" ]]; then
+    if [[ "${_checkpoint}" == "${_index_end}" && \
+          "${_run_once}" == "true" ]]; then
       _msg=(
         "All '${_chunks_total_run}' chunks retrieved."
       )
