@@ -167,7 +167,7 @@ _contract_type_get() {
     _address_lower="$( \
       _lower \
         "${_address}")"
-    if [[ "${_contract_address}" == \
+    if [[ "${_contract_address_lower}" == \
           "${_address_lower}" ]]; then
       _type_fs="true"
       _contract_type="fs"
@@ -179,7 +179,7 @@ _contract_type_get() {
     _address_lower="$( \
       _lower \
         "${_address}")"
-    if [[ "${_contract_address}" == \
+    if [[ "${_contract_address_lower}" == \
           "${_address_lower}" ]]; then
       _type_ccfs="true"
       _contract_type="ccfs"
@@ -207,6 +207,8 @@ _contract_type_get() {
       "assuming it's for a cross-chain"
       "file system."
     )
+    _msg_warning \
+      "${_msg[*]}"
     _contract_type="ccfs"
   fi
 }
