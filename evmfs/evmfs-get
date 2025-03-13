@@ -232,7 +232,8 @@ _contract_setup() {
       evmfs-address \
         "${_evmfs_address_opts[@]}")"
   elif [[ "${_contract_address}" != "" ]]; then
-    _contract_type_get
+    _contract_type_get \
+      "${_contract_address}"
     _uri_contract_type="${_contract_type}"
   fi
 }
