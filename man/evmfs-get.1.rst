@@ -19,6 +19,25 @@ Description
 Program used to retrieve files from the
 Ethereum Virtual Machine File System (EVMFS).
 
+Networks
+========
+
+The list of supported networks can be
+consulted using *evm-chains-info*.
+Public EVMFS contracts' deployments' networks,
+versions and addresses available in this EVMFS
+install can be consulted using *evm-deployment-networks*,
+*evm-deployment-versions* and *evm-deployment-address*.
+So for example to list all the public deployments'
+addresses for the *FileSystem* EVMFS contract
+one can type:
+
+evm-deployment-address *-a* *evmfs* *FileSystem*
+
+For further options, like for example
+how to configure user-defined private
+EVMFS deployments, refer to those programs' manuals.
+
 Options
 =======
 
