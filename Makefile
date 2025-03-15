@@ -35,6 +35,7 @@ DOC_FILES=\
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -Dm644
+_INSTALL_DIR=install -dm755
 _INSTALL_EXE=install -Dm755
 _INSTALL_CONTRACTS_DEPLOYMENT_FUN:=\
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)
@@ -185,6 +186,11 @@ install-doc:
 	$(_INSTALL_FILE) \
 	  "README.md" \
 	  "$(DOC_DIR)/README.md"
+	$(_INSTALL_DIR) \
+	  "$(DOC_DIR)/media"
+	$(_INSTALL_FILE) \
+	  "docs/media/evmfs.png" \
+	  "$(DOC_DIR)/media/evmfs.png"
 
 install-scripts:
 
@@ -218,8 +224,7 @@ install-scripts:
 
 install-man:
 
-	install \
-	  -vdm755 \
+	$(_INSTALL_DIR) \
 	  "$(MAN_DIR)/man1"
 	rst2man \
 	  "man/$(_PROJECT).1.rst" \
