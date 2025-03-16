@@ -91,7 +91,7 @@ Options
 -W cache_dir            Location where to temporary store
                         the downloaded resource chunks.
 
--h                      This message.
+-h                      Displays help message.
 -c                      Enable color output
 -v                      Enable verbose output
 
