@@ -272,7 +272,7 @@ async function
   ];
   if ( _chunks_files_paths == [] ) {
     _msg_error(
-      "file chunks list empty",
+      "File chunks list empty.",
       1);
   }
   if ( _chunks_files_paths != undefined ) {
