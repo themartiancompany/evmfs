@@ -336,6 +336,11 @@ async function
     _progress =
       _progress + 1;
   }
+  _checkpoint_index =
+    _index_end.toString();
+  _file_write(
+    _checkpoint_file_path,
+    _checkpoint_index);
   _msg_info(
     "All chunks correcly locked.");
 }
