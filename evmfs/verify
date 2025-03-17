@@ -286,6 +286,7 @@ async function
       }
       else if ( _chunks_checked[0] == false ) {
         throw `Chunk with index ${_index.toString()} has not been published.`
+      }
     }
     else if ( _chunks_checked_total == 0 ) {
       // Temporary
