@@ -321,6 +321,12 @@ async function
     _tx,
     _value,
     _wallet_password;
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
   _wallet_password =
     "";
   _check_call_base_opts = [

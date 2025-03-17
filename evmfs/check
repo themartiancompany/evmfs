@@ -245,6 +245,12 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
   _chunks_checked =
     [];
   _wallet_seed_path =
