@@ -482,6 +482,9 @@ async function
   else if ( _indexes_unverified.length == 0 ) {
     _msg_info(
       "All chunks already verified.");
+    _file_write(
+      _checkpoint_file_path,
+      _checkpoint_index);
   }
   return _chunks_unverified;
 }
