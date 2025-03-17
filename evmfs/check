@@ -170,6 +170,8 @@ async function
     return true;
   }
   else if ( _value != _chunk ) {
+    _msg_info(
+      `Got ${_value}.`);
     return false;
   }
 }
