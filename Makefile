@@ -198,6 +198,9 @@ install-scripts:
 	  "$(_PROJECT)/check" \
 	  "$(LIB_DIR)/check"
 	$(_INSTALL_EXE) \
+	  "$(_PROJECT)/ccget" \
+	  "$(LIB_DIR)/ccget"
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/publish" \
 	  "$(LIB_DIR)/publish"
 	$(_INSTALL_EXE) \

@@ -321,6 +321,12 @@ async function
     _tx,
     _value,
     _wallet_password;
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
   _wallet_password =
     "";
   _check_call_base_opts = [
@@ -482,6 +488,11 @@ async function
   else if ( _indexes_unverified.length == 0 ) {
     _msg_info(
       "All chunks already verified.");
+    _checkpoint_index =
+      _index_end.toString();
+    _file_write(
+      _checkpoint_file_path,
+      _checkpoint_index);
   }
   return _chunks_unverified;
 }

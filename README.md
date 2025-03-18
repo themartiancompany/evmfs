@@ -59,6 +59,16 @@ tree and are configured into the program at install time.
 Options for user-defined deployments are discussed in
 the documentation.
 
+Extra to the command-line utility, a standalone
+super simple Bash graphical interface using Zenity
+has been made available in the
+[evmfs-zenity](
+  https://github.com/themartiancompany/evmfs-zenity)
+repository.
+
+![evmfs-zenity](
+  https://github.com/themartiancompany/evmfs-zenity/blob/master/media/evmfs-get-zenity.jpg)
+
 The EVMFS is a core component of the
 [Human Instrumentality Project](
   http://www.humaninstrumentalityproject.org).

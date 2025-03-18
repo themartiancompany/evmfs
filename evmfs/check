@@ -170,6 +170,8 @@ async function
     return true;
   }
   else if ( _value != _chunk ) {
+    _msg_info(
+      `Got ${_value}.`);
     return false;
   }
 }
@@ -243,6 +245,12 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
   _chunks_checked =
     [];
   _wallet_seed_path =
@@ -264,7 +272,7 @@ async function
   ];
   if ( _chunks_files_paths == [] ) {
     _msg_error(
-      "file chunks list empty",
+      "File chunks list empty.",
       1);
   }
   if ( _chunks_files_paths != undefined ) {

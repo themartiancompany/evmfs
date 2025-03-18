@@ -278,10 +278,15 @@ async function
     }
     _chunks_checked_total =
       _chunks_checked.length;
-    if ( _chunks_checked_total > 0 ) {
-      _file_write(
-        _checkpoint_file_path,
-        _index.toString());
+    if ( _chunks_checked_total == 1 ) {
+      if ( _chunks_checked[0] == true ) {
+        _file_write(
+          _checkpoint_file_path,
+          _index.toString());
+      }
+      else if ( _chunks_checked[0] == false ) {
+        throw `Chunk with index ${_index.toString()} has not been published.`
+      }
     }
     else if ( _chunks_checked_total == 0 ) {
       // Temporary

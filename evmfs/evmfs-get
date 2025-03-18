@@ -143,7 +143,7 @@ _contract_type_get() {
     -a
       "evmfs"
   )
-  if [[ "${_uri_network_id}" == "" ]]; then
+  if [[ "${_uri_network_id}" != "" ]]; then
     _evm_contract_deployment_address_opts+=(
       -i
         "${_uri_network_id}"
