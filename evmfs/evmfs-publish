@@ -394,7 +394,7 @@ _contract_call_opts_setup() {
   )
   _msg=(
     "evm-contract-call will be called"
-    "with base options '${_evm_contract_call_opts[*]}'"
+    "with base options '${_evm_contract_call_opts[*]}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -405,8 +405,8 @@ _work_dir_setup() {
     _msg=()
   _tmp_dir="${_cache_dir}/${_sum}/publish"
   _msg=(
-    "setting up work directory"
-    "'${_tmp_dir}'"
+    "Setting up work directory"
+    "'${_tmp_dir}'."
   )
   _msg_info \
     "${_msg[*]}"
