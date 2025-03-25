@@ -61,7 +61,9 @@ function
   app_name =
     "publish";
   retries_max =
-    '';
+    "";
+  call_timeout =
+    "";
   wallet_seed_path =
     "";
   api_key_path =
@@ -287,6 +289,7 @@ function
 async function
   _publish(
     _retries_max,
+    _call_timeout,
     _wallet_seed_path,
     _api_key_path,
     _target_network,
@@ -321,6 +324,13 @@ async function
     _tx,
     _value,
     _wallet_password;
+  if ( _call_timeout == "" ) {
+    _call_timeout =
+      300;
+  }
+  _call_timeout =
+    Number(
+      _call_timeout);
   _index_start =
     Number(
       _index_start);
@@ -342,6 +352,7 @@ async function
   ];
   _publish_call_base_opts = [
     _retries_max,
+    _call_timeout,
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
@@ -510,6 +521,10 @@ function
       "{retries_max}",
       retries_max));
   _text.push(
+    "            Call timeout: {call_timeout}".replace(
+      "{call_timeout}",
+      call_timeout));
+  _text.push(
     "              Wallet seed: {wallet_seed_path}".replace(
       "{wallet_seed_path}",
       wallet_seed_path));
@@ -582,6 +597,7 @@ function
     "  publish",
     "    <quiet>",
     "    <retries_max>",
+    "    <call_timeout>",
     "    <wallet_seed_path>",
     "    <api_key_path>",
     "    <target_network>",
@@ -601,6 +617,8 @@ function
     "                                   Default: y",
     "  <retries_max>                    Maximum number of retries before",
     "                                   failing (not implemented).",
+    "  <call_timeout>                   How much seconds to wait for a return",
+    "                                   before declaring the call failed.",
     "  <wallet_seed_path>               Path of the file containing",
     "                                   the seed phrase.",
     "  <api_key_path>                   Path of the API key for the",
@@ -648,54 +666,58 @@ function
           _value;
       }
       if ( _index == 4 ) {
-        wallet_seed_path =
+        call_timeout =
           _value;
       }
       if ( _index == 5 ) {
-        api_key_path =
+        wallet_seed_path =
           _value;
       }
       if ( _index == 6 ) {
-        target_network =
+        api_key_path =
           _value;
       }
       if ( _index == 7 ) {
-        contract_address =
+        target_network =
           _value;
       }
       if ( _index == 8 ) {
-        contract_abi_path =
+        contract_address =
           _value;
       }
       if ( _index == 9 ) {
-        contract_bytecode_path =
+        contract_abi_path =
           _value;
       }
       if ( _index == 10 ) {
-        contract_compiler_output_path =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 11 ) {
-        publication_namespace =
+        contract_compiler_output_path =
           _value;
       }
       if ( _index == 12 ) {
-        file_hash =
+        publication_namespace =
           _value;
       }
       if ( _index == 13 ) {
-        index_start =
+        file_hash =
           _value;
       }
       if ( _index == 14 ) {
-        index_end =
+        index_start =
           _value;
       }
       if ( _index == 15 ) {
+        index_end =
+          _value;
+      }
+      if ( _index == 16 ) {
         checkpoint_file_path =
           _value;
       }
-      if ( 15 < _index ) {
+      if ( 16 < _index ) {
 	chunks_files_paths.push(
           _value);
       }
@@ -732,8 +754,16 @@ async function
     console.error(
       e);
     _msg_error(
-      "Publication error",
+      "Publication error.",
       1);
+  }
+}
+
+function
+  _overrides_set() {
+  if ( call_timeout == "" ) {
+    call_timeout =
+      300;
   }
 }
 
@@ -741,9 +771,11 @@ if ( _cmdline_check(
        "publish") == true ) {
   _global_variables();
   _cmdline_parse();
+  _overrides_set();
   _config_show();
   app_opts = [
     retries_max,
+    call_timeout,
     wallet_seed_path,
     api_key_path,
     target_network,
