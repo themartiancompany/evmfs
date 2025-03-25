@@ -450,7 +450,7 @@ $(_display_networks \
      -P <tasks_paralell>    How many calls tasks perform at any
                             given time
                             Default: ${tasks_parallel}
-     -W <cache_dir>         Work directory
+     -W <cache_dir>         Work directory.
                             Default: ${cache_dir}
 
      -h                     This message.
