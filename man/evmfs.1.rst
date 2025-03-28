@@ -86,6 +86,10 @@ Options
 -c                      Enable color output
 -v                      Enable verbose output
 
+Bugs
+====
+
+https://github.com/themartiancompany/evmfs/-/issues
 
 Copyright
 =========
