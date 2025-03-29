@@ -1571,7 +1571,7 @@ _set_overrides() {
   _set_override \
     "call" \
     "timeout" \
-    "300"
+    "300000"
   _contract_version_auto_detect \
     "${deployments_dir}" \
     "FileSystem" \
@@ -1684,7 +1684,7 @@ $(_display_networks \
      -r <retries_max>       Maximum number of retries before
                             failing.
                             Default: ${retries_max}
-     -T <call_timeout>      Maximum number of seconds before
+     -T <call_timeout>      Maximum number of milliseconds before
                             declaring the call failed.
                             Default: ${call_timeout}
      -L                     Skip check and publish and only lock

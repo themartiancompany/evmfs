@@ -261,7 +261,7 @@ async function
     _wallet_password;
   if ( _call_timeout == "" ) {
     _call_timeout =
-      300;
+      300000;
   }
   _call_timeout =
     Number(
@@ -465,7 +465,7 @@ function
     "                                   Default: y",
     "  <retries_max>                    Maximum number of retries before",
     "                                   failing.",
-    "  <call_timeout>                   How much seconds to wait for a return",
+    "  <call_timeout>                   How many milliseconds to wait for a return",
     "                                   before declaring the call failed.",
     "  <api_key_path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
@@ -584,7 +584,7 @@ function
   _overrides_set() {
   if ( call_timeout == "" ) {
     call_timeout =
-      300;
+      300000;
   }
 }
 
