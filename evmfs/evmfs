@@ -45,21 +45,11 @@ _global_variables() {
   target_command=""
   fs_address=""
   fs_version=""
-  deployments_dir=""
-  user_level=""
-  wallet_name=""
-  wallet_path=""
-  wallet_password=""
-  wallet_seed=""
-  wallet_address=""
-  target_network=""
-  api_key=""
-  wallet_name=""
+  _libevm_global_variables
+  _libevm_app_global_variables
   target_key=""
   target_value=""
   call_method=""
-  retries_max=""
-  call_timeout=""
   lock_only=""
   output_file=""
   tasks_parallel=""
@@ -299,10 +289,6 @@ _set_overrides() {
     "command" \
     "get"
   _set_override \
-    "wallet" \
-    "name" \
-    "default"
-  _set_override \
     "user" \
     "level" \
     "n"
@@ -315,29 +301,10 @@ _set_overrides() {
     "${user_level}"
   _api_key_auto_detect \
     "${target_network}"
-  _set_override \
-    "wallet" \
-    "path" \
-    "$(_wallet_path_get \
-         "evm-wallet" \
-         "${wallet_name}")"
-  _secret_auto_detect \
-    "seed" \
-    "seed" \
+  _wallet_overrides_set \
     "evm-wallet" \
-    "${wallet_name}"
-  _secret_auto_detect \
-    "password" \
-    "plain" \
-    "evm-wallet" \
-    "${wallet_name}"
-  _set_override \
-    "wallet" \
-    "address" \
-    "$(evm-wallet \
-         get \
-           "${wallet_name}" \
-           "address")"
+    "default" \
+    "n"
   _set_override \
     "cache" \
     "dir" \

@@ -42,25 +42,15 @@ _sourced \
 # shellcheck disable=SC2034
 _global_variables() {
   get_date=""
-  wallet_name=""
-  wallet_path=""
-  wallet_password=""
-  wallet_seed=""
-  wallet_address=""
-  networks_amount=""
-  target_network=""
-  target_networks=()
-  api_key=""
+  _libevm_global_variables
+  _libevm_app_global_variables
   cache_dir=""
   tasks_parallel=""
   call_method=""
-  retries_max=""
   ccfs_address=""
   fs_address=""
   ll_address=""
   fs_version=""
-  deployments_dir=""
-  user_level=""
   uris_amount=""
   target_uris=()
   output_files=()
@@ -1176,12 +1166,12 @@ _set_overrides() {
     "max" \
     "300"
   _set_override \
-    "wallet" \
-    "name" \
-    "default"
-  _set_override \
     "user" \
     "level" \
+    "n"
+  _set_override \
+    "call" \
+    "auth" \
     "n"
   _deployments_dir_auto_detect \
     "evmfs" \
@@ -1201,29 +1191,10 @@ _set_overrides() {
     _api_key_auto_detect \
       "${target_networks[0]}"
   fi 
-  _set_override \
-    "wallet" \
-    "path" \
-    "$(_wallet_path_get \
-         "evm-wallet" \
-         "${wallet_name}")"
-  _secret_auto_detect \
-    "seed" \
-    "seed" \
+  _wallet_overrides_set \
     "evm-wallet" \
-    "${wallet_name}"
-  _secret_auto_detect \
-    "password" \
-    "plain" \
-    "evm-wallet" \
-    "${wallet_name}"
-  _set_override \
-    "wallet" \
-    "address" \
-    "$(evm-wallet \
-         get \
-           "${wallet_name}" \
-           "address")"
+    "default" \
+    "n"
   _contract_version_auto_detect \
     "${deployments_dir}" \
     "FileSystem" \
