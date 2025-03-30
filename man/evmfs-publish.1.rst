@@ -73,6 +73,8 @@ Options
 -m upload_method        It can be 'standalone' or 'simulate'.
 -r retries_max          Maximum number of retries before
                         failing.
+-T call_timeout         Maximum number of milliseconds before
+                        declaring the call failed.
 -L                      Skip check and publish and only lock
                         the file.
 -P  tasks_parallel      Tasks to perform in parallel.

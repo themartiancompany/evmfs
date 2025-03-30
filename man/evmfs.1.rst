@@ -76,6 +76,8 @@ Options
 -m call_method          Can be standalone or 'bulk'.
 -r retries_max          Maximum number of retries before
                         failing.
+-T call_timeout         Maximum number of milliseconds before
+                        declaring the call failed.
 -P tasks_parallel       Tasks to perform in parallel.
 -W cache_dir            Location where to temporary store
                         the downloaded resource chunks.
@@ -84,6 +86,10 @@ Options
 -c                      Enable color output
 -v                      Enable verbose output
 
+Bugs
+====
+
+https://github.com/themartiancompany/evmfs/-/issues
 
 Copyright
 =========

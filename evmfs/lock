@@ -52,6 +52,8 @@ function
     "lock";
   retries_max =
     "";
+  call_timeout =
+    "";
   wallet_seed_path =
     "";
   api_key_path =
@@ -232,6 +234,7 @@ async function
 async function
   _lock(
     _retries_max,
+    _call_timeout,
     _wallet_seed_path,
     _api_key_path,
     _target_network,
@@ -256,6 +259,13 @@ async function
     _progress,
     _tx,
     _wallet_password;
+  if ( _call_timeout == "" ) {
+    _call_timeout =
+      300000;
+  }
+  _call_timeout =
+    Number(
+      _call_timeout);
   _index_start =
     Number(
       _index_start);
@@ -266,6 +276,7 @@ async function
     "";
   _lock_call_base_opts = [
     _retries_max,
+    _call_timeout,
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
@@ -365,6 +376,10 @@ function
       "{retries_max}",
       retries_max));
   _text.push(
+    "            Call timeout: {call_timeout}".replace(
+      "{call_timeout}",
+      call_timeout));
+  _text.push(
     "              Wallet seed: {wallet_seed_path}".replace(
       "{wallet_seed_path}",
       wallet_seed_path));
@@ -431,6 +446,7 @@ function
     "  lock",
     "    <quiet>",
     "    <retries_max>",
+    "    <call_timeout>",
     "    <api_key_path>",
     "    <target_network>",
     "    <contract_address>",
@@ -449,6 +465,8 @@ function
     "                                   Default: y",
     "  <retries_max>                    Maximum number of retries before",
     "                                   failing.",
+    "  <call_timeout>                   How many milliseconds to wait for a return",
+    "                                   before declaring the call failed.",
     "  <api_key_path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
     "  <target_network>                 Network on which the contract",
@@ -494,50 +512,54 @@ function
           _value;
       }
       if ( _index == 4 ) {
-        wallet_seed_path =
+        call_timeout =
           _value;
       }
       if ( _index == 5 ) {
-        api_key_path =
+        wallet_seed_path =
           _value;
       }
       if ( _index == 6 ) {
-        target_network =
+        api_key_path =
           _value;
       }
       if ( _index == 7 ) {
-        contract_address =
+        target_network =
           _value;
       }
       if ( _index == 8 ) {
-        contract_abi_path =
+        contract_address =
           _value;
       }
       if ( _index == 9 ) {
-        contract_bytecode_path =
+        contract_abi_path =
           _value;
       }
       if ( _index == 10 ) {
-        contract_compiler_output_path =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 11 ) {
-        publication_namespace =
+        contract_compiler_output_path =
           _value;
       }
       if ( _index == 12 ) {
-        file_hash =
+        publication_namespace =
           _value;
       }
       if ( _index == 13 ) {
-        index_start =
+        file_hash =
           _value;
       }
       if ( _index == 14 ) {
-        index_end =
+        index_start =
           _value;
       }
       if ( _index == 15 ) {
+        index_end =
+          _value;
+      }
+      if ( _index == 16 ) {
         checkpoint_file_path =
           _value;
       }
@@ -558,14 +580,23 @@ function
   }
 }
 
+function
+  _overrides_set() {
+  if ( call_timeout == "" ) {
+    call_timeout =
+      300000;
+  }
+}
 
 if ( _cmdline_check(
        "lock") == true ) {
   _global_variables();
   _cmdline_parse();
+  _overrides_set();
   _config_show();
   app_opts = [
     retries_max,
+    call_timeout,
     wallet_seed_path,
     api_key_path,
     target_network,

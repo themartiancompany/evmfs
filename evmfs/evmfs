@@ -53,6 +53,7 @@ _global_variables() {
   target_value=""
   call_method=""
   retries_max=""
+  call_timeout=""
   lock_only=""
   output_file=""
   tasks_parallel=""
@@ -110,19 +111,20 @@ _evmfs() {
     _api_key_path="${10}" \
     _call_method="${11}" \
     _retries_max="${12}" \
-    _lock_only="${13}" \
-    _tasks_parallel="${14}" \
-    _cache_dir="${15}" \
-    _user_level="${16}" \
-    _output_file="${17}" \
-    _target_key="${18}" \
-    _target_value="${19}" \
+    _call_timeout="${13}" \
+    _lock_only="${14}" \
+    _tasks_parallel="${15}" \
+    _cache_dir="${16}" \
+    _user_level="${17}" \
+    _output_file="${18}" \
+    _target_key="${19}" \
+    _target_value="${20}" \
     _target_uri \
     _target_file \
     _command_args=() \
     _args=()
   shift \
-    19
+    20
   _command_args+=(
     "$@"
   )
@@ -158,6 +160,8 @@ _evmfs() {
       "${_call_method}"
     -r
       "${_retries_max}"
+    -T
+      "${_call_timeout}"
   )
   if [[ "${_user_level}" == "y" ]]; then
     _args+=(
@@ -342,6 +346,10 @@ _set_overrides() {
     "max" \
     "300"
   _set_override \
+    "call" \
+    "timeout" \
+    "300000"
+  _set_override \
     "lock" \
     "only" \
     "n"
@@ -383,7 +391,7 @@ _usage() {
 Ethereum Virtual Machine File System
 
 Usage:
-  $(_get "app" "name")
+  ${app_name}
     [options]
     <command>
       (<command_args>)
@@ -433,13 +441,16 @@ $(_display_networks \
      -r <retries_max>       Maximum number of retries before
                             failing.
                             Default: ${retries_max}
+     -T <call_timeout>      Maximum number of milliseconds before
+                            declaring the call failed.
+                            Default: ${call_timeout}
      -L                     Skip check and publish and only lock
                             the file.
                             Default: ${lock_only}
      -P <tasks_paralell>    How many calls tasks perform at any
                             given time
                             Default: ${tasks_parallel}
-     -W <cache_dir>         Work directory
+     -W <cache_dir>         Work directory.
                             Default: ${cache_dir}
 
      -h                     This message.
@@ -484,6 +495,7 @@ _show_config() {
   _msg_info "          Cache directory:   ${cache_dir}"
   _msg_info "              Call method:   ${call_method}"
   _msg_info "          Maximum retries:   ${retries_max}"
+  _msg_info "             Call timeout:   ${call_timeout}"
   _msg_info "                Lock only:   ${lock_only}"
   _msg_info "           Parallel tasks:   ${tasks_parallel}"
   _msg_info "              Output file:   ${output_file}"
@@ -500,7 +512,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:V:o:ud:N:w:p:s:n:k:m:r:LP:W:cvh?' \
+    'A:V:o:ud:N:w:p:s:n:k:m:r:T:LP:W:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -517,6 +529,7 @@ while \
     k) override_api_key="${OPTARG}" ;;
     m) override_call_method="${OPTARG}" ;;
     r) override_retries_max="${OPTARG}" ;;
+    T) override_call_timeout="${OPTARG}" ;;
     L) override_lock_only="y" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
     W) override_cache_dir="${OPTARG}" ;;
@@ -540,7 +553,7 @@ shift \
   ))
 if (( $# < 1 )); then
   _msg_error \
-    "no command given" \
+    "No command given." \
     0
   _set_overrides
   _usage \
@@ -548,7 +561,7 @@ if (( $# < 1 )); then
 fi
 if (( $# < 2 )); then
   _msg_error \
-    "no value given" \
+    "No command key given." \
     0
   _set_overrides
   _usage \
@@ -593,6 +606,7 @@ app_opts=(
   "${api_key}"
   "${call_method}"
   "${retries_max}"
+  "${call_timeout}"
   "${lock_only}"
   "${tasks_parallel}"
   "${cache_dir}"
