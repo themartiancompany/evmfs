@@ -1503,10 +1503,6 @@ _set_overrides() {
     "date" \
     "$(_get_date_human)"
   _set_override \
-    "wallet" \
-    "name" \
-    "default"
-  _set_override \
     "user" \
     "level" \
     "n"
@@ -1525,6 +1521,10 @@ _set_overrides() {
     target_network=""
     networks_amount="${#target_networks[@]}"
   fi
+  _set_override \
+    "wallet" \
+    "name" \
+    "default"
   _set_override \
     "wallet" \
     "path" \
