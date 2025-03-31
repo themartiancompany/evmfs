@@ -32,11 +32,11 @@ BUILD_DIR=build
 DOC_FILES=\
   $(wildcard *.rst) \
   $(wildcard docs/*.md)
-_BASH_FILES=\
+_BASH_FILES:=\
   $(_PROJECT) \
   $(_PROJECT)-get \
   $(_PROJECT)-publish
-_NODE_FILES=\
+_NODE_FILES:=\
   ccget \
   check \
   get \
