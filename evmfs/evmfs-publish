@@ -46,8 +46,6 @@ _global_variables() {
   fs_version=""
   ll_address=""
   ccfs_address=""
-  _libevm_global_variables
-  _libevm_app_global_variables
   upload_method=""
   lock_only=""
   tasks_parallel=""
@@ -1767,6 +1765,8 @@ _display_target_files() {
 
 _globals
 _global_variables
+_libevm_global_variables
+_libevm_app_global_variables
 _requirements
 # shellcheck disable=SC2034
 while \
