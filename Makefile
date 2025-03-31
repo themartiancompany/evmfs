@@ -94,13 +94,13 @@ _INSTALL_TARGETS_ALL:=\
   $(_INSTALL_SCRIPTS_TARGETS_ALL)
 _UNINSTALL_SCRIPTS_TARGETS:=\
   uninstall-bash-scripts \
-  uninstall-nodes-scripts
+  uninstall-node-scripts
 _UNINSTALL_SCRIPTS_TARGETS_ALL:=\
   $(_UNINSTALL_SCRIPTS_TARGETS) \
   uninstall-scripts
 _UNINSTALL_TARGETS:=\
   uninstall-scripts
-_UNINSTALL_TARGETS_ALL=:\
+_UNINSTALL_TARGETS_ALL:=\
   $(_UNINSTALL_SCRIPTS_TARGETS_ALL) \
   uninstall
 _PHONY_TARGETS:=\
