@@ -1615,6 +1615,22 @@ $(_display_networks \
      "${_networks[@]}")
 
   options:
+     -m <upload_method>     It can be 'standalone', 'simulate' or
+                            'bulk'.
+                            Default: ${upload_method}
+     -L                     Skip check and publish and only lock
+                            the file.
+                            Default: ${lock_only}
+     -r <retries_max>       Maximum number of retries before
+                            failing.
+                            Default: ${retries_max}
+     -T <call_timeout>      Maximum number of milliseconds before
+                            declaring the call failed.
+                            Default: ${call_timeout}
+     -P <tasks_parallel>    Tasks to perform in parallel.
+                            Default: ${tasks_parallel}
+
+  contract options:
      -A <fs_address>        Address of the FileSystem contract
                             on the network.
                             Default: ${fs_address}
@@ -1627,12 +1643,19 @@ $(_display_networks \
      -V <fs_version>        Version of the target EVM file
                             system.
                             Default: ${fs_version}
+
+  libevm options:
      -u                     Whether to retrieve file system
                             address from user directory or custom
                             deployment.
                             Default: ${user_level}
      -d <deployments_dir>   Contracts deployments directory.
                             Default: ${deployments_dir}
+     -n <network>           EVM network name (${_networks[*]}).
+                            Default: ${target_network}
+
+
+  credentials options:
      -N <wallet_name>       Wallet name.
                             Default: ${wallet_name}
      -w <wallet_path>       Wallet path.
@@ -1641,23 +1664,10 @@ $(_display_networks \
                             Default: ${wallet_password}
      -s <wallet_seed>       Wallet seed path.
                             Default: ${wallet_seed}
-     -n <network>           EVM network name (${_networks[*]}).
-                            Default: ${target_network}
      -k <api_key>           Etherscan-like service key.
                             Default: ${api_key}
-     -m <upload_method>     It can be 'standalone' or 'simulate'.
-                            Default: ${upload_method}
-     -r <retries_max>       Maximum number of retries before
-                            failing.
-                            Default: ${retries_max}
-     -T <call_timeout>      Maximum number of milliseconds before
-                            declaring the call failed.
-                            Default: ${call_timeout}
-     -L                     Skip check and publish and only lock
-                            the file.
-                            Default: ${lock_only}
-     -P <tasks_parallel>    Tasks to perform in parallel.
-                            Default: ${tasks_parallel}
+
+  application options:
      -W <cache_dir>         Work directory.
                             Default: ${cache_dir}
 
@@ -1710,27 +1720,31 @@ _display_flags() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "                   Publish date:   ${publish_date}"
+  _msg_info "                      Namespace:   ${wallet_address}"
+  _msg_info "                   Target files:"
+  _display_target_files                        "${target_files[@]}"
+  _msg_info "                  Upload method:   ${upload_method}"
+  _msg_info "                 Tasks parallel:   ${tasks_parallel}"
+  _msg_info "                Maximum retries:   ${retries_max}"
+  _msg_info "                   Call timeout:   ${call_timeout}"
+  _msg_info "                      Lock only:   ${lock_only}"
+  _msg_info "   LibEVM application options:"
   _msg_info "Cross-chain file system address:   ${ccfs_address}"
   _msg_info "            File system address:   ${fs_address}"
   _msg_info "            File system version:   ${fs_version}"
   _msg_info "             LengthLock address:   ${ll_address}"
+  _msg_info "   LibEVM application options:"
   _msg_info "                     User level:   ${user_level}"
   _msg_info "          Deployments directory:   ${deployments_dir}"
-  _msg_info "                      Namespace:   ${wallet_address}"
+  _msg_info "                Target networks:   ${target_networks[*]}"
+  _msg_info "          Credentials options:"
   _msg_info "                    Wallet name:   ${wallet_name}"
   _msg_info "                    Wallet path:   ${wallet_path}"
   _msg_info "                Wallet password:   ${wallet_password}"
   _msg_info "                    Wallet seed:   ${wallet_seed}"
-  _msg_info "                Target networks:   ${target_networks[*]}"
   _msg_info "                        API key:   ${api_key}"
-  _msg_info "                  Upload method:   ${upload_method}"
-  _msg_info "                Maximum retries:   ${retries_max}"
-  _msg_info "                   Call timeout:   ${call_timeout}"
-  _msg_info "                      Lock only:   ${lock_only}"
-  _msg_info "                 Tasks parallel:   ${tasks_parallel}"
+  _msg_info "          Application options:"
   _msg_info "                Cache directory:   ${cache_dir}"
-  _msg_info "                   Target files:"
-  _display_target_files                        "${target_files[@]}"
 }
 
 _display_target_files() {
