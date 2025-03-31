@@ -227,7 +227,7 @@ install-node-scripts:
 	for _file in $(_NODE_FILES); do \
 	  $(_INSTALL_EXE) \
 	  "$(_PROJECT)/$${_file}" \
-	  "$(LIB_DIR)/$${_file}"
+	  "$(LIB_DIR)/$${_file}"; \
 	done
 
 install-man:
@@ -237,7 +237,7 @@ install-man:
 	for _file in $(_BASH_FILES); do \
 	  rst2man \
 	    "man/$${_file}.1.rst" \
-	    "$(MAN_DIR)/man1/$${_file}.1"
+	    "$(MAN_DIR)/man1/$${_file}.1"; \
 	done
 
 .PHONY: $(_PHONY_TARGETS)
