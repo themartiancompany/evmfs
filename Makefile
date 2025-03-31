@@ -224,7 +224,7 @@ install-bash-scripts:
 
 install-node-scripts:
 
-	for _file in $(_NODE_FILES); do
+	for _file in $(_NODE_FILES); do \
 	  $(_INSTALL_EXE) \
 	  "$(_PROJECT)/$${_file}" \
 	  "$(LIB_DIR)/$${_file}"
@@ -234,7 +234,7 @@ install-man:
 
 	$(_INSTALL_DIR) \
 	  "$(MAN_DIR)/man1"
-	for _file in $(_BASH_FILES); do
+	for _file in $(_BASH_FILES); do \
 	  rst2man \
 	    "man/$${_file}.1.rst" \
 	    "$(MAN_DIR)/man1/$${_file}.1"
