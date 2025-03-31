@@ -92,11 +92,22 @@ _INSTALL_TARGETS_ALL:=\
   $(_INSTALL_DOC_TARGETS) \
   $(_INSTALL_CONTRACTS_TARGETS_ALL) \
   $(_INSTALL_SCRIPTS_TARGETS_ALL)
+_UNINSTALL_SCRIPTS_TARGETS:=\
+  uninstall-bash-scripts \
+  uninstall-nodes-scripts
+_UNINSTALL_SCRIPTS_TARGETS_ALL:=\
+  uninstall-scripts \
+  $(_UNINSTALL_SCRIPTS_TARGETS)
+_UNINSTALL_TARGETS:=\
+  uninstall-scripts
+_UNINSTALL_TARGETS_ALL=:\
+  $(_UNINSTALL_SCRIPTS_ALL)
 _PHONY_TARGETS:=\
   $(_BUILD_TARGETS_ALL) \
   $(_CHECK_TARGETS_ALL) \
   $(_CLEAN_TARGETS_ALL) \
-  $(_INSTALL_TARGETS_ALL)
+  $(_INSTALL_TARGETS_ALL) \
+  $(_UNINSTALL_TARGETS_ALL)
 
 all: $(_BUILD_TARGETS)
 
@@ -107,6 +118,10 @@ check: $(_CHECK_TARGETS)
 install-contracts: $(_INSTALL_CONTRACTS_TARGETS)
 
 install-scripts: $(_INSTALL_SCRIPTS_TARGETS)
+
+uninstall: $(_UNINSTALL_TARGETS)
+
+uninstall-scripts: $(_UNINSTALL_SCRIPTS_TARGETS)
 
 clean:
 
@@ -238,6 +253,23 @@ install-man:
 	  rst2man \
 	    "man/$${_file}.1.rst" \
 	    "$(MAN_DIR)/man1/$${_file}.1"; \
+	done
+
+
+uninstall-bash-scripts:
+
+	for _file in $(_BASH_FILES); do \
+	  rm \
+	    -r \
+	    "$(BIN_DIR)/$${_file}"; \
+	done
+
+uninstall-node-scripts:
+
+	for _file in $(_BASH_FILES); do \
+	  rm \
+	    -r \
+	    "$(LIB_DIR)/$${_file}"; \
 	done
 
 .PHONY: $(_PHONY_TARGETS)
