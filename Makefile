@@ -101,8 +101,8 @@ _UNINSTALL_SCRIPTS_TARGETS_ALL:=\
 _UNINSTALL_TARGETS:=\
   uninstall-scripts
 _UNINSTALL_TARGETS_ALL=:\
-  uninstall \
-  $(_UNINSTALL_SCRIPTS_TARGETS_ALL)
+  $(_UNINSTALL_SCRIPTS_TARGETS_ALL) \
+  uninstall
 _PHONY_TARGETS:=\
   $(_BUILD_TARGETS_ALL) \
   $(_CHECK_TARGETS_ALL) \
@@ -256,7 +256,6 @@ install-man:
 	    "$(MAN_DIR)/man1/$${_file}.1"; \
 	done
 
-
 uninstall-bash-scripts:
 
 	for _file in $(_BASH_FILES); do \
@@ -267,7 +266,7 @@ uninstall-bash-scripts:
 
 uninstall-node-scripts:
 
-	for _file in $(_BASH_FILES); do \
+	for _file in $(_NODE_FILES); do \
 	  rm \
 	    -r \
 	    "$(LIB_DIR)/$${_file}"; \
