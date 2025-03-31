@@ -96,11 +96,12 @@ _UNINSTALL_SCRIPTS_TARGETS:=\
   uninstall-bash-scripts \
   uninstall-nodes-scripts
 _UNINSTALL_SCRIPTS_TARGETS_ALL:=\
-  uninstall-scripts \
-  $(_UNINSTALL_SCRIPTS_TARGETS)
+  $(_UNINSTALL_SCRIPTS_TARGETS) \
+  uninstall-scripts
 _UNINSTALL_TARGETS:=\
   uninstall-scripts
 _UNINSTALL_TARGETS_ALL=:\
+  uninstall \
   $(_UNINSTALL_SCRIPTS_TARGETS_ALL)
 _PHONY_TARGETS:=\
   $(_BUILD_TARGETS_ALL) \
