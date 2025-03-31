@@ -77,7 +77,7 @@ _INSTALL_CONTRACTS_TARGETS_ALL:=\
 _INSTALL_DOC_TARGETS:=\
   install-doc \
   install-man
-INSTALL_SCRIPTS_TARGETS:=\
+_INSTALL_SCRIPTS_TARGETS:=\
   install-bash-scripts \
   install-node-scripts
 _INSTALL_SCRIPTS_TARGETS_ALL:=\
