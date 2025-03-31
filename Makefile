@@ -232,7 +232,6 @@ install-doc:
 install-bash-scripts:
 
 	for _file in $(_BASH_FILES); do \
-	  echo "installing $${_file}"; \
 	  $(_INSTALL_EXE) \
 	  "$(_PROJECT)/$${_file}" \
 	  "$(BIN_DIR)/$${_file}"; \
