@@ -32,6 +32,19 @@ BUILD_DIR=build
 DOC_FILES=\
   $(wildcard *.rst) \
   $(wildcard docs/*.md)
+_BASH_FILES=\
+  $(_PROJECT) \
+  $(_PROJECT)-get \
+  $(_PROJECT)-publish
+_NODE_FILES=\
+  ccget \
+  check \
+  get \
+  index \
+  lock \
+  publish \
+  verify
+
 SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
 
 _INSTALL_FILE=install -Dm644
@@ -64,6 +77,12 @@ _INSTALL_CONTRACTS_TARGETS_ALL:=\
 _INSTALL_DOC_TARGETS:=\
   install-doc \
   install-man
+INSTALL_SCRIPTS_TARGETS:=\
+  install-bash-scripts \
+  install-node-scripts
+_INSTALL_SCRIPTS_TARGETS_ALL:=\
+  $(_INSTALL_SCRIPTS_TARGETS) \
+  install-scripts
 _INSTALL_TARGETS:=\
   $(_INSTALL_DOC_TARGETS) \
   $(_INSTALL_CONTRACTS_TARGETS) \
@@ -72,7 +91,7 @@ _INSTALL_TARGETS_ALL:=\
   install \
   $(_INSTALL_DOC_TARGETS) \
   $(_INSTALL_CONTRACTS_TARGETS_ALL) \
-  install-scripts
+  $(_INSTALL_SCRIPTS_TARGETS_ALL)
 _PHONY_TARGETS:=\
   $(_BUILD_TARGETS_ALL) \
   $(_CHECK_TARGETS_ALL) \
@@ -86,6 +105,8 @@ install: $(_INSTALL_TARGETS)
 check: $(_CHECK_TARGETS)
 
 install-contracts: $(_INSTALL_CONTRACTS_TARGETS)
+
+install-scripts: $(_INSTALL_SCRIPTS_TARGETS)
 
 clean:
 
@@ -192,51 +213,31 @@ install-doc:
 	  "docs/media/evmfs.png" \
 	  "$(DOC_DIR)/media/evmfs.png"
 
-install-scripts:
 
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/check" \
-	  "$(LIB_DIR)/check"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/ccget" \
-	  "$(LIB_DIR)/ccget"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/publish" \
-	  "$(LIB_DIR)/publish"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/get" \
-	  "$(LIB_DIR)/get"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/lock" \
-	  "$(LIB_DIR)/lock"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/verify" \
-	  "$(LIB_DIR)/verify"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/index" \
-	  "$(LIB_DIR)/index"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/$(_PROJECT)-get" \
-	  "$(BIN_DIR)/$(_PROJECT)-get"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/$(_PROJECT)-publish" \
-	  "$(BIN_DIR)/$(_PROJECT)-publish"
-	$(_INSTALL_EXE) \
-	  "$(_PROJECT)/$(_PROJECT)" \
-	  "$(BIN_DIR)/$(_PROJECT)"
+install-bash-scripts:
+
+	for _file in $(_BASH_FILES); do
+	  $(_INSTALL_EXE) \
+	  "$(_PROJECT)/$${_file}" \
+	  "$(BIN_DIR)/$${_file}"
+	done
+
+install-node-scripts:
+
+	for _file in $(_NODE_FILES); do
+	  $(_INSTALL_EXE) \
+	  "$(_PROJECT)/$${_file}" \
+	  "$(LIB_DIR)/$${_file}"
+	done
 
 install-man:
 
 	$(_INSTALL_DIR) \
 	  "$(MAN_DIR)/man1"
-	rst2man \
-	  "man/$(_PROJECT).1.rst" \
-	  "$(MAN_DIR)/man1/$(_PROJECT).1"
-	rst2man \
-	  "man/$(_PROJECT)-publish.1.rst" \
-	  "$(MAN_DIR)/man1/$(_PROJECT)-publish.1"
-	rst2man \
-	  "man/$(_PROJECT)-publish.1.rst" \
-	  "$(MAN_DIR)/man1/$(_PROJECT)-get.1"
+	for _file in $(_BASH_FILES); do
+	  rst2man \
+	    "man/$${_file}.1.rst" \
+	    "$(MAN_DIR)/man1/$${_file}.1"
+	done
 
 .PHONY: $(_PHONY_TARGETS)
