@@ -216,10 +216,10 @@ install-doc:
 
 install-bash-scripts:
 
-	for _file in $(_BASH_FILES); do
+	for _file in $(_BASH_FILES); do \
 	  $(_INSTALL_EXE) \
 	  "$(_PROJECT)/$${_file}" \
-	  "$(BIN_DIR)/$${_file}"
+	  "$(BIN_DIR)/$${_file}"; \
 	done
 
 install-node-scripts:
