@@ -45,8 +45,6 @@ _NODE_FILES:=\
   publish \
   verify
 
-SCRIPT_FILES=$(wildcard $(_PROJECT)/*)
-
 _INSTALL_FILE=install -vDm644
 _INSTALL_DIR=install -vdm755
 _INSTALL_EXE=install -vDm755
@@ -132,10 +130,12 @@ clean:
 
 shellcheck:
 
-	shellcheck \
-	  -s \
-	    bash \
-	  $(SCRIPT_FILES)
+	for _file in $(_BASH_FILES); do \
+	  shellcheck \
+	    -s \
+	      bash \
+	    "$(_PROJECT)/$${_file}"; \
+	done
 
 contracts:
 
