@@ -31,10 +31,12 @@ Ethereum Virtual Machine File System
 :Version: evmfs |version|
 :Manual section: 1
 
+
 Synopsis
 ========
 
 evmfs *[options]* *command* *[files]*
+
 
 Description
 ===========
@@ -46,11 +48,13 @@ network-indipendent file system running
 on Ethereum Virtual Machine (EVM) compatible
 blockchain networks.
 
+
 Commands
 =========
 
 * get
 * publish
+
 
 Options
 ========
@@ -62,25 +66,29 @@ Options
                         declaring the call failed.
 -P tasks_parallel       Tasks to perform in parallel.
 
+
 Get options
 =================
 
--o output_file          Name of the file in which to save
-                        the downloaded resource.
+-o output_file          Name of the file in which to save the downloaded resource.
+
 
 Publish options
 ====================
 
--L                      Skip check and publish and only lock
-                        the file.
+-L                      Skip check and publish and only lock the file.
+
+
 Contract options
 =================
+
 -A fs_address           Address of the EVM file system
                         on the network.
 -B ll_address           Address of the Length Lock contract
                         on the network.
 -V fs_version           Version of the target EVM file
                         system.
+
 
 LibEVM options
 ===============
@@ -91,6 +99,7 @@ LibEVM options
 -d deployments_dir      Contracts deployments directory.
 -n network              EVM network name (${_networks[*]}).
 
+
 Credentials options
 ====================
 
@@ -99,6 +108,7 @@ Credentials options
 -p wallet_password>     Wallet password.
 -s wallet_seed          Wallet seed path.
 -k api_key              Etherscan-like service key.
+
 
 Application options
 ====================
@@ -109,6 +119,7 @@ Application options
 -h                      This message.
 -c                      Enable color output
 -v                      Enable verbose output
+
 
 Bugs
 ====
