@@ -213,10 +213,10 @@ install-doc:
 	  "docs/media/evmfs.png" \
 	  "$(DOC_DIR)/media/evmfs.png"
 
-
 install-bash-scripts:
 
 	for _file in $(_BASH_FILES); do \
+	  echo "installing $${_file}"; \
 	  $(_INSTALL_EXE) \
 	  "$(_PROJECT)/$${_file}" \
 	  "$(BIN_DIR)/$${_file}"; \
