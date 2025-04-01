@@ -1466,7 +1466,7 @@ _evmfs_publish() {
     "$@"
   )
   if [[ "${_index_network}" == "" ]]; then
-    if (( 1 < "${#_target_network[@]}" )); then
+    if (( 1 < "${#_target_networks[@]}" )); then
       _index_network="${_target_networks[0]}"
     fi
   fi
@@ -1733,9 +1733,15 @@ _publishing_address_get() {
     _namespace \
     _file \
     _sum
-  _network="${target_networks[0]}"
   _fs_address="${fs_address}"
-  if [[ "${_fs_address}" == "" ]]; then
+  if (( 0 < "${#target_networks[@]}" )); then
+    _network="${target_networks[0]}"
+  fi
+  if (( 1 < "${#target_networks[@]}" )); then
+    _fs_address="${ccfs_address}"
+  fi
+  if [[ "${index_network}" != "" ]]; then
+    _network="${index_network}"
     _fs_address="${ccfs_address}"
   fi
   _namespace="${wallet_address}"
