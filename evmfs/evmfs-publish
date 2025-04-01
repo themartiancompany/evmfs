@@ -320,6 +320,12 @@ _contract_call_opts_setup() {
         "${_wallet_name}"
     )
   fi
+  if [[ "${_wallet_seed}" != "" ]]; then
+    _call_auth_opts+=(
+      -s
+        "${_wallet_seed}"
+    )
+  fi
   if [[ "${_api_key_path}" != "" ]]; then
     _call_auth_opts+=(
       -k
