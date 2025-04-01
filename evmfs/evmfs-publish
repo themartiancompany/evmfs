@@ -298,36 +298,43 @@ _chunk_publish() {
 _contract_call_opts_setup() {
   local \
     _evm_contract_call_opts=() \
+    _call_auth_opts=() \
     _fs_call_opts=() \
     _msg=()
   _length_call_opts=()
   _length_lock_call_opts=()
   if [[ "${quiet}" == "n" ]]; then
-    _length_lock_call_opts+=(
+    _call_auth_opts+=(
       -v
+    )
+  fi
+  _call_auth_opts+=(
+    -t
+      "dynamic"
+    -T
+      "${_call_timeout}"
+  )
+  if [[ "${_wallet_name}" != "" ]]; then
+    _call_auth_opts+=(
+      -N
+        "${_wallet_name}"
+    )
+  fi
+  if [[ "${_api_key_path}" != "" ]]; then
+    _call_auth_opts+=(
+      -k
+        "${_api_key_path}"
     )
   fi
   _evm_contract_call_opts+=(
     -n
       "${_target_network}"
-    -N
-      "${_wallet_name}"
-    -k
-      "${_api_key_path}"
   )
   if [[ "${_upload_method}" == "standalone" ]]; then
     _check_call_opts=()
     _publish_call_opts=()
     _verify_call_opts=()
     _lock_call_opts=()
-    if [[ "${quiet}" == "n" ]]; then
-      _publish_call_opts+=(
-        -v
-      )
-      _lock_call_opts+=(
-        -v
-      )
-    fi
     _fs_call_opts+=(
       "${_evm_contract_call_opts[@]}"
       -A
@@ -344,10 +351,7 @@ _contract_call_opts_setup() {
     )
     _publish_call_opts+=(
       "${_fs_call_opts[@]}"
-      -t
-        "dynamic"
-      -T
-        "${_call_timeout}"
+      "${_call_auth_opts[@]}"
     )
     _verify_call_opts+=(
       "${_fs_call_opts[@]}"
@@ -356,10 +360,7 @@ _contract_call_opts_setup() {
     )
     _lock_call_opts+=(
       "${_fs_call_opts[@]}"
-      -t
-        "dynamic"
-      -T
-        "${_call_timeout}"
+      "${_call_auth_opts[@]}"
     )
   fi
   _length_call_opts+=(
@@ -375,16 +376,13 @@ _contract_call_opts_setup() {
   )
   _length_lock_call_opts+=(
     "${_evm_contract_call_opts[@]}"
+    "${_call_auth_opts[@]}"
     -A
       "${_ll_abi}"
     -B
       "${_ll_bytecode}"
     -C
       "${_ll_compiler_output}"
-    -t
-      "dynamic"
-    -T
-      "${_call_timeout}"
   )
   _msg=(
     "The EVM contract caller"
