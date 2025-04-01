@@ -44,6 +44,7 @@ _global_variables() {
   call_date=""
   target_command=""
   fs_address=""
+  ccfs_address=""
   fs_version=""
   target_key=""
   target_value=""
@@ -96,31 +97,32 @@ _evmfs() {
   local \
     _target_command="${1}" \
     _fs_address="${2}" \
-    _fs_version="${3}" \
-    _deployments_dir="${4}" \
-    _wallet_name="${5}" \
-    _wallet_path="${6}" \
-    _wallet_password="${7}" \
-    _wallet_seed="${8}" \
-    _network="${9}" \
-    _api_key_path="${10}" \
-    _call_method="${11}" \
-    _index_network="${12}" \
-    _retries_max="${13}" \
-    _call_timeout="${14}" \
-    _lock_only="${15}" \
-    _tasks_parallel="${16}" \
-    _cache_dir="${17}" \
-    _user_level="${18}" \
-    _output_file="${19}" \
-    _target_key="${20}" \
-    _target_value="${21}" \
+    _ccfs_address="${3}" \
+    _fs_version="${4}" \
+    _deployments_dir="${5}" \
+    _wallet_name="${6}" \
+    _wallet_path="${7}" \
+    _wallet_password="${8}" \
+    _wallet_seed="${9}" \
+    _network="${10}" \
+    _api_key_path="${11}" \
+    _call_method="${12}" \
+    _index_network="${13}" \
+    _retries_max="${14}" \
+    _call_timeout="${15}" \
+    _lock_only="${16}" \
+    _tasks_parallel="${17}" \
+    _cache_dir="${18}" \
+    _user_level="${19}" \
+    _output_file="${20}" \
+    _target_key="${21}" \
+    _target_value="${22}" \
     _target_uri \
     _target_file \
     _command_args=() \
     _args=()
   shift \
-    21
+    22
   _command_args+=(
     "$@"
   )
@@ -131,43 +133,65 @@ _evmfs() {
   fi
   if [[ "${_wallet_seed}" != "" ]]; then
     _args+=(
-    -s
-      "${_wallet_seed}"
+      -s
+        "${_wallet_seed}"
     )
   fi
   if [[ "${_wallet_path}" != "" ]]; then
     _args+=(
-    -w
-      "${_wallet_path}"
+      -w
+        "${_wallet_path}"
     )
   fi
   if [[ "${_wallet_password}" != "" ]]; then
     _args+=(
-    -p
-      "${_wallet_password}"
+      -p
+        "${_wallet_password}"
     )
   fi
   if [[ "${_network}" != "" ]]; then
     _args+=(
-    -n
-      "${_network}"
+      -n
+        "${_network}"
     )
   fi
   if [[ "${_api_key_path}" != "" ]]; then
     _args+=(
-    -k
-      "${_api_key_path}"
+      -k
+        "${_api_key_path}"
+    )
+  fi
+  if [[ "${_fs_address}" != "" ]]; then
+    _args+=(
+      -A
+        "${_fs_address}"
+    )
+  fi
+  if [[ "${_ccfs_address}" != "" ]]; then
+    _args+=(
+      -C
+        "${_ccfs_address}"
+    )
+  fi
+  if [[ "${_fs_version}" != "" ]]; then
+    _args+=(
+      -V
+        "${_fs_version}"
+    )
+  fi
+  if [[ "${_wallet_name}" != "" ]]; then
+    _args+=(
+      -N
+        "${_wallet_name}"
+    )
+  fi
+  if [[ "${_deployments_dir}" != "" ]]; then
+    _args+=(
+      -d
+        "${_deployments_dir}"
     )
   fi
   _args+=(
-    -A
-      "${_fs_address}"
-    -V
-      "${_fs_version}"
-    -d
-      "${_deployments_dir}"
-    -N
-      "${_wallet_name}"
     -P
       "${_tasks_parallel}"
     -W
@@ -365,6 +389,16 @@ _set_overrides() {
     "FileSystem" \
     "fs" \
     "${target_network}"
+  if [[ "${index_network}" != "" ]]; then
+    _contract_address_auto_detect \
+      "evmfs" \
+      "CrossChainFileSystem" \
+      "ccfs" \
+      "${index_network}" \
+      "${fs_version}" \
+      "${user_level}" \
+      "${deployments_dir}"
+  fi
   _contract_address_auto_detect \
     "evmfs" \
     "FileSystem" \
@@ -443,6 +477,9 @@ $(_display_networks \
      -A <fs_address>        Address of the EVM file system
                             on the network.
                             Default: ${fs_address}
+     -C <ccfs_address>      Address of the CrossChainFileSystem
+                            contract on the network.
+                            Default: ${ccfs_address}
      -V <fs_version>        Version of the target EVM file
                             system.
                             Default: ${fs_version}
@@ -500,34 +537,35 @@ _display_flags() {
 _show_config() {
   TZ=UTC \
   _msg_info "${app_name} configuration"
-  _msg_info "                  Call date:   ${call_date}"
-  _msg_info "             Target command:   ${target_command}"
-  _msg_info "                 Target key:   ${target_key}"
-  _msg_info "               Target value:   ${target_value}"
-  _msg_info "              Index network:   ${target_network}"
-  _msg_info "                Call method:   ${call_method}"
-  _msg_info "            Maximum retries:   ${retries_max}"
-  _msg_info "               Call timeout:   ${call_timeout}"
-  _msg_info "             Parallel tasks:   ${tasks_parallel}"
-  _msg_info "Publication configuration:"
-  _msg_info "                  Lock only:   ${lock_only}"
-  _msg_info "   Download configuration:"
-  _msg_info "                Output file:   ${output_file}"
-  _msg_info "   Contract configuration:"
-  _msg_info "        File system address:   ${fs_address}"
-  _msg_info "        File system version:   ${fs_version}"
-  _msg_info "     LibEVM configuration:"
-  _msg_info "                 User level:   ${user_level}"
-  _msg_info "      Deployments directory:   ${deployments_dir}"
-  _msg_info "             Target network:   ${target_network}"
-  _msg_info "Credentials configuration:"
-  _msg_info "                Wallet name:   ${wallet_name}"
-  _msg_info "                Wallet path:   ${wallet_path}"
-  _msg_info "            Wallet password:   ${wallet_password}"
-  _msg_info "                Wallet seed:   ${wallet_seed}"
-  _msg_info "                    API key:   ${api_key}"
-  _msg_info "Application configuration:"
-  _msg_info "            Cache directory:   ${cache_dir}"
+  _msg_info "                      Call date:   ${call_date}"
+  _msg_info "                 Target command:   ${target_command}"
+  _msg_info "                     Target key:   ${target_key}"
+  _msg_info "                   Target value:   ${target_value}"
+  _msg_info "                  Index network:   ${target_network}"
+  _msg_info "                    Call method:   ${call_method}"
+  _msg_info "                Maximum retries:   ${retries_max}"
+  _msg_info "                   Call timeout:   ${call_timeout}"
+  _msg_info "                 Parallel tasks:   ${tasks_parallel}"
+  _msg_info "    Publication configuration:"
+  _msg_info "                      Lock only:   ${lock_only}"
+  _msg_info "       Download configuration:"
+  _msg_info "                    Output file:   ${output_file}"
+  _msg_info "       Contract configuration:"
+  _msg_info "            File system address:   ${fs_address}"
+  _msg_info "Cross-chain file system address:   ${ccfs_address}"
+  _msg_info "            File system version:   ${fs_version}"
+  _msg_info "         LibEVM configuration:"
+  _msg_info "                     User level:   ${user_level}"
+  _msg_info "          Deployments directory:   ${deployments_dir}"
+  _msg_info "                 Target network:   ${target_network}"
+  _msg_info "    Credentials configuration:"
+  _msg_info "                    Wallet name:   ${wallet_name}"
+  _msg_info "                    Wallet path:   ${wallet_path}"
+  _msg_info "                Wallet password:   ${wallet_password}"
+  _msg_info "                    Wallet seed:   ${wallet_seed}"
+  _msg_info "                        API key:   ${api_key}"
+  _msg_info "    Application configuration:"
+  _msg_info "                Cache directory:   ${cache_dir}"
 }
 
 _globals
@@ -542,7 +580,7 @@ getopts_opts="$( \
   printf \
     "%s" \
     "o:m:r:T:P:L:" \
-    "A:V:" \
+    "A:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
     "$(_wallet_getopts_params_get)" \
@@ -571,6 +609,8 @@ while \
       override_lock_only="${OPTARG}" ;;
     A) \
       override_fs_address="${OPTARG}" ;;
+    C) \
+      override_ccfs_address="${OPTARG}" ;;
     V) \
       override_fs_version="${OPTARG}" ;;
     n) \
@@ -644,6 +684,7 @@ _show_config
 app_opts=(
   "${target_command}"
   "${fs_address}"
+  "${ccfs_address}"
   "${fs_version}"
   "${deployments_dir}"
   "${wallet_name}"
