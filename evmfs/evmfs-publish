@@ -1594,7 +1594,7 @@ _set_overrides() {
       ""
   elif (( 1 < "${networks_amount}" )) || \
        [[ "${index_network}" != "" ]] ; then
-    if [[ "${index_network}" != "" ]]; 
+    if [[ "${index_network}" != "" ]]; then
       _ll_network="${index_network}"
       _ccfs_network="${index_network}"
     fi
