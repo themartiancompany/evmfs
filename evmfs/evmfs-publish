@@ -437,7 +437,7 @@ _file_encode() {
   )
   _msg_info \
     "${_msg[*]}"
-  if [[ "${_lock_only}" == "n" ]]; then
+  if [[ "${_lock_only}" == "" ]]; then
     bin2txt \
       "${_bin2txt_opts[@]}" \
       "${_file}" \
@@ -455,7 +455,7 @@ _queue_setup() {
   elif [[ "${_chunks_many}" == "false" ]]; then
     _query="${_chunk_prefix}"
   fi
-  if [[ "${_lock_only}" == "n" ]]; then
+  if [[ "${_lock_only}" == "" ]]; then
     _chunks_total="$( \
       find \
         "${_query}"* \
@@ -484,7 +484,7 @@ _queue_setup() {
         )
       done
     fi
-  elif [[ "${_lock_only}" == "y" ]]; then
+  elif [[ "${_lock_only}" != "" ]]; then
     _chunks_total="$( \
       bin2txt \
         -L \
@@ -1360,7 +1360,7 @@ _file_upload() {
      _msg_info \
       "index end: ${_index_end}"
     if ! (( "${_index_end}" < "${_index_start}" )); then
-      if [[ "${_lock_only}" == "n" ]]; then
+      if [[ "${_lock_only}" == "" ]]; then
         "_chunks_publish_${_upload_method}" \
           "${_tasks_parallel}" \
           "${_index_start}" \
@@ -1370,10 +1370,12 @@ _file_upload() {
           "${_index_start}" \
           "${_index_end}"
       fi
-      "_chunks_lock_${_upload_method}" \
-        "${_tasks_parallel}" \
-        "${_index_start}" \
-        "${_index_end}"
+      if [[ "${_lock_only}" != "length" ]]; then
+        "_chunks_lock_${_upload_method}" \
+          "${_tasks_parallel}" \
+          "${_index_start}" \
+          "${_index_end}"
+      fi
       if (( 1 < "${_networks_amount}" )); then
         "_index_publish_${_upload_method}" \
           "${_tasks_parallel}" \
@@ -1388,9 +1390,11 @@ _file_upload() {
   done
   _target_network="${_target_networks[0]}"
   _contract_call_opts_setup
-  _chunks_length_lock \
-    "${_target_ll_fs_address}" \
-    "${_chunks_total}"
+  if [[ "${_lock_only}" != "content" ]]; then
+    _chunks_length_lock \
+      "${_target_ll_fs_address}" \
+      "${_chunks_total}"
+  fi
   _publishing_address="$( \
     _publishing_address_get \
       "${_file}")"
@@ -1521,7 +1525,7 @@ _set_overrides() {
   _set_override \
     "lock" \
     "only" \
-    "n"
+    ""
   _set_override \
     "tasks" \
     "parallel" \
@@ -1614,8 +1618,9 @@ $(_display_networks \
      -m <upload_method>     It can be 'standalone', 'simulate' or
                             'bulk'.
                             Default: ${upload_method}
-     -L                     Skip check and publish and only lock
-                            the file.
+     -L <lock_type>         Skip check and publish and only the specified
+                            file lock operation. It can be 'content' or
+                            'length'.
                             Default: ${lock_only}
      -r <retries_max>       Maximum number of retries before
                             failing.
@@ -1770,7 +1775,7 @@ _requirements
 getopts_opts="$( \
   printf \
     "%s" \
-    "m:r:T:P:L" \
+    "m:r:T:P:L:" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "n:" \
@@ -1793,7 +1798,7 @@ while \
     P) \
       override_tasks_parallel="${OPTARG}" ;;
     L) \
-      override_lock_only="y" ;;
+      override_lock_only="${OPTARG}" ;;
     A) \
       override_fs_address="${OPTARG}" ;;
     B) \
