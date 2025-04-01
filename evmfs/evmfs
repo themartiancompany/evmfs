@@ -45,14 +45,13 @@ _global_variables() {
   target_command=""
   fs_address=""
   fs_version=""
-  _libevm_global_variables
-  _libevm_app_global_variables
   target_key=""
   target_value=""
   call_method=""
+  index_network=""
+  tasks_parallel=""
   lock_only=""
   output_file=""
-  tasks_parallel=""
   cache_dir=""
   command_args=()
   color=""
@@ -106,21 +105,22 @@ _evmfs() {
     _network="${9}" \
     _api_key_path="${10}" \
     _call_method="${11}" \
-    _retries_max="${12}" \
-    _call_timeout="${13}" \
-    _lock_only="${14}" \
-    _tasks_parallel="${15}" \
-    _cache_dir="${16}" \
-    _user_level="${17}" \
-    _output_file="${18}" \
-    _target_key="${19}" \
-    _target_value="${20}" \
+    _index_network="${12}" \
+    _retries_max="${13}" \
+    _call_timeout="${14}" \
+    _lock_only="${15}" \
+    _tasks_parallel="${16}" \
+    _cache_dir="${17}" \
+    _user_level="${18}" \
+    _output_file="${19}" \
+    _target_key="${20}" \
+    _target_value="${21}" \
     _target_uri \
     _target_file \
     _command_args=() \
     _args=()
   shift \
-    20
+    21
   _command_args+=(
     "$@"
   )
@@ -196,9 +196,16 @@ _evmfs() {
       "${_target_uri}"
     )
   elif [[ "${_target_command}" == "publish" ]]; then
-    if [[ "${_lock_only}" == "y" ]]; then
+    if [[ "${_lock_only}" != "" ]]; then
       _args+=(
         -L
+          "${_lock_only}"
+      )
+    fi
+    if [[ "${_index_network}" != "" ]]; then
+      _args+=(
+        -i
+          "${_index_network}"
       )
     fi
     _target_file="${_target_key}"
@@ -347,7 +354,7 @@ _set_overrides() {
   _set_override \
     "lock" \
     "only" \
-    "n"
+    ""
   _output_file_auto_detect
   _contract_version_auto_detect \
     "${deployments_dir}" \
@@ -405,6 +412,9 @@ $(_display_networks \
      -m <call_method>       It can be 'standalone', 'bulk' or
                             'simulate'
                             Default: ${call_method}
+     -i <index_network>     EVM Network for the CrossChainFileSystem and
+                            the LengthLock contracts.
+                            Default: ${index_network}
      -r <retries_max>       Maximum number of retries before
                             failing.
                             Default: ${retries_max}
@@ -517,32 +527,39 @@ _show_config() {
 
 _globals
 _global_variables
+_libevm_global_variables
+_libevm_app_global_variables
 _requirements
 _config_user_init \
   "${app_name}"
 # shellcheck disable=SC2034
+getopts_opts="$( \
+  printf \
+    "%s" \
+    "o:m:r:T:P:L:" \
+    "A:V:" \
+    "$(_libevm_app_getopts_params_get)" \
+    "i:n:" \
+    "$(_wallet_getopts_params_get)" \
+    "W:cvh?")"
 while \
   getopts \
-    'A:V:o:ud:N:w:p:s:n:k:m:r:T:LP:W:cvh?' \
+    "${getopts_opts}" \
     arg; do
+  _wallet_getopts_case
+  _libevm_app_getopts_case
   case \
     "${arg}" in
-    A) override_fs_address="${OPTARG}" ;;
-    V) override_fs_version="${OPTARG}" ;;
     o) override_output_file="${OPTARG}" ;;
-    u) override_user_level="y" ;;
-    d) override_deployments_dir="${OPTARG}" ;;
-    N) override_wallet_name="${OPTARG}" ;;
-    w) override_wallet_path="${OPTARG}" ;;
-    p) override_wallet_password="${OPTARG}" ;;
-    s) override_wallet_seed="${OPTARG}" ;;
-    n) override_target_network="${OPTARG}" ;;
-    k) override_api_key="${OPTARG}" ;;
+    i) override_index_network="${OPTARG}" ;;
     m) override_call_method="${OPTARG}" ;;
     r) override_retries_max="${OPTARG}" ;;
     T) override_call_timeout="${OPTARG}" ;;
-    L) override_lock_only="y" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
+    L) override_lock_only="${OPTARG}" ;;
+    A) override_fs_address="${OPTARG}" ;;
+    V) override_fs_version="${OPTARG}" ;;
+    n) override_target_network="${OPTARG}" ;;
     W) override_cache_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -616,6 +633,7 @@ app_opts=(
   "${target_network}"
   "${api_key}"
   "${call_method}"
+  "${index_network}"
   "${retries_max}"
   "${call_timeout}"
   "${lock_only}"

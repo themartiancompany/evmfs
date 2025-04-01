@@ -47,6 +47,7 @@ _global_variables() {
   ll_address=""
   ccfs_address=""
   upload_method=""
+  index_network=""
   lock_only=""
   tasks_parallel=""
   cache_dir=""
@@ -1257,10 +1258,12 @@ _index_publish_bulk() {
 }
 
 _target_ll_fs_address_get() {
-  if [[ "${_networks_amount}" == 1 ]]; then
+  if [[ "${_index_network}" == "" ]] && \
+     [[ "${_networks_amount}" == 1 ]]; then
     _fs_address_get
     _target_ll_fs_address="${_fs_address}"
-  elif (( 1 < "${_networks_amount}" )); then
+  elif [[ "${_index_network}" != "" ]] || \
+       (( 1 < "${_networks_amount}" )); then
     _target_ll_fs_address="${_ccfs_address}"
   fi
   _msg=(
@@ -1306,6 +1309,7 @@ _file_upload() {
     _ll_abi \
     _ll_bytecode \
     _ll_compiler_output \
+    _ll_network \
     _chunk \
     _payload \
     _check_call_opts=() \
@@ -1333,16 +1337,21 @@ _file_upload() {
   _queue_setup
   _chunks_network_assignment 
   _target_ll_fs_address_get
+  if [[ "${_index_network}" == "" ]]; then
+    _ll_network="${_target_networks[0]}"
+  elif [[ "${_index_network}" != "" ]]; then
+    _ll_network="${_index_network}"
+  fi
   _contract_artifacts_auto_detect \
     "${_deployments_dir}" \
-    "${_target_networks[0]}" \
+    "${_ll_network}" \
     "LengthLock" \
     "_ll" \
     "${_fs_version}"
   if (( 1 < "${_networks_amount}" )); then
     _contract_artifacts_auto_detect \
       "${_deployments_dir}" \
-      "${_target_networks[0]}" \
+      "${_ll_network}" \
       "CrossChainFileSystem" \
       "_ccfs" \
       "${_fs_version}"
@@ -1362,9 +1371,9 @@ _file_upload() {
       "${_fs_version}"
     _contract_call_opts_setup
     _msg_info \
-      "index start: ${_index_start}"
+      "Index start: ${_index_start}."
      _msg_info \
-      "index end: ${_index_end}"
+      "Index end: ${_index_end}."
     if ! (( "${_index_end}" < "${_index_start}" )); then
       if [[ "${_lock_only}" == "" ]]; then
         "_chunks_publish_${_upload_method}" \
@@ -1426,13 +1435,14 @@ _evmfs_publish() {
     _wallet_password="${9}" \
     _wallet_seed="${10}" \
     _networks_amount="${11}" \
-    _api_key_path="${12}" \
-    _upload_method="${13}" \
-    _retries_max="${14}" \
-    _call_timeout="${15}" \
-    _lock_only="${16}" \
-    _tasks_parallel="${17}" \
-    _cache_dir="${18}" \
+    _index_network="${12}" \
+    _api_key_path="${13}" \
+    _upload_method="${14}" \
+    _retries_max="${15}" \
+    _call_timeout="${16}" \
+    _lock_only="${17}" \
+    _tasks_parallel="${18}" \
+    _cache_dir="${19}" \
     _target_file \
     _target_files=() \
     _target_networks=() \
@@ -1442,7 +1452,7 @@ _evmfs_publish() {
     _args=() \
     _namespace
   shift \
-    18
+    19
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1453,6 +1463,11 @@ _evmfs_publish() {
   _target_files+=(
     "$@"
   )
+  if [[ "${_index_network}" == "" ]]; then
+    if (( 1 < "${#_target_network[@]}" )); then
+      _index_network="${_target_networks[0]}"
+    fi
+  fi
   _namespace="$( \
     evm-wallet \
      get \
@@ -1483,6 +1498,8 @@ _evmfs_publish() {
 }
 
 _set_overrides() {
+  local \
+    _ll_network
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
@@ -1516,6 +1533,10 @@ _set_overrides() {
     target_network=""
     networks_amount="${#target_networks[@]}"
   fi
+  _set_override \
+    "index" \
+    "network" \
+    ""
   _wallet_overrides_set \
     "evm-wallet" \
     "default" \
@@ -1549,17 +1570,9 @@ _set_overrides() {
     "FileSystem" \
     "fs" \
     "${target_networks[0]}"
-  if [[ "${fs_version}" == "1.0" ]]; then
-    _contract_address_auto_detect \
-      "evmfs" \
-      "LengthLock" \
-      "ll" \
-      "${target_networks[0]}" \
-      "${fs_version}" \
-      "${user_level}" \
-      "${deployments_dir}"
-  fi
-  if [[ "${networks_amount}" == 1 ]]; then
+  if [[ "${_index_network}" == "" ]] && \
+     [[ "${networks_amount}" == 1 ]]; then
+    _ll_network="${target_networks[0]}"
     _api_key_auto_detect \
       "${target_networks[0]}"
     _contract_address_auto_detect \
@@ -1574,7 +1587,9 @@ _set_overrides() {
       "ccfs" \
       "address" \
       ""
-  elif (( 1 < "${networks_amount}" )); then
+  elif [[ "${_index_network}" != "" ]] || \
+       (( 1 < "${networks_amount}" )); then
+    _ll_network="${_index_network}"
     _contract_address_auto_detect \
       "evmfs" \
       "CrossChainFileSystem" \
@@ -1587,6 +1602,16 @@ _set_overrides() {
       "fs" \
       "address" \
       ""
+  fi
+  if [[ "${fs_version}" == "1.0" ]]; then
+    _contract_address_auto_detect \
+      "evmfs" \
+      "LengthLock" \
+      "ll" \
+      "${_ll_network}" \
+      "${fs_version}" \
+      "${user_level}" \
+      "${deployments_dir}"
   fi
 }
 
@@ -1628,6 +1653,9 @@ $(_display_networks \
                             file lock operation. It can be 'content' or
                             'length'.
                             Default: ${lock_only}
+     -i <index_network>     EVM Network for the CrossChainFileSystem and
+                            the LengthLock contracts.
+                            Default: ${index_network}
      -r <retries_max>       Maximum number of retries before
                             failing.
                             Default: ${retries_max}
@@ -1730,6 +1758,7 @@ _show_config() {
   _msg_info "                      Namespace:   ${wallet_address}"
   _msg_info "                   Target files:"
   _display_target_files                        "${target_files[@]}"
+  _msg_info "                  Index network:   ${index_network}"
   _msg_info "                  Upload method:   ${upload_method}"
   _msg_info "                 Tasks parallel:   ${tasks_parallel}"
   _msg_info "                Maximum retries:   ${retries_max}"
@@ -1784,7 +1813,7 @@ getopts_opts="$( \
     "m:r:T:P:L:" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
-    "n:" \
+    "i:n:" \
     "$(_wallet_getopts_params_get)" \
     "W:cvh?")"
 while \
@@ -1813,6 +1842,8 @@ while \
       override_ccfs_address="${OPTARG}" ;;
     V) \
       override_fs_version="${OPTARG}" ;;
+    i) \
+      override_index_network="${OPTARG}" ;;
     n) \
       target_networks+=(
         "${OPTARG}"
@@ -1877,6 +1908,7 @@ app_opts=(
   "${wallet_password}"
   "${wallet_seed}"
   "${networks_amount}"
+  "${index_network}"
   "${api_key}"
   "${upload_method}"
   "${retries_max}"
