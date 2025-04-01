@@ -1593,10 +1593,10 @@ _set_overrides() {
       "address" \
       ""
   elif (( 1 < "${networks_amount}" )) || \
-       [[ "${_index_network}" != "" ]] ; then
-    if [[ "${_index_network}" != "" ]]; 
+       [[ "${index_network}" != "" ]] ; then
+    if [[ "${index_network}" != "" ]]; 
       _ll_network="${index_network}"
-      _ccfs_network="${_index_network}"
+      _ccfs_network="${index_network}"
     fi
     _contract_address_auto_detect \
       "evmfs" \
