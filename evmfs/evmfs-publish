@@ -1770,7 +1770,7 @@ _requirements
 getopts_opts="$( \
   printf \
     "%s" \
-    "m:r:T:P:L"
+    "m:r:T:P:L" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "n:" \
