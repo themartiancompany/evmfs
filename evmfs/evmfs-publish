@@ -1769,44 +1769,63 @@ _libevm_global_variables
 _libevm_app_global_variables
 _requirements
 # shellcheck disable=SC2034
+getopts_opts="$( \
+  printf \
+    "%s" \
+    "m:r:T:P:L"
+    "A:B:C:V:" \
+    "$(_libevm_app_getopts_params_get)" \
+    "n:" \
+    "$(_wallet_getopts_params_get)" \
+    "W:cvh?")"
 while \
   getopts \
-    'A:B:C:V:ud:N:w:p:s:n:k:m:r:T:LP:W:cvh?' \
+    "${getopts_opts}" \
     arg; do
+  _wallet_getopts_case
+  _libevm_app_getopts_case
   case \
     "${arg}" in
-    A) override_fs_address="${OPTARG}" ;;
-    B) override_ll_address="${OPTARG}" ;;
-    C) override_ccfs_address="${OPTARG}" ;;
-    V) override_fs_version="${OPTARG}" ;;
-    u) override_user_level="y" ;;
-    d) override_deployments_dir="${OPTARG}" ;;
-    N) override_wallet_name="${OPTARG}" ;;
-    w) override_wallet_path="${OPTARG}" ;;
-    p) override_wallet_password="${OPTARG}" ;;
-    s) override_wallet_seed="${OPTARG}" ;;
-    n) target_networks+=(
-         "${OPTARG}"
-       ) ;;
-    k) override_api_key="${OPTARG}" ;;
-    m) override_upload_method="${OPTARG}" ;;
-    r) override_retries_max="${OPTARG}" ;;
-    T) override_call_timeout="${OPTARG}" ;;
-    L) override_lock_only="y" ;;
-    P) override_tasks_parallel="${OPTARG}" ;;
-    W) override_cache_dir="${OPTARG}" ;;
-    c) override_color="y" ;;
-    v) override_quiet="n" ;;
-    h|?) _set_overrides && \
-         _usage \
-           0 ;;
-    *)
-    _msg_error \
-      "Invalid argument '${arg}'." \
-      0
-    _usage \
-      1
-    ;;
+    m) \
+      override_upload_method="${OPTARG}" ;;
+    r) \
+      override_retries_max="${OPTARG}" ;;
+    T) \
+      override_call_timeout="${OPTARG}" ;;
+    P) \
+      override_tasks_parallel="${OPTARG}" ;;
+    L) \
+      override_lock_only="y" ;;
+    A) \
+      override_fs_address="${OPTARG}" ;;
+    B) \
+      override_ll_address="${OPTARG}" ;;
+    C) \
+      override_ccfs_address="${OPTARG}" ;;
+    V) \
+      override_fs_version="${OPTARG}" ;;
+    n) \
+      target_networks+=(
+        "${OPTARG}"
+      ) ;;
+    W) \
+      override_cache_dir="${OPTARG}" ;;
+    c) \
+      override_color="y" ;;
+    v) \
+      override_quiet="n" ;;
+    h) \
+      _set_overrides && \
+      _usage \
+        0 ;;
+    *) \
+      if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
+        _msg_error \
+          "Invalid argument '${arg}'." \
+          0
+        _usage \
+          1
+      fi ;;
   esac
 done
 shift \
