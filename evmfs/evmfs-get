@@ -1444,12 +1444,14 @@ while \
       override_color="y" ;;
     v) \
       override_quiet="n" ;;
-    h|?) \
+    h) \
+      echo \
+        "Displaying usage." && \
       _set_overrides && \
       _usage \
         0 ;;
     *) \
-      if [[ " ${_getopts_opts} " != *"${arg}"* ]]; then
+      if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
         _msg_error \
           "Invalid argument '${arg}'." \
           0
