@@ -330,6 +330,10 @@ _set_overrides() {
     "${user_level}"
   _api_key_auto_detect \
     "${target_network}"
+  _set_override \
+    "index" \
+    "network" \
+    ""
   _wallet_overrides_set \
     "evm-wallet" \
     "default" \
@@ -500,6 +504,7 @@ _show_config() {
   _msg_info "             Target command:   ${target_command}"
   _msg_info "                 Target key:   ${target_key}"
   _msg_info "               Target value:   ${target_value}"
+  _msg_info "              Index network:   ${target_network}"
   _msg_info "                Call method:   ${call_method}"
   _msg_info "            Maximum retries:   ${retries_max}"
   _msg_info "               Call timeout:   ${call_timeout}"
