@@ -156,8 +156,6 @@ _evmfs() {
       "${_call_method}"
     -r
       "${_retries_max}"
-    -T
-      "${_call_timeout}"
   )
   if [[ "${_user_level}" == "y" ]]; then
     _args+=(
@@ -183,6 +181,8 @@ _evmfs() {
     fi
     _target_file="${_target_key}"
     _args+=(
+      -T
+        "${_call_timeout}"
       "${_target_file}"
     )
   else

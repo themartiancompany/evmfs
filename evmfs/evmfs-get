@@ -1166,6 +1166,10 @@ _set_overrides() {
     "max" \
     "300"
   _set_override \
+    "call" \
+    "timeout" \
+    "10000"
+  _set_override \
     "user" \
     "level" \
     "n"
@@ -1267,6 +1271,9 @@ $(_display_networks \
      -r <retries_max>       Maximum number of retries before
                             failing.
                             Default: ${retries_max}
+     -T <call_timeout>      Maximum number of milliseconds before
+                            declaring the call failed.
+                            Default: ${call_timeout}
      -P <tasks_parallel>    Tasks to perform in parallel.
                             Default: ${tasks_parallel}
 
@@ -1344,6 +1351,7 @@ _show_config() {
   _msg_info "                    Call method:   ${call_method}"
   _msg_info "                Maximum retries:   ${retries_max}"
   _msg_info "                 Parallel tasks:   ${tasks_parallel}"
+  _msg_info " (not implemented) Call timeout:   ${call_timeout}"
   _msg_info "       Contract configuration:"
   _msg_info "Cross-chain File System address:   ${ccfs_address}"
   _msg_info "            File system address:   ${fs_address}"
@@ -1390,7 +1398,7 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'o:A:B:C:V:ud:N:w:p:s:n:k:m:r:P:W:cvh?' \
+    'o:A:B:C:V:ud:N:w:p:s:n:k:m:r:P:W:T:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1415,6 +1423,7 @@ while \
     r) override_retries_max="${OPTARG}" ;;
     P) override_tasks_parallel="${OPTARG}" ;;
     W) override_cache_dir="${OPTARG}" ;;
+    T) override_call_timeout="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
