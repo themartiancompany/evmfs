@@ -546,7 +546,7 @@ getopts_opts="$( \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
     "$(_wallet_getopts_params_get)" \
-    "W:cvh?")"
+    "W:cvh")"
 while \
   getopts \
     "${getopts_opts}" \
@@ -555,29 +555,44 @@ while \
   _libevm_app_getopts_case
   case \
     "${arg}" in
-    o) override_output_file="${OPTARG}" ;;
-    i) override_index_network="${OPTARG}" ;;
-    m) override_call_method="${OPTARG}" ;;
-    r) override_retries_max="${OPTARG}" ;;
-    T) override_call_timeout="${OPTARG}" ;;
-    P) override_tasks_parallel="${OPTARG}" ;;
-    L) override_lock_only="${OPTARG}" ;;
-    A) override_fs_address="${OPTARG}" ;;
-    V) override_fs_version="${OPTARG}" ;;
-    n) override_target_network="${OPTARG}" ;;
-    W) override_cache_dir="${OPTARG}" ;;
-    c) override_color="y" ;;
-    v) override_quiet="n" ;;
-    h|?) _set_overrides && \
-         _usage \
-           0 ;;
-    *)
-    _msg_error \
-      "Invalid argument '${arg}'." \
-      0
-    _usage \
-      1
-    ;;
+    o) \
+      override_output_file="${OPTARG}" ;;
+    i) \
+      override_index_network="${OPTARG}" ;;
+    m) \
+      override_call_method="${OPTARG}" ;;
+    r) \
+      override_retries_max="${OPTARG}" ;;
+    T) \
+      override_call_timeout="${OPTARG}" ;;
+    P) \
+      override_tasks_parallel="${OPTARG}" ;;
+    L) \
+      override_lock_only="${OPTARG}" ;;
+    A) \
+      override_fs_address="${OPTARG}" ;;
+    V) \
+      override_fs_version="${OPTARG}" ;;
+    n) \
+      override_target_network="${OPTARG}" ;;
+    W) \
+      override_cache_dir="${OPTARG}" ;;
+    c) \
+      override_color="y" ;;
+    v) \
+      override_quiet="n" ;;
+    h) \
+      _set_overrides && \
+      _usage \
+        0 ;;
+    *) \
+      if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
+        _msg_error \
+          "Invalid argument '${arg}'." \
+          0
+        _usage \
+          1
+      fi ;;
   esac
 done
 shift \

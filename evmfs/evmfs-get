@@ -1404,7 +1404,7 @@ getopts_opts="$( \
     "$(_libevm_app_getopts_params_get)" \
     "n:" \
     "$(_wallet_getopts_params_get)" \
-    "W:cvh?")"
+    "W:cvh")"
 while \
   getopts \
     "${getopts_opts}" \
