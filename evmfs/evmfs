@@ -191,18 +191,36 @@ _evmfs() {
         "${_deployments_dir}"
     )
   fi
-  _args+=(
-    -P
-      "${_tasks_parallel}"
-    -W
-      "${_cache_dir}"
-    -m
-      "${_call_method}"
-    -r
-      "${_retries_max}"
-    -T
-      "${_call_timeout}"
-  )
+  if [[ "${_tasks_parallel}" != "" ]]; then
+    _args+=(
+      -P
+        "${_tasks_parallel}"
+    )
+  fi
+  if [[ "${_cache_dir}" != "" ]]; then
+    _args+=(
+      -W
+        "${_cache_dir}"
+    )
+  fi
+  if [[ "${_call_method}" != "" ]]; then
+    _args+=(
+      -m
+        "${_call_method}"
+    )
+  fi
+  if [[ "${_retries_max}" != "" ]]; then
+    _args+=(
+      -r
+        "${_retries_max}"
+    )
+  fi
+  if [[ "${_call_timeout}" != "" ]]; then
+    _args+=(
+      -T
+        "${_call_timeout}"
+    )
+  fi
   if [[ "${_user_level}" == "y" ]]; then
     _args+=(
       -u
