@@ -129,6 +129,36 @@ _evmfs() {
       -v
     )
   fi
+  if [[ "${_wallet_seed}" != "" ]]; then
+    _args+=(
+    -s
+      "${_wallet_seed}"
+    )
+  fi
+  if [[ "${_wallet_path}" != "" ]]; then
+    _args+=(
+    -w
+      "${_wallet_path}"
+    )
+  fi
+  if [[ "${_wallet_password}" != "" ]]; then
+    _args+=(
+    -p
+      "${_wallet_password}"
+    )
+  fi
+  if [[ "${_network}" != "" ]]; then
+    _args+=(
+    -n
+      "${_network}"
+    )
+  fi
+  if [[ "${_api_key_path}" != "" ]]; then
+    _args+=(
+    -k
+      "${_api_key_path}"
+    )
+  fi
   _args+=(
     -A
       "${_fs_address}"
@@ -138,16 +168,6 @@ _evmfs() {
       "${_deployments_dir}"
     -N
       "${_wallet_name}"
-    -w
-      "${_wallet_path}"
-    -p
-      "${_wallet_password}"
-    -s
-      "${_wallet_seed}"
-    -n
-      "${_network}"
-    -k
-      "${_api_key_path}"
     -P
       "${_tasks_parallel}"
     -W
@@ -156,6 +176,8 @@ _evmfs() {
       "${_call_method}"
     -r
       "${_retries_max}"
+    -T
+      "${_call_timeout}"
   )
   if [[ "${_user_level}" == "y" ]]; then
     _args+=(
@@ -181,8 +203,6 @@ _evmfs() {
     fi
     _target_file="${_target_key}"
     _args+=(
-      -T
-        "${_call_timeout}"
       "${_target_file}"
     )
   else
@@ -193,6 +213,8 @@ _evmfs() {
       "${_msg[*]}" \
       1
   fi
+  _msg_info \
+    "Running 'evmfs-${_target_command}' '${_args[*]}'."
   "evmfs-${_target_command}" \
     "${_args[@]}"
   return \
@@ -529,7 +551,7 @@ while \
            0 ;;
     *)
     _msg_error \
-      "Invalid argument '${arg}'" \
+      "Invalid argument '${arg}'." \
       0
     _usage \
       1

@@ -1168,7 +1168,7 @@ _set_overrides() {
   _set_override \
     "call" \
     "timeout" \
-    "10000"
+    "300000"
   _set_override \
     "user" \
     "level" \
@@ -1405,6 +1405,7 @@ getopts_opts="$( \
     "n:" \
     "$(_wallet_getopts_params_get)" \
     "W:cvh?")"
+echo "getopts_opts '${getopts_opts}'."
 while \
   getopts \
     "${getopts_opts}" \
@@ -1413,33 +1414,48 @@ while \
   _libevm_app_getopts_case
   case \
     "${arg}" in
-    o) output_files+=(
-         "${OPTARG}"
-       ) ;;
-    m) override_call_method="${OPTARG}" ;;
-    r) override_retries_max="${OPTARG}" ;;
-    P) override_tasks_parallel="${OPTARG}" ;;
-    T) override_call_timeout="${OPTARG}" ;;
-    A) override_fs_address="${OPTARG}" ;;
-    B) override_ll_address="${OPTARG}" ;;
-    C) override_ccfs_address="${OPTARG}" ;;
-    V) override_fs_version="${OPTARG}" ;;
-    n) target_networks+=(
-         "${OPTARG}"
-       ) ;;
-    W) override_cache_dir="${OPTARG}" ;;
-    c) override_color="y" ;;
-    v) override_quiet="n" ;;
-    h|?) _set_overrides && \
-         _usage \
-           0 ;;
-    *)
-    _msg_error \
-      "Invalid argument '${arg}'." \
-      0
-    _usage \
-      1
-    ;;
+    o) \
+      output_files+=(
+        "${OPTARG}"
+      ) ;;
+    m) \
+      override_call_method="${OPTARG}" ;;
+    r) \
+      override_retries_max="${OPTARG}" ;;
+    P) \
+      override_tasks_parallel="${OPTARG}" ;;
+    T) \
+      override_call_timeout="${OPTARG}" ;;
+    A) \
+      override_fs_address="${OPTARG}" ;;
+    B) \
+      override_ll_address="${OPTARG}" ;;
+    C) \
+      override_ccfs_address="${OPTARG}" ;;
+    V) \
+      override_fs_version="${OPTARG}" ;;
+    n) \
+      target_networks+=(
+        "${OPTARG}"
+      ) ;;
+    W) \
+      override_cache_dir="${OPTARG}" ;;
+    c) \
+      override_color="y" ;;
+    v) \
+      override_quiet="n" ;;
+    h|?) \
+      _set_overrides && \
+      _usage \
+        0 ;;
+    *) \
+      if [[ " ${_getopts_opts} " != *"${arg}"* ]]; then
+        _msg_error \
+          "Invalid argument '${arg}'." \
+          0
+        _usage \
+          1
+      fi ;;
   esac
 done
 shift \
