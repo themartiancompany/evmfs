@@ -27,6 +27,8 @@ const
     '../libcrash-js/crash-js');
 _cmdline_check =
   _libcrash._cmdline_check;
+_error_display =
+  _libcrash._error_display;
 _ext_rm =
   _libcrash._ext_rm;
 _file_read =
@@ -442,10 +444,13 @@ async function
         _tx = await
           _chunk_publish(
             _publish_call_opts);
-      } catch (e) {
+      } catch (
+          _error) {
+        _error_display(
+          _error);
         console.error(
           "Error running publishing chunk function.");
-	throw e;
+	throw _error;
       }
       _msg_info_chunk_published(
         _index,
