@@ -960,6 +960,15 @@ _resource_get() {
     "${_msg[*]}"
 }
 
+_file_hash() {
+  local \
+    _file="${1}"
+  sha256sum \
+    "${_file}" | \
+    awk \
+      '{print $1}'
+}
+
 _evmfs_get() {
   local \
     _fs_address="${1}" \
@@ -982,9 +991,11 @@ _evmfs_get() {
     _target_network \
     _target_networks=() \
     _cursor \
+    _download \
     _target_uri \
     _target_uris=() \
     _output_file \
+    _output_file_hash \
     _output_files=() \
     _network_backend \
     _uri_network \
@@ -1041,10 +1052,27 @@ _evmfs_get() {
         "${_target_uri}")"
     _hash_check \
       "${_uri_hash}"
-    _resource_get \
-      "${_call_method}" \
-      "${_tasks_parallel}" \
-      "${_retries_max}"
+    _download="true"
+    if [[ -e "${_output_file}" ]]; then
+      _output_file_hash="$( \
+        _file_hash \
+          "${_output_file}")"
+      if [[ "${_output_file_hash}" == "${_uri_hash}" ]]; then
+        _msg=(
+          "File '${_target_uri}' already downloaded"
+          "at '${_output_file}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+        _download="false"
+      fi
+    fi
+    if [[ "${_download}" == "true" ]]; then
+      _resource_get \
+        "${_call_method}" \
+        "${_tasks_parallel}" \
+        "${_retries_max}"
+    fi
   done
   return \
     0
