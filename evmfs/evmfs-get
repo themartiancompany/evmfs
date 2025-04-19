@@ -207,8 +207,15 @@ _contract_setup() {
   local \
     _contract_address="${1}" \
     _evmfs_address_opts=() \
-    _contract_type
+    _contract_type \
+    _msg=()
   if [[ "${_contract_address}" == "" ]]; then
+    _msg=(
+      "No EVMFS contract address specified,"
+      "inferring it automatically."
+    )
+    _msg_warning \
+      "${_msg[*]}"
     _evmfs_address_opts+=(
       -n
         "${_uri_network_id}"
