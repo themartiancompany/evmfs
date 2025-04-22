@@ -214,7 +214,9 @@ async function
           null,
           _read_chain_id_call_opts);
       if ( _value == 0 ) {
-        throw "Chunk not indexed.";
+        throw { "error": {
+                  "message":
+                    "Chunk not indexed." } };
       }
       else {
         _passed =
@@ -262,6 +264,8 @@ async function
         await _contract_call_static.apply(
           null,
           _read_fs_call_opts);
+      _passed =
+        true;
     } catch (
         _error) {
       _error_display(
@@ -277,6 +281,9 @@ async function
       await _sleep(
         3000);
     }
+  }
+  if ( _retry > _retries_max ) {
+    throw "Maximum number of retries reached.";
   }
   return _value.toString();
 }
