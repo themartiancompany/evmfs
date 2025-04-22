@@ -468,8 +468,8 @@ async function
       _read_fs_call_base_opts.concat(
         [_read_fs_args]);
     try {
-      _chunk_fs = await
-        _chunk_fs_get(
+      _chunk_fs =
+        await _chunk_fs_get(
           _retries_max,
           _read_fs_call_opts);
     } catch (
@@ -527,7 +527,7 @@ async function
       [_chunk_file_path]
     ];
     try {
-      _get.apply(
+      await _get.apply(
         null,
         _get_opts);
     } catch (
