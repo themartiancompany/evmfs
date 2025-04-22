@@ -621,7 +621,10 @@ _chunks_publish_bulk() {
     node-run \
       "${_node_run_opts[@]}" \
       "${_publish}" \
-      "${_publish_args[@]}"
+      "${_publish_args[@]}" || \
+    _msg_error \
+      "Node exited with error." \
+      0 
     done
 }
 

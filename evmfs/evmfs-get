@@ -530,7 +530,7 @@ _chunks_ccget_bulk() {
       "${_checkpoint}"
       "${_index_end}"
       "${_checkpoint_get_file_path}"
-      "${_chunks[@]}"
+      "${_chunks[@]:${_checkpoint}:${_chunks_total_run}}"
     )
     _msg_info \
       "Running node."
@@ -614,7 +614,7 @@ _chunks_get_bulk() {
       "${_checkpoint}"
       "${_index_end}"
       "${_checkpoint_get_file_path}"
-      "${_chunks[@]}"
+      "${_chunks[@]:${_checkpoint}:${_chunks_total_run}}"
     )
     _msg_info \
       "Running node."
