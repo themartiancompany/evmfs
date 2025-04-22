@@ -273,8 +273,8 @@ async function
       _read_call_base_opts.concat(
         [_method_args]);
     try {
-      _value = await
-        _chunk_get(
+      _value =
+        await _chunk_get(
           _read_call_opts);
       _msg_info_chunk_got(
         _index,
