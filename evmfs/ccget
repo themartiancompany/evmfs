@@ -340,6 +340,7 @@ async function
     _fs_contract_bytecode_path,
     _fs_contract_compiler_output_path,
     _get_opts,
+    _methods,
     _read_chain_id_call_base_opts,
     _read_chain_id_call_opts,
     _read_chain_id_base_args,
@@ -354,6 +355,8 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
+  _methods =
+    {};
   _index_start =
     Number(
       _index_start);

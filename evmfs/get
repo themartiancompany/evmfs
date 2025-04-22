@@ -27,6 +27,8 @@ const
       '../libcrash-js/crash-js');
 _cmdline_check =
   _libcrash._cmdline_check;
+_error_display =
+  _libcrash._error_display;
 _file_write =
   _libcrash._file_write;
 _msg_info =
@@ -126,26 +128,6 @@ function
     _msg);
 }
 
-function
-  _error_handle(
-    error) {
-  let
-    _message;
-  if ( 'error' in error && 
-       error['error'] != undefined &&
-       'message' in error['error'] ) {
-    _message =
-      error['error']['message'];
-  }
-  else if ( 'shortMessage' in error ) {
-    _message =
-      error['shortMessage'];
-  }
-  _msg_error(
-    _message,
-    0);
-}
-
 async function
   _chunk_get(
     _read_call_opts) {
@@ -158,11 +140,14 @@ async function
       await _contract_call_static.apply(
         null,
         _read_call_opts);
-  } catch (e) {
+  } catch (
+      _error) {
+    _error_display(
+      _error);
     _msg_error(
       "Error retrieving chunk.",
       0);
-    throw e;
+    throw _error;
   }
   return _value.toString();
 }
@@ -291,23 +276,27 @@ async function
       _value = await
         _chunk_get(
           _read_call_opts);
-    } catch (e) {
-      console.error(
-        "Error retrieving chunk.");
-      throw e;
+      _msg_info_chunk_got(
+        _index,
+        _progress,
+        _chunks_total);
+      _file_write(
+        _chunk_file_path,
+        _value);
+      _checkpoint_index =
+        _index.toString();
+      _file_write(
+        _checkpoint_file_path,
+        _checkpoint_index);
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error retrieving chunk.",
+        0);
+      throw _error;
     }
-    _msg_info_chunk_got(
-      _index,
-      _progress,
-      _chunks_total);
-    _file_write(
-      _chunk_file_path,
-      _value);
-    _checkpoint_index =
-      _index.toString();
-    _file_write(
-      _checkpoint_file_path,
-      _checkpoint_index);
     _progress =
       _progress + 1;
     _cursor =
