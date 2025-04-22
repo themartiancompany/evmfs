@@ -527,7 +527,7 @@ _chunks_ccget_bulk() {
       "${_ccfs_compiler_output}"
       "${_uri_namespace}"
       "${_uri_hash}"
-      "${_index_start}"
+      "${_checkpoint}"
       "${_index_end}"
       "${_checkpoint_get_file_path}"
       "${_chunks[@]}"
@@ -611,7 +611,7 @@ _chunks_get_bulk() {
       "${_fs_compiler_output}"
       "${_uri_namespace}"
       "${_uri_hash}"
-      "${_index_start}"
+      "${_checkpoint}"
       "${_index_end}"
       "${_checkpoint_get_file_path}"
       "${_chunks[@]}"
@@ -621,7 +621,10 @@ _chunks_get_bulk() {
     node-run \
       "${_node_run_opts[@]}" \
       "${_get}" \
-      "${_get_args[@]}"
+      "${_get_args[@]}" || \
+    _msg_error \
+      "Node exited with error." \
+      0
   done
 }
 
