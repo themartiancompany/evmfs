@@ -88,6 +88,8 @@ function
     "";
   contract_compiler_output_path =
     "";
+  method_objects =
+    {};
   publication_namespace =
     "";
   file_hash =
@@ -198,6 +200,7 @@ async function
     _retries_max,
     _read_chain_id_call_opts) {
   let
+    _method_object,
     _passed,
     _retry,
     _value;
@@ -209,7 +212,7 @@ async function
     _retry <= _retries_max &&
     _passed == false ) {
     try {
-      _value = 
+      _value, _method_object = 
         await _contract_call_static.apply(
           null,
           _read_chain_id_call_opts);
@@ -241,7 +244,7 @@ async function
   if ( _retry > _retries_max ) {
     throw "Maximum number of retries reached.";
   }
-  return _value.toString();
+  return _value.toString(), _method_object;
 }
 
 async function
@@ -249,6 +252,7 @@ async function
     _retries_max,
     _read_fs_call_opts) {
   let
+    _method_object,
     _passed,
     _retry,
     _value;
@@ -260,7 +264,7 @@ async function
     _retry <= _retries_max &&
     _passed == false ) {
     try {
-      _value = 
+      _value, _method_object = 
         await _contract_call_static.apply(
           null,
           _read_fs_call_opts);
@@ -285,7 +289,7 @@ async function
   if ( _retry > _retries_max ) {
     throw "Maximum number of retries reached.";
   }
-  return _value.toString();
+  return _value.toString(), _method_object;
 }
 
 function
@@ -323,6 +327,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _method_objects,
     _publication_namespace,
     _file_hash,
     _index_start,
@@ -340,7 +345,7 @@ async function
     _fs_contract_bytecode_path,
     _fs_contract_compiler_output_path,
     _get_opts,
-    _methods,
+    _method_objects,
     _read_chain_id_call_base_opts,
     _read_chain_id_call_opts,
     _read_chain_id_base_args,
@@ -355,8 +360,14 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
-  _methods =
-    {};
+  if ( _method_objects == {} ) {
+    _method_objects = {
+      "ccfs": {
+        "chunksChainId":
+          "",
+        "chunksFs":
+          "" } };
+  }
   _index_start =
     Number(
       _index_start);
@@ -382,6 +393,9 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksChainId"];
     _contract_address,
     "chunksChainId",
   ];
@@ -397,6 +411,9 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksFs"];
     _contract_address,
     "chunksFs",
   ];
@@ -408,7 +425,7 @@ async function
     _chunks_files_paths.length;
   if ( _chunks_total == 0 ) {
     _msg_error(
-      "file chunks list empty",
+      "File chunks list empty.",
       1);
   }
   _input_data_check(
@@ -447,12 +464,26 @@ async function
       _read_chain_id_call_base_opts.concat(
         [_read_chain_id_args]);
     try {
-      _chunk_chain_id = await
-        _chunk_chain_id_get(
+      _chunk_chain_id, _method_objects[
+                         "ccfs"][
+                           "chunksChainId"] =
+         await _chunk_chain_id_get(
           _retries_max,
           _read_chain_id_call_opts);
+      // I have no idea if _check_call_base_opts
+      // has its components passed by reference
+      // or copied so I have no idea if
+      // _method_object gets immediately updated
+      // or I need to re-init the array so just
+      // in case we re-init whole array.
+      if ( _read_chain_id_call_base_opts[7] == "" ) {
+        _msg_info(
+          "Reusing contract method object.");
+
     } catch (
         _error) {
+      _error_display(
+        _error);
       _msg_error(
         "Error retrieving chunk's ChainId.",
         0);
@@ -468,12 +499,16 @@ async function
       _read_fs_call_base_opts.concat(
         [_read_fs_args]);
     try {
-      _chunk_fs =
+      _chunk_fs, _method_objects[
+                   "ccfs"][
+                     "chunksFs"] =
         await _chunk_fs_get(
           _retries_max,
           _read_fs_call_opts);
     } catch (
         _error) {
+      _display_error(
+        _error);
       _msg_error(
         "Error retrieving chunk's fs address.",
         0);
@@ -532,9 +567,11 @@ async function
         _get_opts);
     } catch (
         _error) {
+      _error_display(
+        _error);
       _msg_error(
         "Error retrieving chunk.",
-	0);
+        0);
       throw _error;
     }
     _progress =
@@ -542,6 +579,7 @@ async function
     _cursor =
       _cursor + 1;
   }
+  return _method_objects;
 }
 
 function
@@ -776,7 +814,7 @@ function
           _value;
       }
       if ( 17 < _index ) {
-	chunks_files_paths.push(
+        chunks_files_paths.push(
           _value);
       }
       if ( _value == "-h" ||
@@ -809,6 +847,7 @@ if ( _cmdline_check(
     contract_abi_path,
     contract_bytecode_path,
     contract_compiler_output_path,
+    method_objects,
     publication_namespace,
     file_hash,
     index_start,

@@ -29,6 +29,8 @@ _cmdline_check =
   _libcrash._cmdline_check;
 _echo =
   _libcrash._echo;
+_error_display =
+  _libcrash._error_display;
 _file_write =
   _libcrash._file_write;
 _file_exists =
@@ -63,6 +65,8 @@ function
   contract_bytecode_path =
     "";
   contract_compiler_output_path =
+    "";
+  method_object =
     "";
   publication_namespace =
     "";
@@ -163,27 +167,6 @@ function
     1)
 }
 
-
-function
-  _error_handle(
-    error) {
-  let
-    _message;
-  if ( 'error' in error && 
-       error['error'] != undefined &&
-       'message' in error['error'] ) {
-    _message =
-      error['error']['message'];
-  }
-  else if ( 'shortMessage' in error ) {
-    _message =
-      error['shortMessage'];
-  }
-  _msg_error(
-    _message,
-    0);
-}
-
 function
   _chunk_file_path_get(
     _prefix,
@@ -210,6 +193,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _method_object,
     _publication_namespace,
     _file_hash,
     _checkpoint_file_path,
@@ -217,6 +201,7 @@ async function
     _chunks_indexes
   ) {
   let
+    _check_opts,
     _chunk,
     _chunk_file_path,
     _chunks_checked,
@@ -226,6 +211,10 @@ async function
     _correct,
     _index,
     _progress;
+  if ( _method_object == undefined ) {
+    _method_object =
+      "";
+  }
   _chunks_checked =
     [];
   _chunks_total =
@@ -256,9 +245,48 @@ async function
     }
     _chunk_file_path_check(
       _chunk_file_path);
+    _check_opts = [
+      _retries_max,
+      _api_key_path,
+      _target_network,
+      _contract_address,
+      _contract_abi_path,
+      _contract_bytecode_path,
+      _contract_compiler_output_path,
+      _method_object,
+      _publication_namespace,
+      _file_hash,
+      _index,
+      _index,
+      [_chunk_file_path]
+    ];
     try {
-      _chunks_checked = await
-        _check(
+      _chunks_checked, _method_object =
+        await _check.apply(
+          _check_opts);
+          // _retries_max,
+          // _api_key_path,
+          // _target_network,
+          // _contract_address,
+          // _contract_abi_path,
+          // _contract_bytecode_path,
+          // _contract_compiler_output_path,
+          // _method_object,
+          // _publication_namespace,
+          // _file_hash,
+          // _index,
+          // _index,
+          // [_chunk_file_path]); 
+      if ( _check_opts[7] == "" ) {
+        _msg_info(
+          "Reusing contract method object.");
+        // I have no idea if _check_call_base_opts
+        // has its components passed by reference
+        // or copied so I have no idea if
+        // _method_object gets immediately updated
+        // or I need to re-init the array so just
+        // in case we re-init whole array.
+        _check_opts = [
           _retries_max,
           _api_key_path,
           _target_network,
@@ -266,15 +294,22 @@ async function
           _contract_abi_path,
           _contract_bytecode_path,
           _contract_compiler_output_path,
+          _method_object,
           _publication_namespace,
           _file_hash,
           _index,
           _index,
-          [_chunk_file_path]); 
-    } catch (e) {
-      console.error(
-        "Error running check routine.");
-      throw e;
+          [_chunk_file_path]
+        ];
+      }
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error running check routine.",
+        0);
+      throw _error;
     }
     _chunks_checked_total =
       _chunks_checked.length;
@@ -301,7 +336,7 @@ async function
       throw "Some chunks have not been published."
     }
   }
-  return _chunks_corrupted;
+  return _chunks_corrupted, _method_object;
 }
 
 function
@@ -528,6 +563,7 @@ if ( _cmdline_check(
     contract_abi_path,
     contract_bytecode_path,
     contract_compiler_output_path,
+    method_object,
     publication_namespace,
     file_hash,
     checkpoint_file_path,

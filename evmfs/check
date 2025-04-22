@@ -29,6 +29,8 @@ _cmdline_check =
   _libcrash._cmdline_check;
 _echo =
   _libcrash._echo;
+_error_display =
+  _libcrash._error_display;
 _file_read =
   _libcrash._file_read;
 _msg_info =
@@ -59,6 +61,8 @@ function
   contract_bytecode_path =
     "";
   contract_compiler_output_path =
+    "";
+  method_object =
     "";
   publication_namespace =
     "";
@@ -151,23 +155,30 @@ async function
     _chunk,
     _get_call_opts) {
   let
+    _method_object,
     _passed,
     _retry,
     _value;
   try {
-    _value = await
-      _chunk_get(
+    _value, _method_object =
+      await _chunk_get(
         _get_call_opts);
     if ( _value == undefined ) {
-      throw "Got undefined value for the chunk.";
+      throw { "error": {
+                "message":
+                  "Got undefined value for the chunk." } };
     }
-  } catch(e) {
-    console.error(
-      "Error getting chunk from the network.");
-    throw e;
+  } catch(
+      _error) {
+    _error_display(
+      _error);
+    _msg_error(
+      "Error getting chunk from the network.",
+      0);
+    throw _error;
   }
   if ( _value == _chunk ) {
-    return true;
+    return true, _method_object;
   }
   else if ( _value != _chunk ) {
     _msg_info(
@@ -225,6 +236,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _method_object,
     _publication_namespace,
     _file_hash,
     _index_start,
@@ -245,6 +257,10 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
+  if ( _method_object == undefined ) {
+    _method_object =
+      "";
+  }
   _index_start =
     Number(
       _index_start);
@@ -263,6 +279,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _method_object,
     _contract_address,
     "chunks",
   ];
@@ -318,14 +335,40 @@ async function
       _check_call_base_opts.concat(
         [_method_args]);
     try {
-      _check = await
-        _chunk_check(
+      _check, _method_object =
+        await _chunk_check(
           _chunk,
           _check_call_opts);
-    } catch (e) {
-      console.error(
-        e);
-      throw e;
+      // I have no idea if _check_call_base_opts
+      // has its components passed by reference
+      // or copied so I have no idea if
+      // _method_object gets immediately updated
+      // or I need to re-init the array so just
+      // in case we re-init whole array.
+      if ( _check_call_base_opts[7] == "" ) {
+        _msg_info(
+          "Reusing contract method object.");
+        _read_call_base_opts = [
+          _wallet_seed_path,
+          _retries_max,
+          _api_key_path,
+          _target_network,
+          _contract_abi_path,
+          _contract_bytecode_path,
+          _contract_compiler_output_path,
+          _method_object,
+          _contract_address,
+          "readChunk",
+        ];
+      }
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error checking chunk.",
+        0);
+      throw _error;
     }
     _msg_info_chunk_checked(
       _index,
@@ -338,7 +381,7 @@ async function
     _cursor =
       _cursor + 1;
   }
-  return _chunks_checked;
+  return _chunks_checked, _method_object;
 }
 
 function
@@ -567,6 +610,7 @@ if ( _cmdline_check(
     contract_abi_path,
     contract_bytecode_path,
     contract_compiler_output_path,
+    method_object,
     publication_namespace,
     file_hash,
     index_start,
