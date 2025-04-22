@@ -198,8 +198,11 @@ async function
     _retries_max,
     _read_chain_id_call_opts) {
   let
+    _passed,
     _retry,
     _value;
+  _passed =
+    false;
   _retry =
     1;
   while (
@@ -244,8 +247,11 @@ async function
     _retries_max,
     _read_fs_call_opts) {
   let
+    _passed,
     _retry,
     _value;
+  _passed =
+    false;
   _retry =
     1;
   while (
