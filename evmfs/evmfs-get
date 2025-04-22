@@ -537,7 +537,10 @@ _chunks_ccget_bulk() {
     node-run \
       "${_node_run_opts[@]}" \
       "${_ccget}" \
-      "${_ccget_args[@]}"
+      "${_ccget_args[@]}" || \
+      _msg_error \
+        "Node exited with error." \
+        0
   done
 }
 

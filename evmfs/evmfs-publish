@@ -622,7 +622,7 @@ _chunks_publish_bulk() {
       "${_node_run_opts[@]}" \
       "${_publish}" \
       "${_publish_args[@]}"
-  done
+    done
 }
 
 _chunks_verify_bulk() {
