@@ -541,6 +541,10 @@ _chunks_ccget_bulk() {
       _msg_error \
         "Node exited with error." \
         0
+    _msg_info \
+      "Retrying in 3 seconds."
+    sleep \
+      3
   done
 }
 
