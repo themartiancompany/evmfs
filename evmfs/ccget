@@ -411,14 +411,15 @@ async function
   _cursor =
     0;
   for ( var _index = _index_start;
-	_index <= _index_end;
-	_index++ ) {
+        _index <= _index_end;
+        _index++ ) {
     _msg_info_chunk_dereference(
       _index,
       _progress,
       _chunks_total);
     _chunk_file_path =
-      _chunks_files_paths[_cursor];
+      _chunks_files_paths[
+        _cursor];
     // Users can provide
     // multiple references for
     // redundancy though, but for
@@ -452,7 +453,7 @@ async function
       _read_fs_base_args.concat(
         [_index.toString(),
          _reference.toString(),
-	 _chunk_chain_id]
+         _chunk_chain_id]
       );
     _read_fs_call_opts =
       _read_fs_call_base_opts.concat(
@@ -462,11 +463,12 @@ async function
         _chunk_fs_get(
           _retries_max,
           _read_fs_call_opts);
-    } catch (e) {
+    } catch (
+        _error) {
       _msg_error(
         "Error retrieving chunk's fs address.",
         0);
-      throw e;
+      throw _error;
     }
     _msg_info_chunk_dereferenced(
       _index,
@@ -519,11 +521,12 @@ async function
       _get.apply(
         null,
         _get_opts);
-    } catch (e) {
+    } catch (
+        _error) {
       _msg_error(
         "Error retrieving chunk.",
 	0);
-      throw e;
+      throw _error;
     }
     _progress =
       _progress + 1;
