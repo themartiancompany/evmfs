@@ -319,6 +319,7 @@ async function
     _chunks_unverified = [],
     _indexes_unverified = [],
     _method_base_args,
+    _method_object,
     _progress,
     _publish_call_base_opts,
     _publish_call_opts,
@@ -339,6 +340,8 @@ async function
   _index_end =
     Number(
       _index_end);
+  _method_object =
+    "";
   _wallet_password =
     "";
   _check_call_base_opts = [
@@ -349,6 +352,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _method_object,
     _contract_address,
     "chunks",
   ];
@@ -413,14 +417,39 @@ async function
       _check_call_base_opts.concat(
         [_chunk_check_args]);
     try {
-      _published = await
-        _chunk_check(
+      _published, _method_object =
+        await _chunk_check(
           _chunk,
           _check_call_opts);
-    } catch (e) {
-      console.error(
-        "Error checking publication status.");
-      throw e;
+      // I have no idea if _check_call_base_opts
+      // has its components passed by reference
+      // or copied so I have no idea if
+      // _method_object gets immediately updated
+      // or I need to re-init the array so just
+      // in case we re-init whole array.
+      if ( _check_call_base_opts[7] == "" ) {
+        _msg_info(
+          "Reusing contract method object.");
+        _check_call_base_opts = [
+          "", // _wallet_seed_path,
+          _retries_max,
+          _api_key_path,
+          _target_network,
+          _contract_abi_path,
+          _contract_bytecode_path,
+          _contract_compiler_output_path,
+          _method_object,
+          _contract_address,
+          "chunks",
+        ];
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error checking publication status.",
+        0);
+      throw _error;
     }
     if ( _published == true ) {
       _msg_info_chunk_published_already(
