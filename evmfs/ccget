@@ -345,7 +345,6 @@ async function
     _fs_contract_bytecode_path,
     _fs_contract_compiler_output_path,
     _get_opts,
-    _method_objects,
     _read_chain_id_call_base_opts,
     _read_chain_id_call_opts,
     _read_chain_id_base_args,
@@ -554,6 +553,10 @@ async function
       _fs_contract_abi_path,
       _fs_contract_bytecode_path,
       _fs_contract_compiler_output_path,
+      _method_objects[
+        "fs"][
+          _chunk_chain_id][
+            _chunk_fs],
       _publication_namespace,
       _file_hash,
       _index,
@@ -562,9 +565,43 @@ async function
       [_chunk_file_path]
     ];
     try {
-      await _get.apply(
-        null,
-        _get_opts);
+      _method_objects[
+        "fs"][
+          _chunk_chain_id][
+            _chunk_fs] =
+        await _get.apply(
+          null,
+          _get_opts);
+      if ( _get_opts[7] == undefined ||
+           _get_opts[7] == "" ) {
+        // I have no idea if _read_call_base_opts
+        // has its components passed by reference
+        // or copied so I have no idea if
+        // _method_object gets immediately updated
+        // or I need to re-init the array so just
+        // in case we re-init whole array.
+        _msg_info(
+          "Reusing contract method object.");
+        _get_opts = [
+          _retries_max,
+          _api_key_path,
+          _rpc_backend,
+          _chunk_fs,
+          _fs_contract_abi_path,
+          _fs_contract_bytecode_path,
+          _fs_contract_compiler_output_path,
+          _method_objects[
+            "fs"][
+              _chunk_chain_id][
+                _chunk_fs],
+          _publication_namespace,
+          _file_hash,
+          _index,
+          _index,
+          _checkpoint_file_path,
+          [_chunk_file_path]
+        ];
+      }
     } catch (
         _error) {
       _error_display(

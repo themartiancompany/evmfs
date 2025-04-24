@@ -335,6 +335,7 @@ async function
     _cursor =
       _cursor + 1;
   }
+  return _method_object;
 }
 
 function
