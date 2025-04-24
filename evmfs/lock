@@ -68,6 +68,11 @@ function
     "";
   contract_compiler_output_path =
     "";
+  // After the method re-use will
+  // have been added to the dynamic
+  // caller as well
+  // method_object =
+  //   "";
   publication_namespace =
     "";
   file_hash =
