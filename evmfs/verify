@@ -336,7 +336,9 @@ async function
       throw "Some chunks have not been published."
     }
   }
-  return _chunks_corrupted, _method_object;
+  return [
+    _chunks_corrupted,
+    _method_object];
 }
 
 function
@@ -539,8 +541,10 @@ async function
     _app_opts) {
   let
     _chunks_corrupted,
-    _index;
-  _chunks_corrupted = 
+    _index,
+    _method_object;
+  [_chunks_corrupted,
+   _method-object] = 
     await _verify.apply(
       null,
       _app_opts);
@@ -570,7 +574,7 @@ if ( _cmdline_check(
     chunks_files_paths_prefix,
     chunks_indexes,
   ];
-  _verify.apply(
+  _verify_cmdline.apply(
     null,
     app_opts);
 }

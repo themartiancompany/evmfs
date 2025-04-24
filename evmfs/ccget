@@ -244,7 +244,9 @@ async function
   if ( _retry > _retries_max ) {
     throw "Maximum number of retries reached.";
   }
-  return _value.toString(), _method_object;
+  return [
+    _value.toString(),
+    _method_object];
 }
 
 async function
@@ -289,7 +291,9 @@ async function
   if ( _retry > _retries_max ) {
     throw "Maximum number of retries reached.";
   }
-  return _value.toString(), _method_object;
+  return [
+    _value.toString(),
+    _method_object];
 }
 
 function
@@ -463,10 +467,11 @@ async function
       _read_chain_id_call_base_opts.concat(
         [_read_chain_id_args]);
     try {
-      _chunk_chain_id, _method_objects[
-                         "ccfs"][
-                           "chunksChainId"] =
-         await _chunk_chain_id_get(
+      [_chunk_chain_id,
+       _method_objects[
+         "ccfs"][
+           "chunksChainId"]] =
+        await _chunk_chain_id_get(
           _retries_max,
           _read_chain_id_call_opts);
       // I have no idea if _check_call_base_opts
@@ -478,7 +483,21 @@ async function
       if ( _read_chain_id_call_base_opts[7] == "" ) {
         _msg_info(
           "Reusing contract method object.");
-
+        _read_chain_id_call_base_opts = [
+          _wallet_seed_path,
+          _retries_max,
+          _api_key_path,
+          _target_network,
+          _contract_abi_path,
+          _contract_bytecode_path,
+          _contract_compiler_output_path,
+          _method_objects[
+            "ccfs"][
+              "chunksChainId"];
+          _contract_address,
+          "chunksChainId",
+        ];
+      }
     } catch (
         _error) {
       _error_display(
@@ -498,12 +517,15 @@ async function
       _read_fs_call_base_opts.concat(
         [_read_fs_args]);
     try {
-      _chunk_fs, _method_objects[
-                   "ccfs"][
-                     "chunksFs"] =
+      [_chunk_fs,
+       _method_objects[
+         "ccfs"][
+           "chunksFs"]] =
         await _chunk_fs_get(
           _retries_max,
           _read_fs_call_opts);
+      if ( _read_fs_call_base_opts[7] == "" ) {
+      }
     } catch (
         _error) {
       _display_error(
