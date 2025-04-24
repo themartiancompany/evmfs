@@ -346,8 +346,10 @@ async function
       // or I need to re-init the array so just
       // in case we re-init whole array.
       if ( _check_call_base_opts[7] == "" ) {
+        console.log(
+          _method_object);
         _msg_info(
-          "Reusing contract method object.");
+          "Re-using contract method object.");
         _read_call_base_opts = [
           _wallet_seed_path,
           _retries_max,

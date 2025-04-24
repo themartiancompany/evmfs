@@ -211,13 +211,14 @@ async function
       _contract_run.apply(
         null,
         _contract_run_opts);
-  } catch(e) {
-    console.error(
-      "Error publishing the chunk.");
+  } catch(
+      _error) {
+    _error_display(
+      _error);
     _msg_error(
-      e,
+      "Error publishing the chunk.",
       0);
-    throw e
+    throw _error;
   }
   return _tx;
 }
@@ -442,6 +443,7 @@ async function
           _contract_address,
           "chunks",
         ];
+      }
     } catch (
         _error) {
       _error_display(
