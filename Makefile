@@ -48,6 +48,7 @@ _NODE_FILES:=\
 _INSTALL_FILE=install -vDm644
 _INSTALL_DIR=install -vdm755
 _INSTALL_EXE=install -vDm755
+
 _INSTALL_CONTRACTS_DEPLOYMENT_FUN:=\
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)
 _BUILD_TARGETS:=\

@@ -1781,7 +1781,7 @@ _show_config() {
   _msg_info "                Maximum retries:   ${retries_max}"
   _msg_info "                   Call timeout:   ${call_timeout}"
   _msg_info "                      Lock only:   ${lock_only}"
-  _msg_info "   LibEVM application options:"
+  _msg_info "             Contract options:"
   _msg_info "Cross-chain file system address:   ${ccfs_address}"
   _msg_info "            File system address:   ${fs_address}"
   _msg_info "            File system version:   ${fs_version}"
