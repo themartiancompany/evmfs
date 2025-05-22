@@ -544,7 +544,7 @@ async function
     _index,
     _method_object;
   [_chunks_corrupted,
-   _method-object] = 
+   _method_object] = 
     await _verify.apply(
       null,
       _app_opts);
@@ -574,8 +574,7 @@ if ( _cmdline_check(
     chunks_files_paths_prefix,
     chunks_indexes,
   ];
-  _verify_cmdline.apply(
-    null,
+  _verify_cmdline(
     app_opts);
 }
 
