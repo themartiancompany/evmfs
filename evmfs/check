@@ -23,8 +23,8 @@
 
 const
   _libcrash =
-  require(
-    '../libcrash-js/crash-js');
+    require(
+      '../libcrash-js/crash-js');
 _cmdline_check =
   _libcrash._cmdline_check;
 _echo =
@@ -130,25 +130,25 @@ function
     _msg);
 }
 
-function
-  _error_handle(
-    error) {
-  let
-    _message;
-  if ( 'error' in error && 
-       error['error'] != undefined &&
-       'message' in error['error'] ) {
-    _message =
-      error['error']['message'];
-  }
-  else if ( 'shortMessage' in error ) {
-    _message =
-      error['shortMessage'];
-  }
-  _msg_error(
-    _message,
-    0);
-}
+// function
+//   _error_handle(
+//     error) {
+//   let
+//     _message;
+//   if ( 'error' in error && 
+//        error['error'] != undefined &&
+//        'message' in error['error'] ) {
+//     _message =
+//       error['error']['message'];
+//   }
+//   else if ( 'shortMessage' in error ) {
+//     _message =
+//       error['shortMessage'];
+//   }
+//   _msg_error(
+//     _message,
+//     0);
+// }
 
 async function
   _chunk_check(

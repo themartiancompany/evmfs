@@ -495,12 +495,14 @@ async function
     }
     else {
       _msg_error(
-        _published,
+        "_published",
         0);
+      _console.error(
+        _published);
       throw {
         "error": {
-          "message": {
-            "Unexpected chunk publication status value." } } };
+          "message":
+            "Unexpected chunk publication status value." } };
     }
     _checkpoint_index =
       _index.toString();
