@@ -27,6 +27,8 @@ const
       "../libcrash-js/crash-js");
 _dirname =
   _libcrash._dirname;
+_error_display =
+  _libcrash._error_display;
 _file_write =
   _libcrash._file_write;
 _msg_info =
@@ -207,11 +209,12 @@ async function
       _contract_run.apply(
         null,
         _contract_run_opts);
-  } catch(e) {
+  } catch(
+      _error) {
     _msg_error(
       "Error locking chunk.",
       0);
-    throw e;
+    throw _error;
   }
   return _tx;
 }
@@ -224,13 +227,17 @@ async function
     _retry,
     _value;
   try {
-    _value = await
-      _contract_call_static.apply(
+    [_value,
+     _method_object] =
+      await _contract_call_static.apply(
         null,
         _locked_call_opts);
-  } catch(e) {
+  } catch(
+      _error) {
+    _error_display(
+      _error);
     _msg_error(
-      e,
+      _error,
       1);
   }
   return _value;

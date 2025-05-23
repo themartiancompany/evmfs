@@ -140,7 +140,7 @@ async function
     _value;
   try {
     [_value,
-     _method_object] = 
+     _method_object] =
       await _contract_call_static.apply(
         null,
         _read_call_opts);
