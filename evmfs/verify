@@ -263,6 +263,7 @@ async function
     try {
       _chunks_checked, _method_object =
         await _check.apply(
+	  null,
           _check_opts);
           // _retries_max,
           // _api_key_path,
@@ -402,7 +403,8 @@ function
       _chunks_indexes));
   for ( _line in _text ) {
     _msg_info(
-      _text[_line]);
+      _text[
+        _line]);
   }
 }
 
