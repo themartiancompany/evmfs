@@ -217,6 +217,8 @@ async function
   }
   _chunks_checked =
     [];
+  _chunks_corrupted =
+    [];
   _chunks_total =
     _chunks_indexes.length;
   for ( var _cursor = 0;
@@ -261,7 +263,8 @@ async function
       [_chunk_file_path]
     ];
     try {
-      _chunks_checked, _method_object =
+      [_chunks_checked,
+       _method_object] =
         await _check.apply(
 	  null,
           _check_opts);
@@ -330,7 +333,7 @@ async function
         _index,
         _chunk_file_path,
         _progress,
-        _total);
+        _chunks_checked_total);
       // Soon
       _chunks_corrupted.push(
         _index);
