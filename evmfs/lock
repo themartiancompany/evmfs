@@ -223,6 +223,7 @@ async function
   _chunk_locked(
     _locked_call_opts) {
   let
+    _method_object,
     _passed,
     _retry,
     _value;
@@ -240,7 +241,10 @@ async function
       _error,
       1);
   }
-  return _value;
+  return [
+    _value,
+    _method_object
+  ];
 }
 
 async function
@@ -267,6 +271,7 @@ async function
     _locked,
     _locked_call_base_opts,
     _locked_call_opts,
+    _locked_method_object,
     _method_args,
     _progress,
     _tx,
@@ -285,6 +290,8 @@ async function
     Number(
       _index_end);
   _wallet_password =
+    "";
+  _locked_method_object =
     "";
   _lock_call_base_opts = [
     _retries_max,
@@ -309,6 +316,7 @@ async function
     _contract_abi_path,
     _contract_bytecode_path,
     _contract_compiler_output_path,
+    _locked_method_object,
     _contract_address,
     "lock"
   ];
@@ -338,8 +346,9 @@ async function
     _locked_call_opts =
       _locked_call_base_opts.concat(
         [_method_args]);
-    _locked = await
-      _chunk_locked(
+    [_locked,
+     _locked_method_object] =
+      await _chunk_locked(
         _locked_call_opts);
     if ( _locked == true ) {
       _msg_info_chunk_locked_already(
