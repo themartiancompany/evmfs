@@ -218,6 +218,7 @@ async function
     _index_call_opts,
     _method_args,
     _progress,
+    _reference,
     _tx,
     _wallet_password;
   if ( _call_timeout == "" ) {
@@ -268,6 +269,8 @@ async function
     // TODO:
     //   Check the pointer has not
     //   been already written.
+    _reference =
+      0;
     _method_args =
       _method_base_args.concat(
         [_index.toString(),

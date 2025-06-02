@@ -335,7 +335,8 @@ async function
     _publication_namespace,
     _file_hash,
     _index_start,
-    _index_end) {
+    _index_end,
+    _reference) {
   let
     _chunk_chain_id,
     _chunks_chain_ids,
@@ -346,8 +347,7 @@ async function
     _read_chain_id_args,
     _read_chain_id_base_args,
     _read_chain_id_call_base_opts,
-    _read_chain_id_call_opts,
-    _reference;
+    _read_chain_id_call_opts;
   _msg =
     "Reading chain ID.";
   _msg_info(
@@ -373,6 +373,12 @@ async function
         "chunksFs":
           "" } };
   }
+  if ( _reference == undefined ) {
+    _reference =
+      0;
+  _reference =
+    Number(
+      _reference);
   _read_chain_id_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
@@ -402,8 +408,6 @@ async function
       `Reading Chain ID for index ${_index}`;
     _msg_info(
       _msg);
-    _reference =
-      0;
     _read_chain_id_args =
       _read_chain_id_base_args.concat(
         [_index.toString(),
@@ -482,7 +486,8 @@ async function
     _file_hash,
     _index_start,
     _index_end,
-    _chunk_chain_id) {
+    _chunk_chain_id,
+    _reference) {
   let
     _chunks_fs_addresses,
     _cursor,
@@ -519,6 +524,12 @@ async function
         "chunksFs":
           "" } };
   }
+  if ( _reference == undefined ) {
+    _reference =
+      0;
+  _reference =
+    Number(
+      _reference);
   _read_fs_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
@@ -548,8 +559,6 @@ async function
       `Reading Chain ID for index ${_index}`;
     _msg_info(
       _msg);
-    _reference =
-      0;
     _read_fs_args =
       _read_fs_base_args.concat(
         [_index.toString(),
@@ -684,6 +693,8 @@ async function
     // one. This capability will be
     // needed when implementing
     // the crowd-sourced upload
+    _reference =
+      0;
     _chain_id_read_opts = [
       _retries_max,
       _api_key_path,
@@ -699,7 +710,8 @@ async function
       _publication_namespace,
       _file_hash,
       _index,
-      _index
+      _index,
+      _reference
     ];
     [ _chunks_chain_ids,
       _method_objects ] =
@@ -725,7 +737,8 @@ async function
       _file_hash,
       _index,
       _index,
-      _chunk_chain_id
+      _chunk_chain_id,
+      _reference
     ];
     [ _chunks_fs_addresses,
       _method_objects ] =
