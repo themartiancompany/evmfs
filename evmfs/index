@@ -39,6 +39,14 @@ const
       '../evm-contracts-tools/evm-contract-call-dynamic');
 _contract_run =
   _evm_contract_call_dynamic_module._contract_run;
+const
+  _ccget_module =
+    require(
+      "./ccget");
+_chain_id_read =
+  _ccget_module._chain_id_read;
+_fs_address_read =
+  _ccget_module._fs_address_read;
 
 function
   _global_variables() {
