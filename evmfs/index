@@ -256,6 +256,9 @@ async function
       _index,
       _progress,
       _chunks_total);
+    // TODO:
+    //   Check the pointer has not
+    //   been already written.
     _method_args =
       _method_base_args.concat(
         [_index.toString(),
