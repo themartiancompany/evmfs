@@ -259,8 +259,8 @@ async function
     _method_args =
       _method_base_args.concat(
         [_index.toString(),
-	 _chunk_chain_id,
-	 _chunk_fs_address]);
+         _chunk_chain_id,
+         _chunk_fs_address]);
     _index_call_opts =
       _index_call_base_opts.concat(
         [_method_args]);
