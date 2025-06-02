@@ -468,6 +468,133 @@ async function
 	   _method_objects ];
 }
 
+async function
+  _references_read(
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _deployments_dir,
+    _fs_version,
+    _rpc_selection,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects,
+    _publication_namespace,
+    _file_hash,
+    _index_start,
+    _index_end) {
+  let
+    _references,
+    _cursor,
+    _index,
+    _msg,
+    _progress,
+    _read_references_args,
+    _read_references_base_args,
+    _read_references_call_base_opts,
+    _read_references_call_opts,
+    _reference;
+  _msg =
+    "Reading File Systems pointers.";
+  _msg_info(
+    _msg);
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
+  _chunks_chain_ids =
+    [];
+  if ( _rpc_selection == "" ||
+       _rpc_selection == undefined ) {
+    _rpc_selection =
+      "kirsh"
+  }
+  if ( _method_objects == {} ) {
+    _method_objects = {
+      "ccfs": {
+        "chunksChainId":
+          "",
+        "chunksFs":
+          "",
+        "chunksNo":
+          "" } ;
+  }
+  if ( _reference == undefined ) {
+    _reference =
+      0;
+  _reference =
+    Number(
+      _reference);
+  _read_fs_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksFs"],
+    _contract_address,
+    "chunksFs",
+  ];
+  _read_fs_base_args = [
+    _publication_namespace,
+    _file_hash
+  ];
+  _progress =
+    1;
+  _cursor =
+    0;
+  for ( var _index = _index_start;
+        _index <= _index_end;
+        _index++ ) {
+    _msg =
+      `Reading Chain ID for index ${_index}`;
+    _msg_info(
+      _msg);
+    _read_fs_args =
+      _read_fs_base_args.concat(
+        [_index.toString(),
+         _reference.toString(),
+         _chunk_chain_id]
+      );
+    _read_fs_call_opts =
+      _read_fs_call_base_opts.concat(
+        [_read_fs_args]);
+    try {
+      [ _chunk_fs,
+        _method_objects[
+          "ccfs"][
+            "chunksFs"] ] =
+        await _chunk_fs_get(
+          _retries_max,
+          _read_fs_call_opts);
+      if ( _read_fs_call_base_opts[7] == "" ) {
+      }
+    } catch (
+        _error) {
+      _display_error(
+        _error);
+      _msg_error(
+        "Error retrieving chunk's fs address.",
+        0);
+      throw _error;
+    }
+    _progress =
+      _progress + 1;
+    _cursor =
+      _cursor + 1;
+  }
+  return [ _chunks_chain_ids,
+	   _method_objects ];
+}
+
 
 async function
   _fs_address_read(
