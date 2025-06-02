@@ -709,7 +709,7 @@ async function
     _chunk_chain_id =
       _chunks_chain_ids[
         0];
-    _fs_read_opts = [
+    _fs_address_read_opts = [
       _retries_max,
       _api_key_path,
       _target_network,
@@ -723,10 +723,18 @@ async function
       _method_objects,
       _publication_namespace,
       _file_hash,
-      _index_start,
-      _index_end,
+      _index,
+      _index,
       _chunk_chain_id
     ];
+    [ _chunks_fs_addresses,
+      _method_objects ] =
+      await _fs_address_read.apply(
+        null,
+        _fs_address_read_opts);
+    _chunk_fs =
+      _chunks_fs_addresses[
+        0];
     _msg_info_chunk_dereferenced(
       _index,
       _chunk_chain_id,
