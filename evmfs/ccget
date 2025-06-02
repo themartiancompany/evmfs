@@ -1120,6 +1120,10 @@ if ( _cmdline_check(
 }
 
 module.exports = {
+  _chain_id_read:
+    _chain_id_read,
+  _fs_address_read:
+    _fs_address_read,
   _ccget:
     _ccget
 };
