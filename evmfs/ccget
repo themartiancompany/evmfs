@@ -320,6 +320,86 @@ function
 }
 
 async function
+  _chain_id_read(
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _deployments_dir,
+    _fs_version,
+    _rpc_selection,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects,
+    _publication_namespace,
+    _file_hash,
+    _index_start,
+    _index_end) {
+  let
+    _cursor,
+    _index,
+    _msg,
+    _progress,
+    _read_chain_id_base_args,
+    _read_chain_id_call_base_opts,
+    _read_chain_id_call_opts;
+  _msg =
+    "Reading chain ID.";
+  _msg_info(
+    _msg);
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
+  if ( _rpc_selection == "" ||
+       _rpc_selection == undefined ) {
+    _rpc_selection =
+      "kirsh"
+  }
+  if ( _method_objects == {} ) {
+    _method_objects = {
+      "ccfs": {
+        "chunksChainId":
+          "",
+        "chunksFs":
+          "" } };
+  }
+  _read_chain_id_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksChainId"],
+    _contract_address,
+    "chunksChainId",
+  ];
+  _read_chain_id_base_args = [
+    _publication_namespace,
+    _file_hash
+  ];
+  _progress =
+    1;
+  _cursor =
+    0;
+  for ( var _index = _index_start;
+        _index <= _index_end;
+        _index++ ) {
+    _msg =
+      `Reading Chain ID for index ${_index}`;
+    _msg_info(
+      _msg);
+  }
+}
+
+async function
   _ccget(
     _retries_max,
     _api_key_path,
