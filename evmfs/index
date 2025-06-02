@@ -97,7 +97,8 @@ function
     _msg,
     _template;
   _template =
-    "Indexing chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Indexing chunk '{_index}'" +
+    "('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
