@@ -398,7 +398,7 @@ async function
     _contract_compiler_output_path,
     _method_objects[
       "ccfs"][
-        "chunksChainId"];
+        "chunksChainId"],
     _contract_address,
     "chunksChainId",
   ];
@@ -416,7 +416,7 @@ async function
     _contract_compiler_output_path,
     _method_objects[
       "ccfs"][
-        "chunksFs"];
+        "chunksFs"],
     _contract_address,
     "chunksFs",
   ];
