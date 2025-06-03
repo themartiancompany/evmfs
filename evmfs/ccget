@@ -540,6 +540,10 @@ async function
     _index_end) {
   let
     _chunks_no,
+    _chunks_fs_addresses,
+    _chunk_fs_address,
+    _chunks_chain_ids,
+    _chunk_chain_id,
     _chunks_references,
     _cursor,
     _fs_address_read_opts,
@@ -713,6 +717,9 @@ async function
           _fs_address_read_opts);
       _chunk_fs_address =
         _chunks_fs_addresses[0];
+      _chunks_references.append(
+        [ _chunk_chain_id,
+          _chunk_fs_address ] );
     }
     _progress =
       _progress + 1;
@@ -955,61 +962,33 @@ async function
     // one. This capability will be
     // needed when implementing
     // the crowd-sourced upload
+    _references_read_opts = [
+      _retries_max,
+      _api_key_path,
+      _target_network,
+      _deployments_dir,
+      _fs_version,
+      _rpc_selection,
+      _contract_address,
+      _contract_abi_path,
+      _contract_bytecode_path,
+      _contract_compiler_output_path,
+      _method_objects,
+      _publication_namespace,
+      _file_hash,
+      _index,
+      _index
+    ];
+    _chunk_references =
+      await _references_read.apply(
+        null,
+        _references_read_opts);
     _reference =
       0;
-    _chain_id_read_opts = [
-      _retries_max,
-      _api_key_path,
-      _target_network,
-      _deployments_dir,
-      _fs_version,
-      _rpc_selection,
-      _contract_address,
-      _contract_abi_path,
-      _contract_bytecode_path,
-      _contract_compiler_output_path,
-      _method_objects,
-      _publication_namespace,
-      _file_hash,
-      _index,
-      _index,
-      _reference
-    ];
-    [ _chunks_chain_ids,
-      _method_objects ] =
-      await _chain_id_read.apply(
-        null,
-        _chain_id_read_opts);
-    _chunk_chain_id =
-      _chunks_chain_ids[
-        0];
-    _fs_address_read_opts = [
-      _retries_max,
-      _api_key_path,
-      _target_network,
-      _deployments_dir,
-      _fs_version,
-      _rpc_selection,
-      _contract_address,
-      _contract_abi_path,
-      _contract_bytecode_path,
-      _contract_compiler_output_path,
-      _method_objects,
-      _publication_namespace,
-      _file_hash,
-      _index,
-      _index,
-      _chunk_chain_id,
-      _reference
-    ];
-    [ _chunks_fs_addresses,
-      _method_objects ] =
-      await _fs_address_read.apply(
-        null,
-        _fs_address_read_opts);
-    _chunk_fs =
-      _chunks_fs_addresses[
-        0];
+    [ _chunk_chain_id,
+      _chunk_fs ] =
+      _chunks_references[
+        _reference];
     _msg_info_chunk_dereferenced(
       _index,
       _chunk_chain_id,
