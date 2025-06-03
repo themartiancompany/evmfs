@@ -488,7 +488,6 @@ async function
     _index_start,
     _index_end) {
   let
-    _references,
     _cursor,
     _index,
     _msg,
@@ -497,7 +496,12 @@ async function
     _read_references_base_args,
     _read_references_call_base_opts,
     _read_references_call_opts,
-    _reference;
+    _read_references_no_args,
+    _read_references_no_base_args,
+    _read_references_no_call_base_opts,
+    _read_references_no_call_opts,
+    _reference,
+    _chunks_references;
   _msg =
     "Reading File Systems pointers.";
   _msg_info(
@@ -508,7 +512,7 @@ async function
   _index_end =
     Number(
       _index_end);
-  _chunks_chain_ids =
+  _chunks_references =
     [];
   if ( _rpc_selection == "" ||
        _rpc_selection == undefined ) {
@@ -532,7 +536,7 @@ async function
   _reference =
     Number(
       _reference);
-  _read_fs_call_base_opts = [
+  _read_references_no_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
     _api_key_path,
@@ -544,9 +548,9 @@ async function
       "ccfs"][
         "chunksFs"],
     _contract_address,
-    "chunksFs",
+    "chunksNo",
   ];
-  _read_fs_base_args = [
+  _read_references_no_base_args = [
     _publication_namespace,
     _file_hash
   ];
@@ -558,43 +562,47 @@ async function
         _index <= _index_end;
         _index++ ) {
     _msg =
-      `Reading Chain ID for index ${_index}`;
+      `Reading references for index ${_index}`;
     _msg_info(
       _msg);
-    _read_fs_args =
-      _read_fs_base_args.concat(
-        [_index.toString(),
-         _reference.toString(),
-         _chunk_chain_id]
+    _read_references_no_args =
+      _read_references_no_base_args.concat(
+        [ _index.toString() ]
       );
-    _read_fs_call_opts =
-      _read_fs_call_base_opts.concat(
-        [_read_fs_args]);
+    _read_references_no_call_opts =
+      _read_references_no_call_base_opts.concat(
+        [ _read_references_no_args ]);
     try {
-      [ _chunk_fs,
+      [ _chunks_no,
         _method_objects[
           "ccfs"][
-            "chunksFs"] ] =
-        await _chunk_fs_get(
+            "chunksNo"] ] =
+        await _chunk_references_no_get(
           _retries_max,
-          _read_fs_call_opts);
-      if ( _read_fs_call_base_opts[7] == "" ) {
+          _read_references_no_call_opts);
+      if ( _read_references_no_call_base_opts[7] == "" ) {
       }
     } catch (
         _error) {
       _display_error(
         _error);
       _msg_error(
-        "Error retrieving chunk's fs address.",
+        "Error retrieving chunk's references amount.",
         0);
       throw _error;
     }
+    // TODO:
+    // get the references
+    _msg =
+      `Found ${_chunks_no} references.`;
+    _msg_info(
+      _msg);
     _progress =
       _progress + 1;
     _cursor =
       _cursor + 1;
   }
-  return [ _chunks_chain_ids,
+  return [ _chunks_references,
 	   _method_objects ];
 }
 
