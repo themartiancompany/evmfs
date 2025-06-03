@@ -1269,5 +1269,7 @@ module.exports = {
   _fs_address_read:
     _fs_address_read,
   _ccget:
-    _ccget
+    _ccget,
+  _references_read:
+    _references_read
 };
