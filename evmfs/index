@@ -212,6 +212,8 @@ async function
   ) {
   let
     _checkpoint_index,
+    _chunk_references_no,
+    _chunk_references,
     _chunks_total,
     _index_call_base_opts,
     _index_call_opts,
@@ -291,45 +293,65 @@ async function
       await _references_read.apply(
         null,
         _references_read_opts);
-    _reference =
-      0;
-    [ _chunk_chain_id,
-      _chunk_fs ] =
-      _chunks_references[
-        _reference];
-    if ( _chunk_chain_id == _chunks_chain_ids[0] ) {
-      _fs_address_read_opts = [
-        _retries_max,
-        _api_key_path,
-        _target_network,
-        _deployments_dir,
-        _fs_version,
-        _rpc_selection,
-        _contract_address,
-        _contract_abi_path,
-        _contract_bytecode_path,
-        _contract_compiler_output_path,
-        _method_objects,
-        _publication_namespace,
-        _file_hash,
-        _index,
-        _index,
-        _chunk_chain_id,
-        _reference
-      ];
-      [ _chunks_fs_addresses,
-        _method_objects ] =
-        await _fs_address_read.apply(
-          null,
-          _fs_address_read_opts);
-      // _chunk_fs =
-      //   _chunks_fs_addresses[
-      //     0];
-      if ( _chunk_fs_address == _chunks_fs_addresses[0] ) {
-        _msg_info(
-          "Already indexed.");
-      }
+    _chunk_references_no =
+      _chunk_references.length;
+    _published_already =
+      false;
+    for ( var _reference = 0;
+          _reference <= _chunk_references_no - 1;
+          _index++ ) {
+      [ _chunk_chain_id,
+        _chunk_fs ] =
+        _chunks_references[
+          _reference];
+       if ( _chunks_references[
+              _reference] == [ _chunk_chain_id,
+                               _chunk_fs_address ] ) {
+         _msg =
+           `Already indexed at reference ${_reference}.`;
+         _msg_info(
+           _msg);
+       }
     }
+    // _reference =
+    //   0;
+    // [ _chunk_chain_id,
+    //   _chunk_fs ] =
+    //   _chunks_references[
+    //     _reference];
+    // if ( _chunk_chain_id == _chunks_chain_ids[0] ) {
+    //   _fs_address_read_opts = [
+    //     _retries_max,
+    //     _api_key_path,
+    //     _target_network,
+    //     _deployments_dir,
+    //     _fs_version,
+    //     _rpc_selection,
+    //     _contract_address,
+    //     _contract_abi_path,
+    //     _contract_bytecode_path,
+    //     _contract_compiler_output_path,
+    //     _method_objects,
+    //     _publication_namespace,
+    //     _file_hash,
+    //     _index,
+    //     _index,
+    //     _chunk_chain_id,
+    //     _reference
+    //   ];
+    //   [ _chunks_fs_addresses,
+    //     _method_objects ] =
+    //     await _fs_address_read.apply(
+    //       null,
+    //       _fs_address_read_opts);
+    //   // _chunk_fs =
+    //   //   _chunks_fs_addresses[
+    //   //     0];
+    //   if ( _chunk_fs_address == _chunks_fs_addresses[0] ) {
+    //     _msg_info(
+    //       "Already indexed.");
+    //   }
+    // }
     _method_args =
       _method_base_args.concat(
         [_index.toString(),
