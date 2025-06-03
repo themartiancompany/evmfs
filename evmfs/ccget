@@ -488,6 +488,8 @@ async function
     _index_start,
     _index_end) {
   let
+    _chunks_no,
+    _chunks_references,
     _cursor,
     _index,
     _msg,
@@ -500,8 +502,7 @@ async function
     _read_references_no_base_args,
     _read_references_no_call_base_opts,
     _read_references_no_call_opts,
-    _reference,
-    _chunks_references;
+    _reference;
   _msg =
     "Reading File Systems pointers.";
   _msg_info(
@@ -546,7 +547,21 @@ async function
     _contract_compiler_output_path,
     _method_objects[
       "ccfs"][
-        "chunksFs"],
+        "chunksNo"],
+    _contract_address,
+    "chunksNo",
+  ];
+  _read_references_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksNo"],
     _contract_address,
     "chunksNo",
   ];
@@ -597,6 +612,18 @@ async function
       `Found ${_chunks_no} references.`;
     _msg_info(
       _msg);
+    _chunks_no =
+      Number(
+        _chunks_no);
+    for ( var _reference = 0;
+          _reference <= _chunks_no;
+          _reference++ ) {
+      _msg =
+        `Reading reference '${_reference}' ` +
+	`for index ${_index}`;
+      _msg_info(
+        _msg);
+    }
     _progress =
       _progress + 1;
     _cursor =
