@@ -43,10 +43,8 @@ const
   _ccget_module =
     require(
       "./ccget");
-_chain_id_read =
-  _ccget_module._chain_id_read;
-_fs_address_read =
-  _ccget_module._fs_address_read;
+_references_read =
+  _ccget_module._references_read;
 
 function
   _global_variables() {
@@ -271,7 +269,7 @@ async function
     //   been already written.
     _reference =
       0;
-    _chain_id_read_opts = [
+    _references_read_opts = [
       _retries_max,
       _api_key_path,
       _target_network,
@@ -286,17 +284,18 @@ async function
       _publication_namespace,
       _file_hash,
       _index,
-      _index,
-      _reference
+      _index
     ];
-    [ _chunks_chain_ids,
-      _method_objects ] =
-      await _chain_id_read.apply(
+    _chunk_references =
+      await _references_read.apply(
         null,
-        _chain_id_read_opts);
-    // _chunk_chain_id =
-    //   _chunks_chain_ids[
-    //     0];
+        _references_read_opts);
+    _reference =
+      0;
+    [ _chunk_chain_id,
+      _chunk_fs ] =
+      _chunks_references[
+        _reference];
     if ( _chunk_chain_id == _chunks_chain_ids[0] ) {
       _fs_address_read_opts = [
         _retries_max,
