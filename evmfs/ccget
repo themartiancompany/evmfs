@@ -242,12 +242,64 @@ async function
     }
   }
   if ( _retry > _retries_max ) {
-    throw "Maximum number of retries reached.";
+    throw { "error": {
+              "message":
+                "Maximum number of retries reached." } };
   }
   return [
     _value.toString(),
     _method_object];
 }
+
+async function
+  _chunk_references_no_get(
+    _retries_max,
+    _read_references_no_call_opts) {
+  let
+    _method_object,
+    _passed,
+    _retry,
+    _value;
+  _passed =
+    false;
+  _retry =
+    1;
+  while (
+    _retry <= _retries_max &&
+    _passed == false ) {
+    try {
+      _value, _method_object = 
+        await _contract_call_static.apply(
+          null,
+          _read_references_no_call_opts);
+      _passed =
+        true;
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error retrieving references amount for chunk.",
+        0);
+      _msg_info(
+        `Attempt '${_retry}' of '${_retries_max}'. ` +
+        "Retrying in 3 seconds.");
+      _retry =
+        _retry + 1;
+      await _sleep(
+        3000);
+    }
+  }
+  if ( _retry > _retries_max ) {
+    throw { "error": {
+              "message":
+                "Maximum number of retries reached." } };
+  }
+  return [
+    _value.toString(),
+    _method_object];
+}
+
 
 async function
   _chunk_fs_get(
@@ -538,20 +590,6 @@ async function
     Number(
       _reference);
   _read_references_no_call_base_opts = [
-    _wallet_seed_path,
-    _retries_max,
-    _api_key_path,
-    _target_network,
-    _contract_abi_path,
-    _contract_bytecode_path,
-    _contract_compiler_output_path,
-    _method_objects[
-      "ccfs"][
-        "chunksNo"],
-    _contract_address,
-    "chunksNo",
-  ];
-  _read_references_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
     _api_key_path,
