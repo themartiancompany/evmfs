@@ -539,6 +539,7 @@ async function
     _index_start,
     _index_end) {
   let
+    _chain_id_read_opts,
     _chunks_no,
     _chunks_fs_addresses,
     _chunk_fs_address,
@@ -884,7 +885,6 @@ async function
     _chunks_files_paths
   ) {
   let
-    _chain_id_read_opts,
     _chunk_chain_id,
     _chunk_file_path,
     _chunk_fs,
@@ -893,7 +893,6 @@ async function
     _fs_contract_abi_path,
     _fs_contract_bytecode_path,
     _fs_contract_compiler_output_path,
-    _fs_address_read_opts,
     _get_opts,
     _reference,
     _rpcs,
@@ -1038,7 +1037,7 @@ async function
       _index,
       _index,
       _checkpoint_file_path,
-      [_chunk_file_path]
+      [ _chunk_file_path ]
     ];
     try {
       _method_objects[
@@ -1075,7 +1074,7 @@ async function
           _index,
           _index,
           _checkpoint_file_path,
-          [_chunk_file_path]
+          [ _chunk_file_path ]
         ];
       }
     } catch (
