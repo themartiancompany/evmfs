@@ -526,6 +526,7 @@ async function
   if ( _reference == undefined ) {
     _reference =
       0;
+  }
   _reference =
     Number(
       _reference);
@@ -625,7 +626,7 @@ async function
     _read_fs_base_args,
     _read_fs_call_base_opts,
     _read_fs_call_opts,
-    _reference;
+    _wallet_seed_path;
   _msg =
     "Reading File Systems addresses.";
   _msg_info(
@@ -654,9 +655,12 @@ async function
   if ( _reference == undefined ) {
     _reference =
       0;
+  }
   _reference =
     Number(
       _reference);
+  _wallet_seed_path =
+    "";
   _read_fs_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
@@ -753,7 +757,7 @@ async function
     _fs_contract_abi_path,
     _fs_contract_bytecode_path,
     _fs_contract_compiler_output_path,
-    fs_read_opts,
+    _fs_address_read_opts,
     _get_opts,
     _reference,
     _rpcs,
