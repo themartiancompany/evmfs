@@ -2,7 +2,7 @@
 
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-#    LibEVMFS
+#    EVMFS Shared Library
 #    ----------------------------------------------------------------------
 #    Copyright © 2024, 2025  Pellegrino Prevete
 #
@@ -49,6 +49,9 @@ _requirements() {
     "coreutils"
   _check_cmd \
     "chmod" \
+    "coreutils"
+  _check_cmd \
+    "sha256sum" \
     "coreutils"
 }
 

@@ -1284,19 +1284,6 @@ ENDUSAGETEXT
     "${1}"
 }
 
-_display_flags() {
-  local \
-    _flags=(
-      "${1}"
-    ) \
-    _flag
-  for _flag \
-    in "${_flags[@]}"; do
-  _msg_info \
-    "                             ${_flag}"
-  done
-}
-
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
