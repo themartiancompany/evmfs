@@ -74,6 +74,9 @@ _requirements() {
     'bin2txt' \
     'encoding-tools'
   _check_cmd \
+    'find' \
+    'findutils'
+  _check_cmd \
     'txt2bin' \
     'encoding-tools'
   _check_cmd \
@@ -415,17 +418,29 @@ _work_dir_setup() {
     "${_tmp_dir}"
 }
 
+_chunks_check() {
+  find \
+    "${_tmp_dir}" \
+    -iname \
+      "${_file_hash}.base64" \
+    -depth \
+      1
+}
+
 _file_encode() {
   local \
     _msg=() \
     _length
   _length=22000
-  _chunk_prefix="$( \
-    mktemp \
-      -u \
-      -p \
-      "${_tmp_dir}" \
-      --suffix=".base64")"
+  # _chunk_prefix="$( \
+  #   mktemp \
+  #     -u \
+  #     -p \
+  #     "${_tmp_dir}" \
+  #     --suffix=".base64")"
+  #
+  _chunk_prefix="${_tmp_dir}/${_file_hash}.base64"
+  _chunks_check
   _file_size_check \
     "${_file}"
   _bin2txt_opts+=(
