@@ -32,12 +32,15 @@ _lib="$( \
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
 _libevm="${_lib}/libevm/libevm"
+_libevmfs="${_lib}/evmfs/libevmfs"
 _sourced \
   "${_crash_bash}" 2>/dev/null || \
   source \
     "${_crash_bash}"
 _sourced \
   "${_libevm}"
+_sourced \
+  "${_libevmfs}"
 
 # shellcheck disable=SC2034
 _global_variables() {
@@ -81,22 +84,6 @@ _requirements() {
     'encoding-tools'
   _check_cmd \
     'node-run'
-}
-
-_get_conf_dir_path() {
-  local \
-    _dir
-  _dir="${HOME}/.config/evmfs"
-  echo \
-    "${_dir}"
-}
-
-_cache_dir_auto_detect() {
-  local \
-    _dir
-  _dir="${HOME}/.cache/evmfs"
-  echo \
-    "${_dir}"
 }
 
 _file_size_check() {
@@ -220,15 +207,6 @@ _chunk_lock() {
   fi
   _msg_info \
     "${_msg[*]}"
-}
-
-_file_hash() {
-  local \
-    _file="${1}"
-  sha256sum \
-    "${_file}" | \
-    awk \
-      '{print $1}'
 }
 
 _chunk_publish() {
@@ -418,13 +396,43 @@ _work_dir_setup() {
     "${_tmp_dir}"
 }
 
+_chunks_get() {
+  local \
+    _dir="${1}"
+  mapfile \
+    -d \
+    $'\0' \
+    _chunks < \
+    <(find \
+        "${_dir}" \
+        -iname \
+          "${_file_hash}.base64" \
+        -depth \
+          1
+        -type \
+          "f" \
+        -print0 || \
+      true)
+}
+
 _chunks_check() {
-  find \
-    "${_tmp_dir}" \
-    -iname \
-      "${_file_hash}.base64" \
-    -depth \
-      1
+  local \
+    _chunks=() \
+    _check
+  _chunks_get
+  _check="${_tmp_dir}/${_uri_hash}.check"
+  if (( 0 < "${#_chunks[@]}" )); then
+    _msg=(
+      "Got '${#_chunks[@]}' chunks. Merging."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    txt2bin \
+      "${_check}" \
+      "${_chunks[@]}"
+    _resource_validate \
+      "${_check}"
+  fi
 }
 
 _file_encode() {
@@ -438,8 +446,7 @@ _file_encode() {
   #     -p \
   #     "${_tmp_dir}" \
   #     --suffix=".base64")"
-  #
-  _chunk_prefix="${_tmp_dir}/${_file_hash}.base64"
+  _chunk_prefix="${_tmp_dir}/${_sum}.base64"
   _chunks_check
   _file_size_check \
     "${_file}"
@@ -1741,33 +1748,6 @@ ENDUSAGETEXT
     "${_usage_text}"
   exit \
     "${1}"
-}
-
-_publishing_address_get() {
-  local \
-    _file="${1}" \
-    _network \
-    _fs_address \
-    _namespace \
-    _file \
-    _sum
-  _fs_address="${fs_address}"
-  if (( 0 < "${#target_networks[@]}" )); then
-    _network="${target_networks[0]}"
-  fi
-  if (( 1 < "${#target_networks[@]}" )); then
-    _fs_address="${ccfs_address}"
-  fi
-  if [[ "${index_network}" != "" ]]; then
-    _network="${index_network}"
-    _fs_address="${ccfs_address}"
-  fi
-  _namespace="${wallet_address}"
-  _sum="$( \
-    _file_hash \
-      "${_file}")"
-  echo \
-    "evmfs://${_network}/${_fs_address}/${_namespace}/${_sum}"
 }
 
 _display_flags() {

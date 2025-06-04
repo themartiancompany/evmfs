@@ -32,12 +32,15 @@ _lib="$( \
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
 _libevm="${_lib}/libevm/libevm"
+_libevmfs="${_lib}/evmfs/libevmfs"
 _sourced \
   "${_crash_bash}" 2>/dev/null || \
   source \
     "${_crash_bash}"
 _sourced \
   "${_libevm}"
+_sourced \
+  "${_libevmfs}"
 
 # shellcheck disable=SC2034
 _global_variables() {
@@ -77,14 +80,6 @@ _requirements() {
     'encoding-tools'
   _check_cmd \
     'node-run'
-}
-
-_get_conf_dir_path() {
-  local \
-    _dir
-  _dir="${HOME}/.config/evmfs"
-  echo \
-    "${_dir}"
 }
 
 _network_setup() {
@@ -387,64 +382,6 @@ _resource_length_mutable_get() {
       "${_uri_hash}")"
   echo \
     "${_length}"
-}
-
-_resource_validate() {
-  local \
-    _check="${1}" \
-    _sum \
-    _msg=()
-  _msg=(
-    "Validating integrity of merged file."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _sum="$( \
-    sha256sum \
-      "${_check}" | \
-      awk \
-        '{print $1}')"
-  if [[ "${_sum}" != "${_uri_hash}" ]]; then
-    _msg=(
-      "Error downloading or file"
-      "corrupted."
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  elif [[ "${_sum}" == "${_uri_hash}" ]]; then
-    _msg=(
-      "File correctly downloaded."
-    )
-    _msg_info \
-      "${_msg[*]}"
-  fi
-}
-
-_checkpoint_get() {
-  local \
-    _checkpoint_file_path="${1}" \
-    _msg=()
-  if [[ -e "${_checkpoint_file_path}" ]]; then
-    _checkpoint="$( \
-      cat \
-        "${_checkpoint_file_path}")"
-    _msg=(
-      "Checkpoint is '${_checkpoint}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _run_once="true"
-  else
-    _msg=(
-      "Checkpoint file does not exist."
-      "Setting checkpoint to '${_index_start}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _checkpoint="${_index_start}"
-    _run_once="false"
-  fi
 }
 
 _chunks_ccget_bulk() {
@@ -977,15 +914,6 @@ _resource_get() {
     "${_msg[*]}"
 }
 
-_file_hash() {
-  local \
-    _file="${1}"
-  sha256sum \
-    "${_file}" | \
-    awk \
-      '{print $1}'
-}
-
 _evmfs_get() {
   local \
     _fs_address="${1}" \
@@ -1093,24 +1021,6 @@ _evmfs_get() {
   done
   return \
     0
-}
-
-_cache_dir_auto_detect() {
-  local \
-    _cache_dir
-  _cache_dir="${HOME}/.cache/evmfs"
-  if [[ ! -e "${_cache_dir}" ]]; then
-    mkdir \
-      -p \
-      "${_cache_dir}"
-    chmod \
-      700 \
-      "${_cache_dir}"
-  fi
-  _set_override \
-    "cache" \
-    "dir" \
-    "${HOME}/.cache/evmfs"
 }
 
 _tasks_parallel_auto_detect() {
