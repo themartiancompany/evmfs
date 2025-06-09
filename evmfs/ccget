@@ -417,7 +417,7 @@ async function
     _rpc_selection =
       "kirsh"
   }
-  if ( _method_objects == {} ) {
+  if ( _method_objects == undefined ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
@@ -579,7 +579,7 @@ async function
     _rpc_selection =
       "kirsh"
   }
-  if ( _method_objects == {} ) {
+  if ( _method_objects == undefined ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
@@ -783,7 +783,7 @@ async function
     _rpc_selection =
       "kirsh"
   }
-  if ( _method_objects == {} ) {
+  if ( _method_objects == undefined ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
@@ -904,7 +904,7 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
-  if ( _method_objects == {} ) {
+  if ( _method_objects == undefined ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
