@@ -556,8 +556,7 @@ async function
     _read_references_no_args,
     _read_references_no_base_args,
     _read_references_no_call_base_opts,
-    _read_references_no_call_opts,
-    _reference;
+    _read_references_no_call_opts;
   _msg =
     "Reading File Systems pointers.";
   _msg_info(
