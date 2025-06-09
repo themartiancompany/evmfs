@@ -272,6 +272,11 @@ async function
         await _contract_call_static.apply(
           null,
           _read_references_no_call_opts);
+      if ( _value == undefined ) {
+        throw { "error": {
+                  "message":
+                    "No reference detected." } };
+      }
       _passed =
         true;
     } catch (
@@ -588,7 +593,6 @@ async function
     Object.keys(
       _method_objects).length === 0
   if ( _method_objects_empty ) {
-    console.log("why not");
     _method_objects = {
       "ccfs": {
         "chunksChainId":
@@ -596,11 +600,8 @@ async function
         "chunksFs":
           "",
         "chunksNo":
-          "" ,
-        "defined":
-          true } };
+          "" } };
   }
-  console.log(_method_objects);
   if ( _reference == undefined ) {
     _reference =
       0;

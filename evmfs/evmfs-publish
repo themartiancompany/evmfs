@@ -445,7 +445,8 @@ _file_encode() {
     _length
   _length=22000
   _chunk_prefix="${_tmp_dir}/${_sum}.base64"
-  _chunks_check
+  _chunks_check \
+    "${_tmp_dir}"
   _file_size_check \
     "${_file}"
   _bin2txt_opts+=(
