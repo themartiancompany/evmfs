@@ -547,7 +547,6 @@ async function
     _chunks_references,
     _cursor,
     _fs_address_read_opts,
-    _index,
     _msg,
     _progress,
     _read_references_args,
@@ -753,7 +752,6 @@ async function
   let
     _chunks_fs_addresses,
     _cursor,
-    _index,
     _msg,
     _progress,
     _read_fs_args,
