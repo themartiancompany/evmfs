@@ -78,9 +78,9 @@ _cache_dir_auto_detect() {
   _set_override \
     "cache" \
     "dir" \
-    "${HOME}/.cache/evmfs"
+    "${_cache_dir}"
   echo \
-    "${_dir}"
+    "${_cache_dir}"
 }
 
 _file_hash() {

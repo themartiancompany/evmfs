@@ -1110,7 +1110,8 @@ _set_overrides() {
   networks_amount="${#target_networks[@]}"
   uris_amount="${#target_uris[@]}"
   _output_files_check
-  _cache_dir_auto_detect
+  _cache_dir_auto_detect \
+    1>/dev/null
   _set_override \
     "call" \
     "method" \
