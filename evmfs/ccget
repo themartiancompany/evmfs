@@ -392,7 +392,6 @@ async function
     _chunk_chain_id,
     _chunks_chain_ids,
     _cursor,
-    _index,
     _msg,
     _progress,
     _read_chain_id_args,
