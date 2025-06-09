@@ -560,6 +560,8 @@ async function
     _read_references_no_base_args,
     _read_references_no_call_base_opts,
     _read_references_no_call_opts;
+  _wallet_seed_path =
+    "";
   _msg =
     "Reading File Systems pointers.";
   _msg_info(
