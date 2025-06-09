@@ -760,6 +760,8 @@ async function
     _read_fs_call_base_opts,
     _read_fs_call_opts,
     _wallet_seed_path;
+  // Force unauthenticated call
+  // for now.
   _wallet_seed_path =
     "";
   _msg =
