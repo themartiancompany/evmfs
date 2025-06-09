@@ -425,7 +425,7 @@ _chunks_check() {
     _check
   _chunks_get \
     "${_tmp_dir}"
-  _check="${_tmp_dir}/${_uri_hash}.check"
+  _check="${_tmp_dir}/${_sum}.check"
   if (( 0 < "${#_chunks[@]}" )); then
     _msg=(
       "Got '${#_chunks[@]}' chunks. Merging."
