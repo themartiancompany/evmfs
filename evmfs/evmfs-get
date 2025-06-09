@@ -900,7 +900,8 @@ _resource_get() {
       "${_check}" \
       "${_chunks[@]}"
     _resource_validate \
-      "${_check}"
+      "${_check}" \
+      1
     mv \
       "${_check}" \
       "${_output_file}"

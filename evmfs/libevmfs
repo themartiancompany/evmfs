@@ -95,8 +95,10 @@ _file_hash() {
 _resource_validate() {
   local \
     _check="${1}" \
+    _exit="${2}" \
     _sum \
     _msg=()
+  _flag_valid=""
   _msg=(
     "Validating integrity of merged file."
   )
@@ -112,13 +114,15 @@ _resource_validate() {
     )
     _msg_error \
       "${_msg[*]}" \
-      1
+      "${_exit}"
+    _flag_valid="false"
   elif [[ "${_sum}" == "${_uri_hash}" ]]; then
     _msg=(
       "File correctly downloaded."
     )
     _msg_info \
       "${_msg[*]}"
+    _flag_valid="true"
   fi
 }
 

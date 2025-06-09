@@ -409,12 +409,12 @@ _chunks_get() {
     _chunks < \
     <(find \
         "${_dir}" \
-        -iname \
-          "${_file_hash}.base64" \
         -depth \
           1
         -type \
           "f" \
+        -iname \
+          "${_sum}.base64" \
         -print0 || \
       true)
 }
@@ -423,7 +423,8 @@ _chunks_check() {
   local \
     _chunks=() \
     _check
-  _chunks_get
+  _chunks_get \
+    "${_tmp_dir}"
   _check="${_tmp_dir}/${_uri_hash}.check"
   if (( 0 < "${#_chunks[@]}" )); then
     _msg=(
@@ -435,18 +436,30 @@ _chunks_check() {
       "${_check}" \
       "${_chunks[@]}"
     _resource_validate \
-      "${_check}"
+      "${_check}" \
+      0
+    if [[ "${_flag_valid}" == "true" ]]; then
+      _msg=(
+        "Skipping encoding."
+      )
+    elif [[ "${_flag_valid}" == "true" ]]; then
+      _msg=(
+        "Incomplete encoding, re-encoding."
+      )
+    fi
+    _msg_info \
+      "${_msg[*]}"
   fi
 }
 
 _file_encode() {
   local \
     _msg=() \
-    _length
+    _length \
+    _flag_valid
   _length=22000
   _chunk_prefix="${_tmp_dir}/${_sum}.base64"
-  _chunks_check \
-    "${_tmp_dir}"
+  _chunks_check
   _file_size_check \
     "${_file}"
   _bin2txt_opts+=(
@@ -465,7 +478,8 @@ _file_encode() {
   )
   _msg_info \
     "${_msg[*]}"
-  if [[ "${_lock_only}" == "" ]]; then
+  if [[ "${_lock_only}" == "" || \
+        "${_flag_valid}" == "true" ]]; then
     bin2txt \
       "${_bin2txt_opts[@]}" \
       "${_file}" \
