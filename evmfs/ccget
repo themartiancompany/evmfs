@@ -392,6 +392,7 @@ async function
     _chunk_chain_id,
     _chunks_chain_ids,
     _cursor,
+    _method_objects_empty,
     _msg,
     _progress,
     _read_chain_id_args,
@@ -417,7 +418,10 @@ async function
     _rpc_selection =
       "kirsh"
   }
-  if ( _method_objects == undefined ) {
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
@@ -550,6 +554,7 @@ async function
     _chunks_references,
     _cursor,
     _fs_address_read_opts,
+    _method_objects_empty,
     _msg,
     _progress,
     _read_references_args,
@@ -579,7 +584,11 @@ async function
     _rpc_selection =
       "kirsh"
   }
-  if ( _method_objects == undefined ) {
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
+    console.log("why not");
     _method_objects = {
       "ccfs": {
         "chunksChainId":
@@ -587,8 +596,11 @@ async function
         "chunksFs":
           "",
         "chunksNo":
-          "" } };
+          "" ,
+        "defined":
+          true } };
   }
+  console.log(_method_objects);
   if ( _reference == undefined ) {
     _reference =
       0;
@@ -644,7 +656,7 @@ async function
       }
     } catch (
         _error) {
-      _display_error(
+      _error_display(
         _error);
       _msg_error(
         "Error retrieving chunk's references amount.",
@@ -783,7 +795,10 @@ async function
     _rpc_selection =
       "kirsh"
   }
-  if ( _method_objects == undefined ) {
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
@@ -904,7 +919,10 @@ async function
     _progress,
     _value,
     _wallet_seed_path;
-  if ( _method_objects == undefined ) {
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
