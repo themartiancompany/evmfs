@@ -398,6 +398,8 @@ async function
     _read_chain_id_base_args,
     _read_chain_id_call_base_opts,
     _read_chain_id_call_opts;
+  _wallet_seed_path =
+    "";
   _msg =
     "Reading chain ID.";
   _msg_info(
@@ -758,6 +760,8 @@ async function
     _read_fs_call_base_opts,
     _read_fs_call_opts,
     _wallet_seed_path;
+  _wallet_seed_path =
+    "";
   _msg =
     "Reading File Systems addresses.";
   _msg_info(
