@@ -106,9 +106,12 @@ _file_size_check() {
   _msg_info \
     "${_msg[*]}"
   if (( 22000 < "${_size}" )); then
-    _msg_info \
+    _msg=(
       "The file will be split over many"
       "strings chunks."
+    )
+    _msg_info \
+      "${_msg[*]}"
     _chunks_many="true"
   fi
 }
