@@ -237,6 +237,9 @@ install-bash-scripts:
 	  "$(_PROJECT)/$${_file}" \
 	  "$(BIN_DIR)/$${_file}"; \
 	done
+	$(_INSTALL_FILE) \
+	  "$(_PROJECT)/lib$(_PROJECT)" \
+	  "$(LIB_DIR)/lib$(_PROJECT)"
 
 install-node-scripts:
 

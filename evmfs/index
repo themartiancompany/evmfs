@@ -39,6 +39,12 @@ const
       '../evm-contracts-tools/evm-contract-call-dynamic');
 _contract_run =
   _evm_contract_call_dynamic_module._contract_run;
+const
+  _ccget_module =
+    require(
+      "./ccget");
+_references_read =
+  _ccget_module._references_read;
 
 function
   _global_variables() {
@@ -89,7 +95,8 @@ function
     _msg,
     _template;
   _template =
-    "Indexing chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Indexing chunk '{_index}'" +
+    "('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -115,7 +122,8 @@ function
     _msg,
     _template;
   _template =
-    "Indexed chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Indexed chunk '{_index}' " +
+    "('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
       "{_index}",
@@ -204,11 +212,14 @@ async function
   ) {
   let
     _checkpoint_index,
+    _chunk_references_no,
+    _chunk_references,
     _chunks_total,
     _index_call_base_opts,
     _index_call_opts,
     _method_args,
     _progress,
+    _reference,
     _tx,
     _wallet_password;
   if ( _call_timeout == "" ) {
@@ -256,11 +267,57 @@ async function
       _index,
       _progress,
       _chunks_total);
+    // TODO:
+    //   Check the pointer has not
+    //   been already written.
+    _reference =
+      0;
+    _references_read_opts = [
+      _retries_max,
+      _api_key_path,
+      _target_network,
+      _deployments_dir,
+      _fs_version,
+      _rpc_selection,
+      _contract_address,
+      _contract_abi_path,
+      _contract_bytecode_path,
+      _contract_compiler_output_path,
+      _method_objects,
+      _publication_namespace,
+      _file_hash,
+      _index,
+      _index
+    ];
+    _chunk_references =
+      await _references_read.apply(
+        null,
+        _references_read_opts);
+    _chunk_references_no =
+      _chunk_references.length;
+    _published_already =
+      false;
+    for ( var _reference = 0;
+          _reference <= _chunk_references_no - 1;
+          _index++ ) {
+      [ _chunk_chain_id,
+        _chunk_fs ] =
+        _chunks_references[
+          _reference];
+       if ( _chunks_references[
+              _reference] == [ _chunk_chain_id,
+                               _chunk_fs_address ] ) {
+         _msg =
+           `Already indexed at reference ${_reference}.`;
+         _msg_info(
+           _msg);
+       }
+    }
     _method_args =
       _method_base_args.concat(
         [_index.toString(),
-	 _chunk_chain_id,
-	 _chunk_fs_address]);
+         _chunk_chain_id,
+         _chunk_fs_address]);
     _index_call_opts =
       _index_call_base_opts.concat(
         [_method_args]);

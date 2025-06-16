@@ -242,7 +242,63 @@ async function
     }
   }
   if ( _retry > _retries_max ) {
-    throw "Maximum number of retries reached.";
+    throw { "error": {
+              "message":
+                "Maximum number of retries reached." } };
+  }
+  return [
+    _value.toString(),
+    _method_object];
+}
+
+async function
+  _chunk_references_no_get(
+    _retries_max,
+    _read_references_no_call_opts) {
+  let
+    _method_object,
+    _passed,
+    _retry,
+    _value;
+  _passed =
+    false;
+  _retry =
+    1;
+  while (
+    _retry <= _retries_max &&
+    _passed == false ) {
+    try {
+      _value, _method_object = 
+        await _contract_call_static.apply(
+          null,
+          _read_references_no_call_opts);
+      if ( _value == undefined ) {
+        throw { "error": {
+                  "message":
+                    "No reference detected." } };
+      }
+      _passed =
+        true;
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error retrieving references amount for chunk.",
+        0);
+      _msg_info(
+        `Attempt '${_retry}' of '${_retries_max}'. ` +
+        "Retrying in 3 seconds.");
+      _retry =
+        _retry + 1;
+      await _sleep(
+        3000);
+    }
+  }
+  if ( _retry > _retries_max ) {
+    throw { "error": {
+              "message":
+                "Maximum number of retries reached." } };
   }
   return [
     _value.toString(),
@@ -320,6 +376,515 @@ function
 }
 
 async function
+  _chain_id_read(
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _deployments_dir,
+    _fs_version,
+    _rpc_selection,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects,
+    _publication_namespace,
+    _file_hash,
+    _index_start,
+    _index_end,
+    _reference) {
+  let
+    _chunk_chain_id,
+    _chunks_chain_ids,
+    _cursor,
+    _method_objects_empty,
+    _msg,
+    _progress,
+    _read_chain_id_args,
+    _read_chain_id_base_args,
+    _read_chain_id_call_base_opts,
+    _read_chain_id_call_opts;
+  _wallet_seed_path =
+    "";
+  _msg =
+    "Reading chain ID.";
+  _msg_info(
+    _msg);
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
+  _chunks_chain_ids =
+    [];
+  if ( _rpc_selection == "" ||
+       _rpc_selection == undefined ) {
+    _rpc_selection =
+      "kirsh"
+  }
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
+    _method_objects = {
+      "ccfs": {
+        "chunksChainId":
+          "",
+        "chunksFs":
+          "",
+        "chunksNo":
+          "" } };
+  }
+  if ( _reference == undefined ) {
+    _reference =
+      0;
+  _reference =
+    Number(
+      _reference);
+  }
+  _read_chain_id_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksChainId"],
+    _contract_address,
+    "chunksChainId",
+  ];
+  _read_chain_id_base_args = [
+    _publication_namespace,
+    _file_hash
+  ];
+  _progress =
+    1;
+  _cursor =
+    0;
+  for ( var _index = _index_start;
+        _index <= _index_end;
+        _index++ ) {
+    _msg =
+      `Reading Chain ID for index ${_index}`;
+    _msg_info(
+      _msg);
+    _read_chain_id_args =
+      _read_chain_id_base_args.concat(
+        [_index.toString(),
+         _reference.toString()]
+      );
+    _read_chain_id_call_opts =
+      _read_chain_id_call_base_opts.concat(
+        [_read_chain_id_args]);
+    try {
+      [ _chunk_chain_id,
+        _method_objects[
+          "ccfs"][
+            "chunksChainId"] ] =
+         await _chunk_chain_id_get(
+          _retries_max,
+          _read_chain_id_call_opts);
+      // I have no idea if _check_call_base_opts
+      // has its components passed by reference
+      // or copied so I have no idea if
+      // _method_object gets immediately updated
+      // or I need to re-init the array so just
+      // in case we re-init whole array.
+      if ( _read_chain_id_call_base_opts[7] == "" ) {
+        _msg_info(
+          "Reusing contract method object.");
+        _read_chain_id_call_base_opts = [
+          _wallet_seed_path,
+          _retries_max,
+          _api_key_path,
+          _target_network,
+          _contract_abi_path,
+          _contract_bytecode_path,
+          _contract_compiler_output_path,
+          _method_objects[
+            "ccfs"][
+              "chunksChainId"],
+          _contract_address,
+          "chunksChainId",
+        ];
+      }
+      _chunks_chain_ids.append(
+        _chunk_chain_id);
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error retrieving chunk's ChainId.",
+        0);
+      throw _error;
+    }
+    _progress =
+      _progress + 1;
+    _cursor =
+      _cursor + 1;
+  }
+  return [ _chunks_chain_ids,
+	   _method_objects ];
+}
+
+async function
+  _references_read(
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _deployments_dir,
+    _fs_version,
+    _rpc_selection,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects,
+    _publication_namespace,
+    _file_hash,
+    _index_start,
+    _index_end) {
+  let
+    _chain_id_read_opts,
+    _chunks_no,
+    _chunks_fs_addresses,
+    _chunk_fs_address,
+    _chunks_chain_ids,
+    _chunk_chain_id,
+    _chunks_references,
+    _cursor,
+    _fs_address_read_opts,
+    _method_objects_empty,
+    _msg,
+    _progress,
+    _read_references_args,
+    _read_references_base_args,
+    _read_references_call_base_opts,
+    _read_references_call_opts,
+    _read_references_no_args,
+    _read_references_no_base_args,
+    _read_references_no_call_base_opts,
+    _read_references_no_call_opts;
+  _wallet_seed_path =
+    "";
+  _msg =
+    "Reading File Systems pointers.";
+  _msg_info(
+    _msg);
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
+  _chunks_references =
+    [];
+  if ( _rpc_selection == "" ||
+       _rpc_selection == undefined ) {
+    _rpc_selection =
+      "kirsh"
+  }
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
+    _method_objects = {
+      "ccfs": {
+        "chunksChainId":
+          "",
+        "chunksFs":
+          "",
+        "chunksNo":
+          "" } };
+  }
+  if ( _reference == undefined ) {
+    _reference =
+      0;
+  }
+  _reference =
+    Number(
+      _reference);
+  _read_references_no_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksNo"],
+    _contract_address,
+    "chunksNo",
+  ];
+  _read_references_no_base_args = [
+    _publication_namespace,
+    _file_hash
+  ];
+  _progress =
+    1;
+  _cursor =
+    0;
+  for ( var _index = _index_start;
+        _index <= _index_end;
+        _index++ ) {
+    _msg =
+      `Reading references for index ${_index}`;
+    _msg_info(
+      _msg);
+    _read_references_no_args =
+      _read_references_no_base_args.concat(
+        [ _index.toString() ]
+      );
+    _read_references_no_call_opts =
+      _read_references_no_call_base_opts.concat(
+        [ _read_references_no_args ]);
+    try {
+      [ _chunks_no,
+        _method_objects[
+          "ccfs"][
+            "chunksNo"] ] =
+        await _chunk_references_no_get(
+          _retries_max,
+          _read_references_no_call_opts);
+      if ( _read_references_no_call_base_opts[7] == "" ) {
+      }
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error retrieving chunk's references amount.",
+        0);
+      throw _error;
+    }
+    // TODO:
+    // get the references
+    _msg =
+      `Found ${_chunks_no} references.`;
+    _msg_info(
+      _msg);
+    _chunks_no =
+      Number(
+        _chunks_no);
+    for ( var _reference = 0;
+          _reference <= _chunks_no;
+          _reference++ ) {
+      _msg =
+        `Reading reference '${_reference}' ` +
+        `for index ${_index}.`;
+      _msg_info(
+        _msg);
+      _chain_id_read_opts = [
+        _retries_max,
+        _api_key_path,
+        _target_network,
+        _deployments_dir,
+        _fs_version,
+        _rpc_selection,
+        _contract_address,
+        _contract_abi_path,
+        _contract_bytecode_path,
+        _contract_compiler_output_path,
+        _method_objects,
+        _publication_namespace,
+        _file_hash,
+        _index,
+        _index,
+        _reference
+      ];
+      [ _chunks_chain_ids,
+        _method_objects ] =
+        await _chain_id_read.apply(
+          null,
+          _chain_id_read_opts);
+      _chunk_chain_id =
+        _chunks_chain_ids[
+          0];
+      _fs_address_read_opts = [
+        _retries_max,
+        _api_key_path,
+        _target_network,
+        _deployments_dir,
+        _fs_version,
+        _rpc_selection,
+        _contract_address,
+        _contract_abi_path,
+        _contract_bytecode_path,
+        _contract_compiler_output_path,
+        _method_objects,
+        _publication_namespace,
+        _file_hash,
+        _index,
+        _index,
+        _chunk_chain_id,
+        _reference
+      ];
+      [ _chunks_fs_addresses,
+        _method_objects ] =
+        await _fs_address_read.apply(
+          null,
+          _fs_address_read_opts);
+      _chunk_fs_address =
+        _chunks_fs_addresses[0];
+      _chunks_references.append(
+        [ _chunk_chain_id,
+          _chunk_fs_address ] );
+    }
+    _progress =
+      _progress + 1;
+    _cursor =
+      _cursor + 1;
+  }
+  return [ _chunks_references,
+           _method_objects ];
+}
+
+async function
+  _fs_address_read(
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _deployments_dir,
+    _fs_version,
+    _rpc_selection,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects,
+    _publication_namespace,
+    _file_hash,
+    _index_start,
+    _index_end,
+    _chunk_chain_id,
+    _reference) {
+  let
+    _chunks_fs_addresses,
+    _cursor,
+    _msg,
+    _progress,
+    _read_fs_args,
+    _read_fs_base_args,
+    _read_fs_call_base_opts,
+    _read_fs_call_opts,
+    _wallet_seed_path;
+  // Force unauthenticated call
+  // for now.
+  _wallet_seed_path =
+    "";
+  _msg =
+    "Reading File Systems addresses.";
+  _msg_info(
+    _msg);
+  _index_start =
+    Number(
+      _index_start);
+  _index_end =
+    Number(
+      _index_end);
+  _chunks_chain_ids =
+    [];
+  if ( _rpc_selection == "" ||
+       _rpc_selection == undefined ) {
+    _rpc_selection =
+      "kirsh"
+  }
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
+    _method_objects = {
+      "ccfs": {
+        "chunksChainId":
+          "",
+        "chunksFs":
+          "",
+        "chunksNo":
+          "" } };
+  }
+  if ( _reference == undefined ) {
+    _reference =
+      0;
+  }
+  _reference =
+    Number(
+      _reference);
+  _wallet_seed_path =
+    "";
+  _read_fs_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_objects[
+      "ccfs"][
+        "chunksFs"],
+    _contract_address,
+    "chunksFs",
+  ];
+  _read_fs_base_args = [
+    _publication_namespace,
+    _file_hash
+  ];
+  _progress =
+    1;
+  _cursor =
+    0;
+  for ( var _index = _index_start;
+        _index <= _index_end;
+        _index++ ) {
+    _msg =
+      `Reading Chain ID for index ${_index}`;
+    _msg_info(
+      _msg);
+    _read_fs_args =
+      _read_fs_base_args.concat(
+        [_index.toString(),
+         _reference.toString(),
+         _chunk_chain_id]
+      );
+    _read_fs_call_opts =
+      _read_fs_call_base_opts.concat(
+        [_read_fs_args]);
+    try {
+      [ _chunk_fs,
+        _method_objects[
+          "ccfs"][
+            "chunksFs"] ] =
+        await _chunk_fs_get(
+          _retries_max,
+          _read_fs_call_opts);
+      if ( _read_fs_call_base_opts[7] == "" ) {
+      }
+    } catch (
+        _error) {
+      _display_error(
+        _error);
+      _msg_error(
+        "Error retrieving chunk's fs address.",
+        0);
+      throw _error;
+    }
+    _progress =
+      _progress + 1;
+    _cursor =
+      _cursor + 1;
+  }
+  return [ _chunks_chain_ids,
+	   _method_objects ];
+}
+
+async function
   _ccget(
     _retries_max,
     _api_key_path,
@@ -349,26 +914,23 @@ async function
     _fs_contract_bytecode_path,
     _fs_contract_compiler_output_path,
     _get_opts,
-    _read_chain_id_call_base_opts,
-    _read_chain_id_call_opts,
-    _read_chain_id_base_args,
-    _read_chain_id_args,
-    _read_fs_call_base_opts,
-    _read_fs_call_opts,
-    _read_fs_base_args,
-    _read_fs_args,
     _reference,
     _rpcs,
     _rpc_backend,
     _progress,
     _value,
     _wallet_seed_path;
-  if ( _method_objects == {} ) {
+  _method_objects_empty =
+    Object.keys(
+      _method_objects).length === 0
+  if ( _method_objects_empty ) {
     _method_objects = {
       "ccfs": {
         "chunksChainId":
           "",
         "chunksFs":
+          "",
+        "chunksNo":
           "" } };
   }
   _index_start =
@@ -382,48 +944,14 @@ async function
     _rpc_selection =
       "kirsh"
   }
-  _rpcs =
-    {};
+  if ( _rpcs == undefined ) {
+    _rpcs =
+      {};
+  }
   _get_opts =
     [];
   _wallet_seed_path =
     "";
-  _read_chain_id_call_base_opts = [
-    _wallet_seed_path,
-    _retries_max,
-    _api_key_path,
-    _target_network,
-    _contract_abi_path,
-    _contract_bytecode_path,
-    _contract_compiler_output_path,
-    _method_objects[
-      "ccfs"][
-        "chunksChainId"];
-    _contract_address,
-    "chunksChainId",
-  ];
-  _read_chain_id_base_args = [
-    _publication_namespace,
-    _file_hash
-  ];
-  _read_fs_call_base_opts = [
-    _wallet_seed_path,
-    _retries_max,
-    _api_key_path,
-    _target_network,
-    _contract_abi_path,
-    _contract_bytecode_path,
-    _contract_compiler_output_path,
-    _method_objects[
-      "ccfs"][
-        "chunksFs"];
-    _contract_address,
-    "chunksFs",
-  ];
-  _read_fs_base_args = [
-    _publication_namespace,
-    _file_hash
-  ];
   _chunks_total =
     _chunks_files_paths.length;
   if ( _chunks_total == 0 ) {
@@ -456,85 +984,33 @@ async function
     // one. This capability will be
     // needed when implementing
     // the crowd-sourced upload
+    _references_read_opts = [
+      _retries_max,
+      _api_key_path,
+      _target_network,
+      _deployments_dir,
+      _fs_version,
+      _rpc_selection,
+      _contract_address,
+      _contract_abi_path,
+      _contract_bytecode_path,
+      _contract_compiler_output_path,
+      _method_objects,
+      _publication_namespace,
+      _file_hash,
+      _index,
+      _index
+    ];
+    _chunk_references =
+      await _references_read.apply(
+        null,
+        _references_read_opts);
     _reference =
       0;
-    _read_chain_id_args =
-      _read_chain_id_base_args.concat(
-        [_index.toString(),
-         _reference.toString()]
-      );
-    _read_chain_id_call_opts =
-      _read_chain_id_call_base_opts.concat(
-        [_read_chain_id_args]);
-    try {
-      [_chunk_chain_id,
-       _method_objects[
-         "ccfs"][
-           "chunksChainId"]] =
-        await _chunk_chain_id_get(
-          _retries_max,
-          _read_chain_id_call_opts);
-      // I have no idea if _check_call_base_opts
-      // has its components passed by reference
-      // or copied so I have no idea if
-      // _method_object gets immediately updated
-      // or I need to re-init the array so just
-      // in case we re-init whole array.
-      if ( _read_chain_id_call_base_opts[7] == "" ) {
-        _msg_info(
-          "Reusing contract method object.");
-        _read_chain_id_call_base_opts = [
-          _wallet_seed_path,
-          _retries_max,
-          _api_key_path,
-          _target_network,
-          _contract_abi_path,
-          _contract_bytecode_path,
-          _contract_compiler_output_path,
-          _method_objects[
-            "ccfs"][
-              "chunksChainId"];
-          _contract_address,
-          "chunksChainId",
-        ];
-      }
-    } catch (
-        _error) {
-      _error_display(
-        _error);
-      _msg_error(
-        "Error retrieving chunk's ChainId.",
-        0);
-      throw _error;
-    }
-    _read_fs_args =
-      _read_fs_base_args.concat(
-        [_index.toString(),
-         _reference.toString(),
-         _chunk_chain_id]
-      );
-    _read_fs_call_opts =
-      _read_fs_call_base_opts.concat(
-        [_read_fs_args]);
-    try {
-      [_chunk_fs,
-       _method_objects[
-         "ccfs"][
-           "chunksFs"]] =
-        await _chunk_fs_get(
-          _retries_max,
-          _read_fs_call_opts);
-      if ( _read_fs_call_base_opts[7] == "" ) {
-      }
-    } catch (
-        _error) {
-      _display_error(
-        _error);
-      _msg_error(
-        "Error retrieving chunk's fs address.",
-        0);
-      throw _error;
-    }
+    [ _chunk_chain_id,
+      _chunk_fs ] =
+      _chunks_references[
+        _reference];
     _msg_info_chunk_dereferenced(
       _index,
       _chunk_chain_id,
@@ -584,7 +1060,7 @@ async function
       _index,
       _index,
       _checkpoint_file_path,
-      [_chunk_file_path]
+      [ _chunk_file_path ]
     ];
     try {
       _method_objects[
@@ -621,7 +1097,7 @@ async function
           _index,
           _index,
           _checkpoint_file_path,
-          [_chunk_file_path]
+          [ _chunk_file_path ]
         ];
       }
     } catch (
@@ -920,6 +1396,12 @@ if ( _cmdline_check(
 }
 
 module.exports = {
+  _chain_id_read:
+    _chain_id_read,
+  _fs_address_read:
+    _fs_address_read,
   _ccget:
-    _ccget
+    _ccget,
+  _references_read:
+    _references_read
 };

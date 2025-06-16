@@ -32,12 +32,15 @@ _lib="$( \
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
 _libevm="${_lib}/libevm/libevm"
+_libevmfs="${_lib}/evmfs/libevmfs"
 _sourced \
   "${_crash_bash}" 2>/dev/null || \
   source \
     "${_crash_bash}"
 _sourced \
   "${_libevm}"
+_sourced \
+  "${_libevmfs}"
 
 # shellcheck disable=SC2034
 _global_variables() {
@@ -74,26 +77,16 @@ _requirements() {
     'bin2txt' \
     'encoding-tools'
   _check_cmd \
+    'find' \
+    'findutils'
+  _check_cmd \
+    'mkdir' \
+    'coreutils'
+  _check_cmd \
     'txt2bin' \
     'encoding-tools'
   _check_cmd \
     'node-run'
-}
-
-_get_conf_dir_path() {
-  local \
-    _dir
-  _dir="${HOME}/.config/evmfs"
-  echo \
-    "${_dir}"
-}
-
-_cache_dir_auto_detect() {
-  local \
-    _dir
-  _dir="${HOME}/.cache/evmfs"
-  echo \
-    "${_dir}"
 }
 
 _file_size_check() {
@@ -108,13 +101,17 @@ _file_size_check() {
       "${_file}" | \
       awk '{print $1}')"
   _msg=(
-    "file '${_file}' has size '${_size}' bytes"
+    "File '${_file}' has size '${_size}' bytes."
   )
   _msg_info \
     "${_msg[*]}"
   if (( 22000 < "${_size}" )); then
+    _msg=(
+      "The file will be split over many"
+      "strings chunks."
+    )
     _msg_info \
-      "writing over more than a single string!"
+      "${_msg[*]}"
     _chunks_many="true"
   fi
 }
@@ -217,15 +214,6 @@ _chunk_lock() {
   fi
   _msg_info \
     "${_msg[*]}"
-}
-
-_file_hash() {
-  local \
-    _file="${1}"
-  sha256sum \
-    "${_file}" | \
-    awk \
-      '{print $1}'
 }
 
 _chunk_publish() {
@@ -415,17 +403,66 @@ _work_dir_setup() {
     "${_tmp_dir}"
 }
 
+_chunks_get() {
+  local \
+    _dir="${1}"
+  mapfile \
+    -d \
+    $'\0' \
+    _chunks < \
+    <(find \
+        "${_dir}" \
+        -depth \
+          1
+        -type \
+          "f" \
+        -iname \
+          "${_sum}.base64" \
+        -print0 || \
+      true)
+}
+
+_chunks_check() {
+  local \
+    _chunks=() \
+    _check
+  _chunks_get \
+    "${_tmp_dir}"
+  _check="${_tmp_dir}/${_sum}.check"
+  if (( 0 < "${#_chunks[@]}" )); then
+    _msg=(
+      "Got '${#_chunks[@]}' chunks. Merging."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    txt2bin \
+      "${_check}" \
+      "${_chunks[@]}"
+    _resource_validate \
+      "${_check}" \
+      0
+    if [[ "${_flag_valid}" == "true" ]]; then
+      _msg=(
+        "Skipping encoding."
+      )
+    elif [[ "${_flag_valid}" == "true" ]]; then
+      _msg=(
+        "Incomplete encoding, re-encoding."
+      )
+    fi
+    _msg_info \
+      "${_msg[*]}"
+  fi
+}
+
 _file_encode() {
   local \
     _msg=() \
-    _length
+    _length \
+    _flag_valid
   _length=22000
-  _chunk_prefix="$( \
-    mktemp \
-      -u \
-      -p \
-      "${_tmp_dir}" \
-      --suffix=".base64")"
+  _chunk_prefix="${_tmp_dir}/${_sum}.base64"
+  _chunks_check
   _file_size_check \
     "${_file}"
   _bin2txt_opts+=(
@@ -444,7 +481,8 @@ _file_encode() {
   )
   _msg_info \
     "${_msg[*]}"
-  if [[ "${_lock_only}" == "" ]]; then
+  if [[ "${_lock_only}" == "" || \
+        "${_flag_valid}" == "true" ]]; then
     bin2txt \
       "${_bin2txt_opts[@]}" \
       "${_file}" \
@@ -504,12 +542,15 @@ _queue_setup() {
     )
   fi
   if [[ "${_publish_queue[*]}" == "" ]]; then
+    _msg=(
+      "Error processing file for upload."
+    )
     _msg_error \
-      "error processing file for upload" \
+      "${_msg[*]}" \
       1
   fi
   _msg=(
-    "upload queue: ${_publish_queue[*]}"
+    "Upload queue: ${_publish_queue[*]}."
   )
   _msg_info \
     "${_msg[*]}"
@@ -519,32 +560,6 @@ _verify_skip() {
   local \
     _index="${1}"
   _verify_queue["${_index}"]="false"
-}
-
-_checkpoint_get() {
-  local \
-    _checkpoint_file_path="${1}" \
-    _msg=()
-  if [[ -e "${_checkpoint_file_path}" ]]; then
-    _checkpoint="$( \
-      cat \
-        "${_checkpoint_file_path}")"
-    _msg=(
-      "Checkpoint is '${_checkpoint}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _run_once="true"
-  else
-    _msg=(
-      "Checkpoint file does not exist."
-      "Setting checkpoint to '${_index_start}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _checkpoint="${_index_start}"
-    _run_once="false"
-  fi
 }
 
 _chunks_publish_bulk() {
@@ -596,8 +611,11 @@ _chunks_publish_bulk() {
         "${_checkpoint_publish_file_path}"
       break
     fi
+    _msg=(
+      "Preparing Node arguments."
+    )
     _msg_info \
-      "Preparing node arguments."
+      "${_msg[*]}"
     _publish_args=(
       "${quiet}"
       "${_retries_max}"
@@ -616,16 +634,22 @@ _chunks_publish_bulk() {
       "${_checkpoint_publish_file_path}"
       "${_publish_queue[@]:${_checkpoint}:${_chunks_total_run}}"
     )
-    _msg_info \
+    _msg=(
       "Running node."
+    )
+    _msg_info \
+      "${_msg[*]}"
     node-run \
       "${_node_run_opts[@]}" \
       "${_publish}" \
       "${_publish_args[@]}" || \
+    _msg=(
+      "Node exited with error."
+    ) && \
     _msg_error \
-      "Node exited with error." \
+      "${_msg[*]}" \
       0 
-    done
+  done
 }
 
 _chunks_verify_bulk() {
@@ -942,9 +966,9 @@ _chunks_lock_new() {
     [ "${#_pendings}" -le "${_tasks_parallel}" ]; do
     _chunk="${_publish_queue["${_index}"]}"
     _msg=(
-      "locking chunk '${_chunk}'"
+      "Locking chunk '${_chunk}'"
       "$(( "${_index}" + 1))"
-      "of ${_chunks_total}"
+      "of ${_chunks_total}."
     )
     _msg_info \
       "${_msg[*]}"
@@ -988,7 +1012,7 @@ _chunks_lock_new() {
   wait \
     "${_pendings[@]}"
   _msg=(
-    "all '${_chunks_total}' chunks"
+    "All '${_chunks_total}' chunks"
     "correctly locked."
   )
   _msg_info \
@@ -1230,8 +1254,11 @@ _index_publish_bulk() {
         "${_checkpoint_index_file_path}"
       break
     fi
+    _msg=(
+      "Preparing Node arguments."
+    )
     _msg_info \
-      "Preparing node arguments."
+      "${_msg[*]}"
     _index_args=(
       "${quiet}"
       "${_retries_max}"
@@ -1251,8 +1278,11 @@ _index_publish_bulk() {
       "${_fs_address}"
       "${_checkpoint_index_file_path}"
     )
+    _msg=(
+      "Running Node."
+    )
     _msg_info \
-      "Running node."
+      "${_msg[*]}"
     node-run \
       "${_node_run_opts[@]}" \
       "${_index}" \
@@ -1726,46 +1756,6 @@ ENDUSAGETEXT
     "${_usage_text}"
   exit \
     "${1}"
-}
-
-_publishing_address_get() {
-  local \
-    _file="${1}" \
-    _network \
-    _fs_address \
-    _namespace \
-    _file \
-    _sum
-  _fs_address="${fs_address}"
-  if (( 0 < "${#target_networks[@]}" )); then
-    _network="${target_networks[0]}"
-  fi
-  if (( 1 < "${#target_networks[@]}" )); then
-    _fs_address="${ccfs_address}"
-  fi
-  if [[ "${index_network}" != "" ]]; then
-    _network="${index_network}"
-    _fs_address="${ccfs_address}"
-  fi
-  _namespace="${wallet_address}"
-  _sum="$( \
-    _file_hash \
-      "${_file}")"
-  echo \
-    "evmfs://${_network}/${_fs_address}/${_namespace}/${_sum}"
-}
-
-_display_flags() {
-  local \
-    _flag \
-    _flags=(
-      "${1}"
-    )
-  for _flag \
-    in "${_flags[@]}"; do
-  _msg_info \
-    "                             ${_flag}"
-  done
 }
 
 # Shows configuration options.

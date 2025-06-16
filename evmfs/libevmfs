@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+#    EVMFS Shared Library
+#    ----------------------------------------------------------------------
+#    Copyright © 2024, 2025  Pellegrino Prevete
+#
+#    All rights reserved
+#    ----------------------------------------------------------------------
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="$( \
+  realpath \
+    "${_bin}/../lib")"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_libevm="${_lib}/libevm/libevm"
+_sourced \
+  "${_crash_bash}" 2>/dev/null || \
+  source \
+    "${_crash_bash}"
+_sourced \
+  "${_libevm}"
+
+_requirements() {
+  _check_cmd \
+    "awk" \
+    "gawk"
+  _check_cmd \
+    "mkdir" \
+    "coreutils"
+  _check_cmd \
+    "chmod" \
+    "coreutils"
+  _check_cmd \
+    "sha256sum" \
+    "coreutils"
+}
+
+_get_conf_dir_path() {
+  local \
+    _dir
+  _dir="${HOME}/.config/evmfs"
+  echo \
+    "${_dir}"
+}
+
+_cache_dir_auto_detect() {
+  local \
+    _cache_dir
+  _cache_dir="${HOME}/.cache/evmfs"
+  if [[ ! -e "${_cache_dir}" ]]; then
+    mkdir \
+      -p \
+      "${_cache_dir}"
+    chmod \
+      700 \
+      "${_cache_dir}"
+  fi
+  _set_override \
+    "cache" \
+    "dir" \
+    "${_cache_dir}"
+  echo \
+    "${_cache_dir}"
+}
+
+_file_hash() {
+  local \
+    _file="${1}"
+  sha256sum \
+    "${_file}" | \
+    awk \
+      '{print $1}'
+}
+
+_resource_validate() {
+  local \
+    _check="${1}" \
+    _exit="${2}" \
+    _sum \
+    _msg=()
+  _flag_valid=""
+  _msg=(
+    "Validating integrity of merged file."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _sum="$( \
+    _file_hash \
+      "${_check}")"
+  if [[ "${_sum}" != "${_uri_hash}" ]]; then
+    _msg=(
+      "Error downloading or file"
+      "corrupted."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      "${_exit}"
+    _flag_valid="false"
+  elif [[ "${_sum}" == "${_uri_hash}" ]]; then
+    _msg=(
+      "File correctly downloaded."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _flag_valid="true"
+  fi
+}
+
+_checkpoint_get() {
+  local \
+    _checkpoint_file_path="${1}" \
+    _msg=()
+  if [[ -e "${_checkpoint_file_path}" ]]; then
+    _checkpoint="$( \
+      cat \
+        "${_checkpoint_file_path}")"
+    _msg=(
+      "Checkpoint is '${_checkpoint}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _run_once="true"
+  else
+    _msg=(
+      "Checkpoint file does not exist."
+      "Setting checkpoint to '${_index_start}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _checkpoint="${_index_start}"
+    _run_once="false"
+  fi
+}
+
+_publishing_address_get() {
+  local \
+    _file="${1}" \
+    _network \
+    _fs_address \
+    _namespace \
+    _file \
+    _sum
+  _fs_address="${fs_address}"
+  if (( 0 < "${#target_networks[@]}" )); then
+    _network="${target_networks[0]}"
+  fi
+  if (( 1 < "${#target_networks[@]}" )); then
+    _fs_address="${ccfs_address}"
+  fi
+  if [[ "${index_network}" != "" ]]; then
+    _network="${index_network}"
+    _fs_address="${ccfs_address}"
+  fi
+  _namespace="${wallet_address}"
+  _sum="$( \
+    _file_hash \
+      "${_file}")"
+  echo \
+    "evmfs://${_network}/${_fs_address}/${_namespace}/${_sum}"
+}
+
+_display_flags() {
+  local \
+    _flag \
+    _flags=(
+      "${1}"
+    )
+  for _flag \
+    in "${_flags[@]}"; do
+  _msg_info \
+    "                             ${_flag}"
+  done
+}
+
+_globals
+_requirements
+
+# vim:set sw=2 sts=-1 et:
