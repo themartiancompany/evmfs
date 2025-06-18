@@ -405,20 +405,24 @@ _work_dir_setup() {
 
 _chunks_get() {
   local \
-    _dir="${1}"
+    _dir="${1}" \
+    _find_opts=()
+  _find_opts+=(
+    -depth
+      1
+    -type
+      "f"
+    -iname
+      "${_sum}.base64"
+    -print0
+  )
   mapfile \
     -d \
     $'\0' \
     _chunks < \
     <(find \
         "${_dir}" \
-        -depth \
-          1
-        -type \
-          "f" \
-        -iname \
-          "${_sum}.base64" \
-        -print0 || \
+        "${_find_opts[@]}" || \
       true)
 }
 
