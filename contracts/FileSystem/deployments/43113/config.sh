@@ -7,11 +7,11 @@ declare \
   contract_address
 
 solc_version=(
-  ["1.0"]="0.7.5"
+  ["1.0"]="0.8.28"
 )
 evm_version=(
-  ["1.0"]="istanbul"
+  ["1.0"]="cancun"
 )
 contract_address=(
-  ["1.0"]="0x821CDF0ba6B11Ae7FDf97B1fc36add3ef1aC4bE8"
+  ["1.0"]="0xae7913f587bb0E6AeB350016a40181284F1d4857"
 )
