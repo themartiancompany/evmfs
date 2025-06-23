@@ -52,6 +52,7 @@ _global_variables() {
   upload_method=""
   index_network=""
   lock_only=""
+  chunk_length=""
   tasks_parallel=""
   cache_dir=""
   target_files=()
@@ -105,7 +106,7 @@ _file_size_check() {
   )
   _msg_info \
     "${_msg[*]}"
-  if (( 22000 < "${_size}" )); then
+  if (( "${_chunk_length}" < "${_size}" )); then
     _msg=(
       "The file will be split over many"
       "strings chunks."
@@ -464,7 +465,7 @@ _file_encode() {
     _msg=() \
     _length \
     _flag_valid
-  _length=22000
+  _length="${_chunk_length}"
   _chunk_prefix="${_tmp_dir}/${_sum}.base64"
   _chunks_check
   _file_size_check \
@@ -1480,8 +1481,9 @@ _evmfs_publish() {
     _retries_max="${15}" \
     _call_timeout="${16}" \
     _lock_only="${17}" \
-    _tasks_parallel="${18}" \
-    _cache_dir="${19}" \
+    _chunk_length="${18}" \
+    _tasks_parallel="${19}" \
+    _cache_dir="${20}" \
     _target_file \
     _target_files=() \
     _target_networks=() \
@@ -1491,7 +1493,7 @@ _evmfs_publish() {
     _args=() \
     _namespace
   shift \
-    19
+    20
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1534,6 +1536,27 @@ _evmfs_publish() {
         1
     fi
   done
+}
+
+_chunk_length_auto_detect() {
+  local \
+    _chunk_length \
+    _networks_short=() \
+    _network
+  _chunk_length="22000"
+  _networks_short=(
+    "43113"
+  )
+  for _network in "${_networks_short[@]}"; do
+    if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
+      _chunk_length="15000"
+      break
+    fi
+  done
+  _set_override \
+    "chunk" \
+    "length" \
+    "${_chunk_length}"
 }
 
 _set_overrides() {
@@ -1593,6 +1616,7 @@ _set_overrides() {
     "lock" \
     "only" \
     ""
+  _chunk_length_auto_detect
   _set_override \
     "tasks" \
     "parallel" \
@@ -1775,6 +1799,7 @@ _show_config() {
   _msg_info "                Maximum retries:   ${retries_max}"
   _msg_info "                   Call timeout:   ${call_timeout}"
   _msg_info "                      Lock only:   ${lock_only}"
+  _msg_info "                   Chunk length:   ${chunk_length}"
   _msg_info "             Contract options:"
   _msg_info "Cross-chain file system address:   ${ccfs_address}"
   _msg_info "            File system address:   ${fs_address}"
@@ -1821,7 +1846,7 @@ _requirements
 getopts_opts="$( \
   printf \
     "%s" \
-    "m:r:T:P:L:" \
+    "m:r:T:P:L:l:" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
@@ -1845,6 +1870,8 @@ while \
       override_tasks_parallel="${OPTARG}" ;;
     L) \
       override_lock_only="${OPTARG}" ;;
+    l) \
+      override_chunk_length="${OPTARG}" ;;
     A) \
       override_fs_address="${OPTARG}" ;;
     B) \
@@ -1925,6 +1952,7 @@ app_opts=(
   "${retries_max}"
   "${call_timeout}"
   "${lock_only}"
+  "${chunk_length}"
   "${tasks_parallel}"
   "${cache_dir}"
   "${target_networks[@]}"
