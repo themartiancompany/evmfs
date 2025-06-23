@@ -52,6 +52,7 @@ _global_variables() {
   upload_method=""
   index_network=""
   lock_only=""
+  chunk_length=""
   tasks_parallel=""
   cache_dir=""
   target_files=()
@@ -105,7 +106,7 @@ _file_size_check() {
   )
   _msg_info \
     "${_msg[*]}"
-  if (( 22000 < "${_size}" )); then
+  if (( "${_chunk_length}" < "${_size}" )); then
     _msg=(
       "The file will be split over many"
       "strings chunks."
@@ -464,7 +465,7 @@ _file_encode() {
     _msg=() \
     _length \
     _flag_valid
-  _length=22000
+  _length="${_chunk_length}"
   _chunk_prefix="${_tmp_dir}/${_sum}.base64"
   _chunks_check
   _file_size_check \
@@ -480,7 +481,7 @@ _file_encode() {
   fi
   _msg=(
     "Encoding file with base64 encoding"
-    "and splitting it into 22000 characters"
+    "and splitting it into '${_chunk_length}' characters"
     "chunks."
   )
   _msg_info \
@@ -537,7 +538,7 @@ _queue_setup() {
     _chunks_total="$( \
       bin2txt \
         -L \
-          22000 \
+          "${_chunk_length}" \
         -s \
           "${_file}")"
     _publish_queue+=(
@@ -1480,8 +1481,9 @@ _evmfs_publish() {
     _retries_max="${15}" \
     _call_timeout="${16}" \
     _lock_only="${17}" \
-    _tasks_parallel="${18}" \
-    _cache_dir="${19}" \
+    _chunk_length="${18}" \
+    _tasks_parallel="${19}" \
+    _cache_dir="${20}" \
     _target_file \
     _target_files=() \
     _target_networks=() \
@@ -1491,7 +1493,7 @@ _evmfs_publish() {
     _args=() \
     _namespace
   shift \
-    19
+    20
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1534,6 +1536,28 @@ _evmfs_publish() {
         1
     fi
   done
+}
+
+_chunk_length_auto_detect() {
+  local \
+    _chunk_length \
+    _networks_short=() \
+    _network
+  _chunk_length="22000"
+  _networks_short=(
+    "43113"
+    "62831"
+  )
+  for _network in "${_networks_short[@]}"; do
+    if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
+      _chunk_length="15000"
+      break
+    fi
+  done
+  _set_override \
+    "chunk" \
+    "length" \
+    "${_chunk_length}"
 }
 
 _set_overrides() {
@@ -1593,6 +1617,7 @@ _set_overrides() {
     "lock" \
     "only" \
     ""
+  _chunk_length_auto_detect
   _set_override \
     "tasks" \
     "parallel" \
@@ -1694,10 +1719,17 @@ $(_display_networks \
      -m <upload_method>     It can be 'standalone', 'simulate' or
                             'bulk'.
                             Default: ${upload_method}
-     -L <lock_type>         Skip check and publish and only the specified
+     -L <lock_only>         Skip check and publish and only the specified
                             file lock operation. It can be 'content' or
                             'length'.
                             Default: ${lock_only}
+     -l <chunk_length>      Length of the encoded chunk.
+                            On EVM networks one can write up to
+                            around 24.000 characters
+                            but on some network it seems it
+                            is not possible to spend the amount
+                            of gas needed to write that much.
+                            Default: ${chunk_length} 
      -i <index_network>     EVM Network for the CrossChainFileSystem and
                             the LengthLock contracts.
                             Default: ${index_network}
@@ -1775,6 +1807,7 @@ _show_config() {
   _msg_info "                Maximum retries:   ${retries_max}"
   _msg_info "                   Call timeout:   ${call_timeout}"
   _msg_info "                      Lock only:   ${lock_only}"
+  _msg_info "                   Chunk length:   ${chunk_length}"
   _msg_info "             Contract options:"
   _msg_info "Cross-chain file system address:   ${ccfs_address}"
   _msg_info "            File system address:   ${fs_address}"
@@ -1821,7 +1854,7 @@ _requirements
 getopts_opts="$( \
   printf \
     "%s" \
-    "m:r:T:P:L:" \
+    "m:r:T:P:L:l:" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
@@ -1845,6 +1878,8 @@ while \
       override_tasks_parallel="${OPTARG}" ;;
     L) \
       override_lock_only="${OPTARG}" ;;
+    l) \
+      override_chunk_length="${OPTARG}" ;;
     A) \
       override_fs_address="${OPTARG}" ;;
     B) \
@@ -1925,6 +1960,7 @@ app_opts=(
   "${retries_max}"
   "${call_timeout}"
   "${lock_only}"
+  "${chunk_length}"
   "${tasks_parallel}"
   "${cache_dir}"
   "${target_networks[@]}"

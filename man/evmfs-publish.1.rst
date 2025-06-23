@@ -59,6 +59,12 @@ Options
                         declaring the call failed.
 -L                      Skip check and publish and only lock
                         the file.
+-l chunk_length         Length of the encoded chunk.
+                        On EVM networks one can write up to
+                        around 24.000 characters
+                        but on some network it seems it
+                        is not possible to spend the amount
+                        of gas needed to write that much.
 -P  tasks_parallel      Tasks to perform in parallel.
 
 Contract options
