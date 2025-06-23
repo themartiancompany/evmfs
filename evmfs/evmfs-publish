@@ -481,7 +481,7 @@ _file_encode() {
   fi
   _msg=(
     "Encoding file with base64 encoding"
-    "and splitting it into 22000 characters"
+    "and splitting it into '${_chunk_length}' characters"
     "chunks."
   )
   _msg_info \
@@ -538,7 +538,7 @@ _queue_setup() {
     _chunks_total="$( \
       bin2txt \
         -L \
-          22000 \
+          "${_chunk_length}" \
         -s \
           "${_file}")"
     _publish_queue+=(
@@ -1718,10 +1718,17 @@ $(_display_networks \
      -m <upload_method>     It can be 'standalone', 'simulate' or
                             'bulk'.
                             Default: ${upload_method}
-     -L <lock_type>         Skip check and publish and only the specified
+     -L <lock_only>         Skip check and publish and only the specified
                             file lock operation. It can be 'content' or
                             'length'.
                             Default: ${lock_only}
+     -l <chunk_length>      Length of the encoded chunk.
+                            On EVM networks one can write up to
+                            around 24.000 characters
+                            but on some network it seems it
+                            is not possible to spend the amount
+                            of gas needed to write that much.
+                            Default: ${chunk_length} 
      -i <index_network>     EVM Network for the CrossChainFileSystem and
                             the LengthLock contracts.
                             Default: ${index_network}
