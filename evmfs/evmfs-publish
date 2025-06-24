@@ -1551,6 +1551,7 @@ _chunk_length_auto_detect() {
     "555666"
   )
   _networks_short_extra=(
+    "63"
     # "62831"
   )
   for _network in "${_networks_short[@]}"; do
