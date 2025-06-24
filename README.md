@@ -71,7 +71,11 @@ repository.
 
 The EVMFS is a core component of the
 [Human Instrumentality Project](
-  http://www.humaninstrumentalityproject.org).
+  http://www.humaninstrumentalityproject.org)
+and of the
+[Ur](
+  https://github.com/themartiancompany/ur)
+application store for Life and DogeOS.
 
 ### Installation
 
