@@ -1554,6 +1554,9 @@ _chunk_length_auto_detect() {
     "63"
     # "62831"
   )
+  _networks_short_extreme=(
+    "1"
+  )
   for _network in "${_networks_short[@]}"; do
     if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
       _chunk_length="15000"
@@ -1563,6 +1566,12 @@ _chunk_length_auto_detect() {
   for _network in "${_networks_short_extra[@]}"; do
     if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
       _chunk_length="10000"
+      break
+    fi
+  done
+  for _network in "${_networks_short_extreme[@]}"; do
+    if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
+      _chunk_length="1000"
       break
     fi
   done
