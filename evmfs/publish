@@ -602,9 +602,9 @@ function
       "{file_hash}",
       file_hash));
   _text.push(
-    "    Publication namespace: {file_hash}".replace(
-      "{file_hash}",
-      file_hash));
+    "    Publication namespace: {publication_namespace}".replace(
+      "{publication_namespace}",
+      publication_namespace));
   _text.push(
     "              Index start: {index_start}".replace(
       "{index_start}",
