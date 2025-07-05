@@ -2,6 +2,7 @@
 
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+//    lengthlock
 //    ----------------------------------------------------------------------
 //    Copyright © 2024, 2025  Pellegrino Prevete
 //
@@ -9,8 +10,8 @@
 //    ----------------------------------------------------------------------
 //
 //    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
+//    it under the terms of the GNU Affero General Public License as published
+//    by the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
 //    This program is distributed in the hope that it will be useful,
@@ -199,18 +200,46 @@ async function
       _method_object ] =
       await _contract_call_static.apply(
         null,
-        _read_call_opts);
+        _lock_call_opts);
   } catch (
       _error) {
     _error_display(
       _error);
     _msg_error(
-      "Error retrieving chunk.",
+      "Error retrieving lock status.",
       0);
     throw _error;
   }
   return [
-    _value.toString(),
+    _value,
+    _method_object];
+}
+
+async function
+  _length_get(
+    _length_call_opts) {
+  let
+    _method_object,
+    _passed,
+    _retry,
+    _value;
+  try {
+    [ _value,
+      _method_object ] =
+      await _contract_call_static.apply(
+        null,
+        _length_call_opts);
+  } catch (
+      _error) {
+    _error_display(
+      _error);
+    _msg_error(
+      "Error retrieving length.",
+      0);
+    throw _error;
+  }
+  return [
+    _value,
     _method_object];
 }
 
@@ -274,7 +303,6 @@ function
     }
   }
 }
-
 
 async function
   _length_locked(
@@ -432,17 +460,22 @@ async function
     _chunks_lengths_paths
   ) {
   let
-    _checkpoint_index,
-    _chunks_total,
     _cursor,
+    _files_hashes_total,
+    _files_lengths,
+    _files_lengths_total,
     _file_length_path,
-    _read_call_base_opts,
-    _read_call_opts,
+    _length_call_base_opts,
+    _length_call_opts,
+    _length_locked_opts,
+    _lock_method_object,
     _method_base_args,
     _method_args,
     _progress,
     _value,
     _wallet_seed_path;
+  _files_lengths =
+    [];
   if ( _method_object == undefined ) {
     _method_object =
       '';
@@ -482,6 +515,25 @@ async function
     1;
   _cursor =
     0;
+  _length_locked_opts = [
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_object,
+    _publication_namespace,
+    _files_hashes,
+    _checkpoint_file_path,
+    _chunks_locks_paths,
+  ];
+  [ _locks,
+    _lock_method_object ] =
+    await _length_locked.apply(
+      null,
+      _length_locked_opts);
   for ( _hash of _file_hashes ) {
     _msg_info_length_get(
       _hash,
@@ -497,52 +549,63 @@ async function
     _length_call_opts =
       _length_call_base_opts.concat(
         [ _method_args ]);
-    try {
-      [ _value,
-        _method_object ] =
-        await _length_get(
-          _length_call_opts);
-      if ( _length_call_base_opts[7] == "" ) {
-        _msg_info(
-          "Reusing contract method object.");
-        _length_call_base_opts = [
-          _wallet_seed_path,
-          _retries_max,
-          _api_key_path,
-          _target_network,
-          _contract_abi_path,
-          _contract_bytecode_path,
-          _contract_compiler_output_path,
-          _method_object,
-          _contract_address,
-          "getLength",
-        ];
-      }
-      _msg_info_length_got(
-        _hash,
-        _progress,
-        _chunks_total);
-      if ( _file_length_path ) {
+    _lock =
+      _locks[
+        _cursor];
+    if ( _lock == true ) {
+      try {
+        [ _value,
+          _method_object ] =
+          await _length_get(
+            _length_call_opts);
+        if ( _length_call_base_opts[7] == "" ) {
+          _msg_info(
+            "Reusing contract method object.");
+          _length_call_base_opts = [
+            _wallet_seed_path,
+            _retries_max,
+            _api_key_path,
+            _target_network,
+            _contract_abi_path,
+            _contract_bytecode_path,
+            _contract_compiler_output_path,
+            _method_object,
+            _contract_address,
+            "getLength",
+          ];
+        }
+        _msg_info_length_got(
+          _hash,
+          _progress,
+          _chunks_total);
+        if ( _file_length_path ) {
+          _file_write(
+            _file_length_path,
+            _value);
+        }
         _file_write(
-          _file_length_path,
+          _checkpoint_file_path,
+          _hash);
+        _file_lengths.append(
           _value);
+      } catch (
+          _error) {
+        _error_display(
+          _error);
+        _msg =
+          "Error retrieving file " +
+          "length.""
+        _msg_error(
+          _msg,
+          0);
+        throw _error;
       }
-      _file_write(
-        _checkpoint_file_path,
-        _hash);
+    }
+    else if ( _lock == false ) {
+      _value =
+        "";
       _file_lengths.append(
         _value);
-    } catch (
-        _error) {
-      _error_display(
-        _error);
-      _msg =
-        "Error retrieving file " +
-	"length.""
-      _msg_error(
-        _msg,
-        0);
-      throw _error;
     }
     _progress =
       _progress + 1;
@@ -562,7 +625,7 @@ function
   _text = 
     [];
   _text.push(
-    "  File exists configuration:"
+    "  Length Lock configuration:"
   );
   _text.push(
     "          Maximum retries: {retries_max}".replace(
@@ -597,23 +660,23 @@ function
       "{publication_namespace}",
       publication_namespace));
   _text.push(
-    "                File hash: {file_hash}".replace(
-      "{file_hash}",
-      file_hash));
+    "            Write to disk: {disk_write}".replace(
+      "{disk_write}",
+      disk_write));
   _text.push(
-    "              Index start: {index_start}".replace(
-      "{index_start}",
-      index_start));
-  _text.push(
-    "                Index end: {index_end}".replace(
-      "{index_end}",
-      index_end));
+    "              File hashes:");
+  for ( _file_hash of _files_hashes ) {
+    _text.push(
+      "                           {file_hash}".replace(
+        "{file_hash}",
+        file_hash));
+  }
   _text.push(
     "          Checkpoint file: {checkpoint_file_path}".replace(
       "{checkpoint_file_path}",
       checkpoint_file_path));
-  _chunks_files_paths =
-    chunks_files_paths.join(
+  _files_lengths_paths =
+    _files_lengths_paths.join(
     " ");
   _text.push(
     "              File chunks: {_chunks_files_paths}".replace(
@@ -621,7 +684,8 @@ function
       _chunks_files_paths));
   for ( _line in _text ) {
     _msg_info(
-      _text[_line]);
+      _text[
+        _line]);
   }
 }
 
@@ -646,12 +710,10 @@ function
     "    <contract_bytecode_path>",
     "    <contract_compiler_output_path>",
     "    <publication_namespace>",
-    "    <index_start>",
-    "    <file_hash>",
-    "    <index_start>",
-    "    <index_end>",
     "    <checkpoint_file_path>",
-    "    [chunk_file_path]",
+    "    <disk_write>",
+    "    [file_hash]",
+    "    ([files_length_path])",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
@@ -669,6 +731,9 @@ function
     "                                   output path (the hardhat artifact).",
     "  <publication_namespace>          Namespace in which the file will be",
     "                                   published.",
+    "  <disk_write>                     Whether to write the query results",
+    "                                   to a file.",
+    "                                   Default: y",
     "  <file_hash>                      Hash of the file to publish.",
     "  <index_start>                    Chunk index from where to start.",
     "  <index_end>                      Final chunk index to download.",
