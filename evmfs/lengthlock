@@ -432,7 +432,7 @@ async function
         0);
       throw _error;
     }
-    _locks.append(
+    _locks.push(
       _lock);
     _progress =
       _progress + 1;
@@ -586,7 +586,7 @@ async function
         _file_write(
           _checkpoint_file_path,
           _hash);
-        _file_lengths.append(
+        _file_lengths.push(
           _value);
       } catch (
           _error) {
@@ -604,7 +604,7 @@ async function
     else if ( _lock == false ) {
       _value =
         "";
-      _file_lengths.append(
+      _file_lengths.push(
         _value);
     }
     _progress =
@@ -760,9 +760,45 @@ function
 }
 
 function 
+  _cmdline_paths_parse(
+    _paths,
+    _disk_write) {
+  let
+    _path,
+    _paths_length,
+    _paths_total;
+  if ( disk_write == "y" ) {
+    _paths_total =
+      _paths.length;
+    _paths_length =
+      _paths_total / 3;
+    files_hashes =
+      _paths.slice(
+        0,
+        _paths_length);
+    files_locks_paths =
+      _paths.slice(
+        _paths_length,
+        _paths_length * 2);
+    files_lengths_paths =
+      _paths.slice(
+        _paths_length * 2,
+        _paths_length * 3);
+  }
+  else if ( disk_write == "n" ) {
+    files_hashes =
+      _paths;
+  }
+}
+
+function 
   _cmdline_parse() {
+  let
+    _paths
   quiet = 
     "y";
+  _paths =
+    [];
   process.argv.forEach(
     function (
       _value,
@@ -805,23 +841,15 @@ function
           _value;
       }
       if ( _index == 11 ) {
-        file_hash =
-          _value;
-      }
-      if ( _index == 12 ) {
-        index_start =
-          _value;
-      }
-      if ( _index == 13 ) {
-        index_end =
-          _value;
-      }
-      if ( _index == 14 ) {
         checkpoint_file_path =
           _value;
       }
-      if ( 14 < _index ) {
-	chunks_files_paths.push(
+      if ( _index == 12 ) {
+        disk_write =
+          _value;
+      }
+      if ( 12 < _index ) {
+        _paths.push(
           _value);
       }
       if ( _value == "-h" ||
@@ -830,6 +858,9 @@ function
 	  0);
       }
   });
+  _cmdline_paths_parse(
+    _paths,
+    disk_write);
   if ( file_hash == "" ||
        publication_namespace == "" ) {
     _usage(
