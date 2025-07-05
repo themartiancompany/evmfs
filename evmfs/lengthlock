@@ -65,15 +65,15 @@ function
     "";
   publication_namespace =
     "";
-  file_hash =
-    "";
-  index_start =
-    "";
-  index_end =
+  disk_write =
     "";
   checkpoint_file_path =
     "";
-  chunks_files_paths =
+  files_hashes =
+    [];
+  files_locks_paths =
+    [];
+  files_lengths_paths =
     [];
   quiet =
     "";
@@ -315,8 +315,8 @@ async function
     _contract_compiler_output_path,
     _method_object,
     _publication_namespace,
-    _files_hashes,
     _checkpoint_file_path,
+    _files_hashes,
     _files_locks_paths
   ) {
   let
@@ -454,8 +454,8 @@ async function
     _contract_compiler_output_path,
     _method_object,
     _publication_namespace,
-    _files_hashes,
     _checkpoint_file_path,
+    _files_hashes,
     _chunks_locks_paths,
     _chunks_lengths_paths
   ) {
@@ -525,8 +525,8 @@ async function
     _contract_compiler_output_path,
     _method_object,
     _publication_namespace,
-    _files_hashes,
     _checkpoint_file_path,
+    _files_hashes,
     _chunks_locks_paths,
   ];
   [ _locks,
@@ -617,6 +617,14 @@ async function
 }
 
 function
+  _overrides_set() {
+  if ( disk_write  == "" ) {
+    disk_write =
+      "n";
+  }
+}
+
+function
   _config_show() {
   let
     _chunks_files_paths,
@@ -664,6 +672,10 @@ function
       "{disk_write}",
       disk_write));
   _text.push(
+    "          Checkpoint file: {checkpoint_file_path}".replace(
+      "{checkpoint_file_path}",
+      checkpoint_file_path));
+  _text.push(
     "              File hashes:");
   for ( _file_hash of _files_hashes ) {
     _text.push(
@@ -671,10 +683,6 @@ function
         "{file_hash}",
         file_hash));
   }
-  _text.push(
-    "          Checkpoint file: {checkpoint_file_path}".replace(
-      "{checkpoint_file_path}",
-      checkpoint_file_path));
   _files_lengths_paths =
     _files_lengths_paths.join(
     " ");
@@ -731,16 +739,17 @@ function
     "                                   output path (the hardhat artifact).",
     "  <publication_namespace>          Namespace in which the file will be",
     "                                   published.",
-    "  <disk_write>                     Whether to write the query results",
-    "                                   to a file.",
-    "                                   Default: y",
-    "  <file_hash>                      Hash of the file to publish.",
-    "  <index_start>                    Chunk index from where to start.",
-    "  <index_end>                      Final chunk index to download.",
     "  <checkpoint_file_path>           Checkpoint file on which latest",
     "                                   downloaded chunk index is saved",
     "                                   in case node was to crash.",
-    "  [chunk_file_path]                Files in which to write the chunks.",
+    "  <disk_write>                     Whether to write the query results",
+    "                                   to a file.",
+    "                                   Default: y",
+    "  [files_hashes]                   Hashes of the files to get the",
+    "                                   length and lock status of.",
+    "  [files_lengths_path]             Files in which to write the lengths.",
+    "  [files_locks_path]               Files in which to write the lock.",
+    "                                   statuses.",
   ];
   for ( _line of _text ) {
     _msg_info(
@@ -749,7 +758,6 @@ function
   process.exit(
     _exit);
 }
-
 
 function 
   _cmdline_parse() {
