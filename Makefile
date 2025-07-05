@@ -41,6 +41,7 @@ _NODE_FILES:=\
   check \
   get \
   index \
+  lengthlock \
   lock \
   publish \
   verify
