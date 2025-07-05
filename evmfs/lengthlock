@@ -45,7 +45,7 @@ _contract_call_static =
 function
   _global_variables() {
   app_name =
-    "get";
+    "lengthlock";
   retries_max =
     '';
   api_key_path =
@@ -79,19 +79,20 @@ function
 }
 
 function
-  _msg_info_chunk_get(
-    _index,
+  _msg_info_length_get(
+    _hash,
     _progress,
     _total) {
   let
     _msg,
     _template;
   _template =
-    "Downloading chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Getting length for hash '{_hash}' " +
+    "('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
-      "{_index}",
-      _index);
+      "{_hash}",
+      _hash);
   _msg =
     _msg.replaceAll(
       "{_progress}",
@@ -105,19 +106,74 @@ function
 }
 
 function
-  _msg_info_chunk_got(
-    _index,
+  _msg_info_length_got(
+    _hash,
     _progress,
     _total) {
   let
     _msg,
     _template;
   _template =
-    "Downloaded chunk '{_index}' ('{_progress}'of '{_total}').";
+    "Got length for hash '{_hash}' " +
+    "('{_progress}'of '{_total}').";
   _msg =
     _template.replaceAll(
-      "{_index}",
-      _index);
+      "{_hash}",
+      _hash);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
+  _msg_info(
+    _msg);
+}
+
+function
+  _msg_info_lock_get(
+    _hash,
+    _progress,
+    _total) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Getting lock status for hash '{_hash}' " +
+    "('{_progress}'of '{_total}').";
+  _msg =
+    _template.replaceAll(
+      "{_hash}",
+      _hash);
+  _msg =
+    _msg.replaceAll(
+      "{_progress}",
+      _progress);
+  _msg =
+    _msg.replaceAll(
+      "{_total}",
+      _total);
+  _msg_info(
+    _msg);
+}
+
+function
+  _msg_info_lock_got(
+    _hash,
+    _progress,
+    _total) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Got lock status for hash '{_hash}' " +
+    "('{_progress}'of '{_total}').";
+  _msg =
+    _template.replaceAll(
+      "{_hash}",
+      _hash);
   _msg =
     _msg.replaceAll(
       "{_progress}",
@@ -131,16 +187,16 @@ function
 }
 
 async function
-  _chunk_get(
-    _read_call_opts) {
+  _lock_get(
+    _lock_call_opts) {
   let
     _method_object,
     _passed,
     _retry,
     _value;
   try {
-    [_value,
-     _method_object] =
+    [ _value,
+      _method_object ] =
       await _contract_call_static.apply(
         null,
         _read_call_opts);
@@ -159,57 +215,69 @@ async function
 }
 
 function
-  _input_data_check(
-    _index_start,
-    _index_end,
-    _total_files) {
+  _lock_input_data_check(
+    _file_hashes,
+    _file_hashes_total,
+    _files_locks_paths_total) {
   let
-    _total_indexes;
-  _total_indexes =
-    _index_end - _index_start + 1;
-  if ( _total_files == 0 ) {
-    _msg =
-      "File chunks list empty."
+    _sha256sum_length,
+    _hash;
+  if ( _files_hashes_total == 0 ) {
     _msg_error(
-      _msg,
+      "File hashes list empty.",
       1);
   }
-  if ( _total_files > _total_indexes ) {
-    _msg_error(
-      "More files to save into than indexes to download.",
-      1);
+  _sha256sum_length =
+    64;
+  for ( _hash of _file_hashes ) {
+    if ( _hash.length != sha256sum_length ) {
+      _msg =
+        "Malformed SHA256 sum."
+      _msg_error(
+        _msg,
+        1);
+    }
   }
-  if ( _total_files < _total_indexes ) {
-    _msg_error(
-      "More indexes downloads than files to save into.",
-      1);
+  if ( _files_locks_paths_total > 0 ) {
+    if ( _files_locks_paths_total != 
+         _files_hashes_total ) {
+      _msg =
+        "Amount of input files hashes different " +
+        "from amount of input lock files paths."
+      _msg_error(
+        _msg);
+    }
   }
-  _msg_info(
-    "Input data checked.");
 }
 
 function
-  _chunk_file_path_check(
-    _path,
-    _index,
-    _cursor) {
-    let
-      _text;
-  if ( _path == undefined ) {
-    _text =
-      "Chunk file for index " +
-      _index +
-      " and cursor " +
-      _cursor +
-      " undefined."
-    _msg_error(
-      _msg,
-      1);
+  _length_input_data_check(
+    _file_hashes,
+    _file_hashes_total,
+    _files_locks_paths_total,
+    _files_lengths_paths_total) {
+  let
+    _sha256sum_length,
+    _hash;
+  _lock_input_data_check(
+    _files_hashes,
+    _files_hashes_total,
+    _files_locks_paths_total);
+  if ( _files_lengths_paths_total > 0 ) {
+    if ( _files_lengths_paths_total != 
+         _files_hashes_total ) {
+      _msg =
+        "Amount of input files hashes different " +
+        "from amount of input length files paths."
+      _msg_error(
+        _msg);
+    }
   }
 }
 
+
 async function
-  _get(
+  _length_locked(
     _retries_max,
     _api_key_path,
     _target_network,
@@ -219,22 +287,159 @@ async function
     _contract_compiler_output_path,
     _method_object,
     _publication_namespace,
-    _file_hash,
-    _index_start,
-    _index_end,
+    _files_hashes,
     _checkpoint_file_path,
-    _chunks_files_paths
+    _files_locks_paths
+  ) {
+  let
+    _cursor,
+    _file_lock_path,
+    _files_hashes_total,
+    _files_locks_paths_total,
+    _hash,
+    _lock_call_base_opts,
+    _lock_call_opts,
+    _locks,
+    _method_base_args,
+    _method_args,
+    _progress,
+    _value,
+    _wallet_seed_path;
+  _locks =
+    [];
+  if ( _method_object == undefined ) {
+    _method_object =
+      '';
+  }
+  _wallet_seed_path =
+    '';
+  _method_object =
+    '';
+  _lock_call_base_opts = [
+    _wallet_seed_path,
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_object,
+    _contract_address,
+    "lock",
+  ];
+  _method_base_args = [
+    _publication_namespace
+    // _file_hash
+  ];
+  _files_hashes_total =
+    _files_hashes.length;
+  _files_locks_paths_total =
+    _files_locks_paths.length;
+  _lock_input_data_check(
+    _file_hashes,
+    _file_hashes_total,
+    _file_locks_paths_total);
+  _file_lock_path =
+    "";
+  _progress =
+    1;
+  _cursor =
+    0;
+  for ( _hash of _file_hashes ) {
+    _msg_info_lock_get(
+      _hash,
+      _progress,
+      _file_hashes_total);
+    _method_args =
+      _method_base_args.concat(
+        [ _hash ]
+      );
+    _lock_call_opts =
+      _lock_call_base_opts.concat(
+        [ _method_args ]);
+    if ( _files_locks_path_total > 0 ) {
+      _file_lock_path =
+        _files_locks_paths[
+          _cursor];
+    }
+    try {
+      [ _value,
+        _method_object ] =
+        await _lock_get(
+          _lock_call_opts);
+      if ( _lock_call_base_opts[7] == "" ) {
+        _msg_info(
+          "Reusing contract method object.");
+        _lock_call_base_opts = [
+          _wallet_seed_path,
+          _retries_max,
+          _api_key_path,
+          _target_network,
+          _contract_abi_path,
+          _contract_bytecode_path,
+          _contract_compiler_output_path,
+          _method_object,
+          _contract_address,
+          "lock",
+        ];
+      }
+      _msg_info_lock_got(
+        _hash,
+        _progress,
+        _files_hashes_total);
+      if ( _file_lock_path != "" ) {
+        _file_write(
+          _file_lock_path,
+          _value);
+      }
+      _file_write(
+        _checkpoint_file_path,
+        _hash);
+    } catch (
+        _error) {
+      _error_display(
+        _error);
+      _msg_error(
+        "Error getting lock status.",
+        0);
+      throw _error;
+    }
+    _locks.append(
+      _lock);
+    _progress =
+      _progress + 1;
+    _cursor =
+      _cursor + 1;
+  }
+  return [ _locks,
+           _method_object ];
+}
+
+async function
+  _length_lock(
+    _retries_max,
+    _api_key_path,
+    _target_network,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _contract_compiler_output_path,
+    _method_object,
+    _publication_namespace,
+    _files_hashes,
+    _checkpoint_file_path,
+    _chunks_locks_paths,
+    _chunks_lengths_paths
   ) {
   let
     _checkpoint_index,
-    _chunk_file_path,
     _chunks_total,
     _cursor,
+    _file_length_path,
     _read_call_base_opts,
     _read_call_opts,
     _method_base_args,
     _method_args,
-    _msg,
     _progress,
     _value,
     _wallet_seed_path;
@@ -246,7 +451,7 @@ async function
     '';
   _method_object =
     '';
-  _read_call_base_opts = [
+  _length_call_base_opts = [
     _wallet_seed_path,
     _retries_max,
     _api_key_path,
@@ -256,58 +461,51 @@ async function
     _contract_compiler_output_path,
     _method_object,
     _contract_address,
-    "readChunk",
+    "getLength",
   ];
   _method_base_args = [
     _publication_namespace,
-    _file_hash
+    // _file_hash
   ];
-  _chunks_total =
-    _chunks_files_paths.length;
-  _input_data_check(
-    _index_start,
-    _index_end,
-    _chunks_total);
+  _files_hashes_total =
+    _files_hashes.length;
+  _files_locks_paths_total =
+    _files_locks_paths.length;
+  _files_lengths_paths_total =
+    _files_lengths_paths.length;
+  _length_input_data_check(
+    _file_hashes,
+    _file_hashes_total,
+    _files_locks_paths_total,
+    _files_lengths_paths_total);
   _progress =
     1;
   _cursor =
     0;
-  for ( var _index = _index_start;
-        _index <= _index_end;
-        _index++ ) {
-    _msg_info_chunk_get(
-      _index,
+  for ( _hash of _file_hashes ) {
+    _msg_info_length_get(
+      _hash,
       _progress,
-      _chunks_total);
-    _chunk_file_path =
-      _chunks_files_paths[
+      _files_hashes_total);
+    _file_length_path =
+      _files_lengths_paths[
         _cursor];
-    _chunk_file_path_check(
-      _chunk_file_path,
-      _index,
-      _cursor);
     _method_args =
       _method_base_args.concat(
-        [ _index.toString() ]
+        [ _hash ]
       );
-    _read_call_opts =
-      _read_call_base_opts.concat(
+    _length_call_opts =
+      _length_call_base_opts.concat(
         [ _method_args ]);
     try {
       [ _value,
         _method_object ] =
-        await _chunk_get(
-          _read_call_opts);
-      // I have no idea if _read_call_base_opts
-      // has its components passed by reference
-      // or copied so I have no idea if
-      // _method_object gets immediately updated
-      // or I need to re-init the array so just
-      // in case we re-init whole array.
-      if ( _read_call_base_opts[7] == "" ) {
+        await _length_get(
+          _length_call_opts);
+      if ( _length_call_base_opts[7] == "" ) {
         _msg_info(
           "Reusing contract method object.");
-        _read_call_base_opts = [
+        _length_call_base_opts = [
           _wallet_seed_path,
           _retries_max,
           _api_key_path,
@@ -317,27 +515,32 @@ async function
           _contract_compiler_output_path,
           _method_object,
           _contract_address,
-          "readChunk",
+          "getLength",
         ];
       }
-      _msg_info_chunk_got(
-        _index,
+      _msg_info_length_got(
+        _hash,
         _progress,
         _chunks_total);
-      _file_write(
-        _chunk_file_path,
-        _value);
-      _checkpoint_index =
-        _index.toString();
+      if ( _file_length_path ) {
+        _file_write(
+          _file_length_path,
+          _value);
+      }
       _file_write(
         _checkpoint_file_path,
-        _checkpoint_index);
+        _hash);
+      _file_lengths.append(
+        _value);
     } catch (
         _error) {
       _error_display(
         _error);
+      _msg =
+        "Error retrieving file " +
+	"length.""
       _msg_error(
-        "Error retrieving chunk.",
+        _msg,
         0);
       throw _error;
     }
@@ -346,7 +549,8 @@ async function
     _cursor =
       _cursor + 1;
   }
-  return _method_object;
+  return [ _files_lengths,
+           _method_object ];
 }
 
 function
@@ -357,6 +561,9 @@ function
     _text;
   _text = 
     [];
+  _text.push(
+    "  File exists configuration:"
+  );
   _text.push(
     "          Maximum retries: {retries_max}".replace(
       "{retries_max}",
@@ -425,10 +632,11 @@ function
     _line,
     _text;
   _text = [
-    "Downloads chunks of an EVMFS file.",
+    "",
+    "Check if a file length is locked.",
     "",
     "Usage:",
-    "  get",
+    "  exists",
     "    <quiet>",
     "    <retries_max>",
     "    <api_key_path>",
@@ -557,7 +765,7 @@ function
 }
 
 if ( _cmdline_check(
-       "get") ) {
+       "lengthlock") ) {
   _global_variables();
   _cmdline_parse();
   _config_show();
@@ -577,14 +785,14 @@ if ( _cmdline_check(
     checkpoint_file_path,
     chunks_files_paths,
   ];
-  _get.apply(
+  _length_lock.apply(
     null,
     app_opts);
 }
 
 module.exports = {
-  _chunk_get:
-    _chunk_get,
-  _get:
-    _get
+  _length_locked:
+    _length_locked,
+  _length_lock:
+    _length_lock
 };
