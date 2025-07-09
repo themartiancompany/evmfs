@@ -1546,6 +1546,8 @@ _chunk_length_auto_detect() {
     _network
   _chunk_length="22000"
   _networks_short=(
+    "16"
+    "114"
     "43113"
     "62831"
     "555666"
