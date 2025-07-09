@@ -1553,10 +1553,12 @@ _chunk_length_auto_detect() {
     "555666"
   )
   _networks_short_extra=(
+    "21"
     "63"
   )
   _networks_short_extreme=(
     "1"
+    "31"
     "10143"
   )
   for _network in "${_networks_short[@]}"; do
