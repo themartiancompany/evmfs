@@ -1556,6 +1556,7 @@ _chunk_length_auto_detect() {
   _networks_short_extra=(
     "21"
     "63"
+    "1328"
   )
   _networks_short_extreme=(
     "234"
