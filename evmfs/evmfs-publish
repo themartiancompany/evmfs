@@ -1551,7 +1551,6 @@ _chunk_length_auto_detect() {
     "212"
     "296"
     "1287"
-    "2484"
     "9990"
     "43113"
     "50312"
@@ -1563,6 +1562,7 @@ _chunk_length_auto_detect() {
     "63"
     "1230"
     "1328"
+    "2484"
   )
   _networks_short_extreme=(
     "234"
