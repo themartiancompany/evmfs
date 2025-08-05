@@ -1570,6 +1570,7 @@ _chunk_length_auto_detect() {
     "7575"
     "8131"
     "10947"
+    "19515"
   )
   _networks_short_wow=(
     "1"
