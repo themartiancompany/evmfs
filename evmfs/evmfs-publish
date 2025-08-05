@@ -1551,6 +1551,7 @@ _chunk_length_auto_detect() {
     "212"
     "296"
     "1287"
+    "7672"
     "9990"
     "43113"
     "50312"
@@ -1567,12 +1568,14 @@ _chunk_length_auto_detect() {
   _networks_short_extreme=(
     "234"
     "7575"
+    "8131"
   )
   _networks_short_wow=(
     "1"
     "31"
     "41"
     "10143"
+    "10508"
   )
   for _network in "${_networks_short[@]}"; do
     if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
