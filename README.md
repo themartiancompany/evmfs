@@ -56,6 +56,10 @@ selected blockchain networks can be found in the
 `contracts/deployments` directory in the source
 tree and are configured into the program at install time.
 
+The file system currently has public deployments
+on around 4% of all Ethereum Virtual Machine
+compatible blockchains networks.
+
 Options for user-defined deployments are discussed in
 the documentation.
 
