@@ -1556,7 +1556,9 @@ _chunk_length_auto_detect() {
     "43113"
     "50312"
     "62831"
+    "175177"
     "555666"
+    "666888"
   )
   _networks_short_extra=(
     "21"
@@ -1565,6 +1567,7 @@ _chunk_length_auto_detect() {
     "1328"
     "2484"
     "73799"
+    "552981"
   )
   _networks_short_extreme=(
     "234"
