@@ -59,6 +59,7 @@ Options
                         declaring the call failed.
 -L                      Skip check and publish and only lock
                         the file.
+-G                      Explicitly skip file encoding.
 -l chunk_length         Length of the encoded chunk.
                         On EVM networks one can write up to
                         around 24.000 characters
