@@ -52,6 +52,7 @@ _global_variables() {
   index_network=""
   tasks_parallel=""
   lock_only=""
+  encoding_skip=""
   output_file=""
   cache_dir=""
   command_args=()
@@ -111,18 +112,20 @@ _evmfs() {
     _retries_max="${14}" \
     _call_timeout="${15}" \
     _lock_only="${16}" \
-    _tasks_parallel="${17}" \
-    _cache_dir="${18}" \
-    _user_level="${19}" \
-    _output_file="${20}" \
-    _target_key="${21}" \
-    _target_value="${22}" \
+    _encoding_skip="${17}" \
+    _tasks_parallel="${18}" \
+    _cache_dir="${19}" \
+    _user_level="${20}" \
+    _output_file="${21}" \
+    _target_key="${22}" \
+    _target_value="${23}" \
     _target_uri \
     _target_file \
     _command_args=() \
-    _args=()
+    _args=() \
+    _msg=()
   shift \
-    22
+    23
   _command_args+=(
     "$@"
   )
@@ -238,6 +241,11 @@ _evmfs() {
       "${_target_uri}"
     )
   elif [[ "${_target_command}" == "publish" ]]; then
+    if [[ "${_encoding_skip}" == "y" ]]; then
+      _args+=(
+        -G
+      )
+    fi
     if [[ "${_lock_only}" != "" ]]; then
       _args+=(
         -L
@@ -262,8 +270,13 @@ _evmfs() {
       "${_msg[*]}" \
       1
   fi
+  _msg=(
+    "Running"
+    "'evmfs-${_target_command}'"
+      "'${_args[*]}'."
+  )
   _msg_info \
-    "Running 'evmfs-${_target_command}' '${_args[*]}'."
+    "${_msg[*]}"
   "evmfs-${_target_command}" \
     "${_args[@]}"
   return \
@@ -401,6 +414,10 @@ _set_overrides() {
     "lock" \
     "only" \
     ""
+  _set_override \
+    "encoding" \
+    "skip" \
+    "n"
   _output_file_auto_detect
   _contract_version_auto_detect \
     "${deployments_dir}" \
@@ -566,6 +583,7 @@ _show_config() {
   _msg_info "                 Parallel tasks:   ${tasks_parallel}"
   _msg_info "    Publication configuration:"
   _msg_info "                      Lock only:   ${lock_only}"
+  _msg_info "                  Skip encoding:   ${encoding_skip}"
   _msg_info "       Download configuration:"
   _msg_info "                    Output file:   ${output_file}"
   _msg_info "       Contract configuration:"
@@ -597,7 +615,7 @@ _config_user_init \
 getopts_opts="$( \
   printf \
     "%s" \
-    "o:m:r:T:P:L:" \
+    "o:m:r:T:P:L:G:" \
     "A:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
@@ -625,6 +643,8 @@ while \
       override_tasks_parallel="${OPTARG}" ;;
     L) \
       override_lock_only="${OPTARG}" ;;
+    G) \
+      override_encoding_skip="y" ;;
     A) \
       override_fs_address="${OPTARG}" ;;
     C) \
@@ -716,6 +736,7 @@ app_opts=(
   "${retries_max}"
   "${call_timeout}"
   "${lock_only}"
+  "${encoding_skip}"
   "${tasks_parallel}"
   "${cache_dir}"
   "${user_level}"

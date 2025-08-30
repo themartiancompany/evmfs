@@ -51,6 +51,7 @@ _global_variables() {
   ccfs_address=""
   upload_method=""
   index_network=""
+  encoding_skip=""
   lock_only=""
   chunk_length=""
   tasks_parallel=""
@@ -467,7 +468,7 @@ _file_encode() {
     _flag_valid
   _length="${_chunk_length}"
   _chunk_prefix="${_tmp_dir}/${_sum}.base64"
-  _chunks_check
+  # _chunks_check
   _file_size_check \
     "${_file}"
   _bin2txt_opts+=(
@@ -1371,7 +1372,9 @@ _file_upload() {
     _file_hash \
       "${_file}")"
   _work_dir_setup
-  _file_encode
+  if [[ "${_encoding_skip}" == "n" ]]; then
+    _file_encode
+  fi
   _queue_setup
   _chunks_network_assignment 
   _target_ll_fs_address_get
@@ -1480,10 +1483,11 @@ _evmfs_publish() {
     _upload_method="${14}" \
     _retries_max="${15}" \
     _call_timeout="${16}" \
-    _lock_only="${17}" \
-    _chunk_length="${18}" \
-    _tasks_parallel="${19}" \
-    _cache_dir="${20}" \
+    _encoding_skip="${17}" \
+    _lock_only="${18}" \
+    _chunk_length="${19}" \
+    _tasks_parallel="${20}" \
+    _cache_dir="${21}" \
     _target_file \
     _target_files=() \
     _target_networks=() \
@@ -1493,7 +1497,7 @@ _evmfs_publish() {
     _args=() \
     _namespace
   shift \
-    20
+    21
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1557,6 +1561,7 @@ _chunk_length_auto_detect() {
     "50312"
     "62831"
     "175177"
+    "381932"
     "555666"
     "666888"
   )
@@ -1575,6 +1580,7 @@ _chunk_length_auto_detect() {
     "8131"
     "10947"
     "19515"
+    "96969696"
   )
   _networks_short_wow=(
     "1"
@@ -1687,6 +1693,10 @@ _set_overrides() {
     "call" \
     "timeout" \
     "300000"
+  _set_override \
+    "encoding" \
+    "skip" \
+    "n"
   _contract_version_auto_detect \
     "${deployments_dir}" \
     "FileSystem" \
@@ -1780,6 +1790,8 @@ $(_display_networks \
                             file lock operation. It can be 'content' or
                             'length'.
                             Default: ${lock_only}
+     -G                     Explicitly skip file encoding.
+                            Default: ${encoding_skip}
      -l <chunk_length>      Length of the encoded chunk.
                             On EVM networks one can write up to
                             around 24.000 characters
@@ -1864,6 +1876,7 @@ _show_config() {
   _msg_info "                Maximum retries:   ${retries_max}"
   _msg_info "                   Call timeout:   ${call_timeout}"
   _msg_info "                      Lock only:   ${lock_only}"
+  _msg_info "                  Skip encoding:   ${encoding_skip}"
   _msg_info "                   Chunk length:   ${chunk_length}"
   _msg_info "             Contract options:"
   _msg_info "Cross-chain file system address:   ${ccfs_address}"
@@ -1911,7 +1924,7 @@ _requirements
 getopts_opts="$( \
   printf \
     "%s" \
-    "m:r:T:P:L:l:" \
+    "m:r:T:P:L:l:G" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
@@ -1933,6 +1946,8 @@ while \
       override_call_timeout="${OPTARG}" ;;
     P) \
       override_tasks_parallel="${OPTARG}" ;;
+    G) \
+      override_encoding_skip="y" ;;
     L) \
       override_lock_only="${OPTARG}" ;;
     l) \
@@ -2016,6 +2031,7 @@ app_opts=(
   "${upload_method}"
   "${retries_max}"
   "${call_timeout}"
+  "${encoding_skip}"
   "${lock_only}"
   "${chunk_length}"
   "${tasks_parallel}"
