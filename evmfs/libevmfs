@@ -101,7 +101,8 @@ _resource_validate() {
     _msg=()
   _flag_valid=""
   _msg=(
-    "Validating integrity of merged file."
+    "Validating integrity"
+    "of merged file."
   )
   _msg_info \
     "${_msg[*]}"
@@ -109,6 +110,18 @@ _resource_validate() {
     _file_hash \
       "${_check}")"
   if [[ "${_sum}" != "${_reference}" ]]; then
+    _msg=(
+      "Expected: '${_reference}'."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      0
+    _msg=(
+      "Found: '${_sum}'."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      0
     _msg=(
       "Error downloading or file"
       "corrupted."
@@ -119,7 +132,8 @@ _resource_validate() {
     _flag_valid="false"
   elif [[ "${_sum}" == "${_reference}" ]]; then
     _msg=(
-      "File correctly downloaded."
+      "File correctly downloaded"
+      "or encoded."
     )
     _msg_info \
       "${_msg[*]}"

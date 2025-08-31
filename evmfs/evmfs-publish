@@ -425,7 +425,10 @@ _chunks_get() {
     _chunks < \
     <(find \
         "${_dir}" \
-        "${_find_opts[@]}" || \
+        "${_find_opts[@]}" | \
+        sort \
+          -z \
+          -V || \
       true)
 }
 
@@ -447,16 +450,21 @@ _chunks_check() {
       "${_msg[*]}"
   elif (( 0 < "${#_chunks[@]}" )); then
     _msg=(
-      "Got '${#_chunks[@]}' chunks. Merging."
+      "Found '${#_chunks[@]}' chunks"
+      "from a previous encoding."
+      "Merging to check integrity."
     )
+    printf \
+      "%s\n" \
+      "${_chunks[@]}"
     _msg_info \
       "${_msg[*]}"
     txt2bin \
       "${_check}" \
       "${_chunks[@]}"
     _resource_validate \
-      "${_sum}" \
       "${_check}" \
+      "${_sum}" \
       0
     if [[ "${_flag_valid}" == "true" ]]; then
       _msg=(
@@ -521,8 +529,9 @@ _file_encode() {
           "cached encoded file is corrupted."
           "This will result in a broken upload."
         )
-        _msg_warning \
-          "${_msg[*]}"
+        _msg_error \
+          "${_msg[*]}" \
+          1
       fi
     fi
   fi
