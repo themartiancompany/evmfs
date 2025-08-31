@@ -35,6 +35,8 @@ _file_read =
   _libcrash._file_read;
 _file_write =
   _libcrash._file_write;
+_json_read =
+  _libcrash._json_read;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =
@@ -89,6 +91,8 @@ function
   index_end =
     "";
   checkpoint_file_path =
+    "";
+  chunks_files_type =
     "";
   chunks_files_paths =
     [];
@@ -682,6 +686,11 @@ function
     "  <checkpoint_file_path>           Checkpoint file on which latest",
     "                                   downloaded chunk index is saved",
     "                                   in case node was to crash.",
+    "  <chunks_files_type>              Can be 'file' or 'list. If file",
+    "                                   it will consider the next arguments",
+    "                                   files, if 'list' it the next argument",
+    "                                   will be considered a JSON list containing",
+    "                                   the files paths.",
     "  [chunks_files_paths]             File chunks to publish.",
   ];
   for ( _line of _text ) {
@@ -761,7 +770,11 @@ function
         checkpoint_file_path =
           _value;
       }
-      if ( 16 < _index ) {
+      if ( _index == 17) {
+        chunks_files_type =
+          _value;
+      }
+      if ( 17 < _index ) {
 	chunks_files_paths.push(
           _value);
       }
@@ -810,6 +823,16 @@ function
     call_timeout =
       300000;
   }
+  if ( chunks_files_type == "" ) {
+    call_timeout =
+      "file";
+  }
+  if ( chunks_files_type == "list" ) {
+    chunks_files_paths =
+      _json_read(
+        chunks_files_paths[0]
+      );
+  }
 }
 
 if ( _cmdline_check(
@@ -833,6 +856,7 @@ if ( _cmdline_check(
     index_start,
     index_end,
     checkpoint_file_path,
+    chunks_files_type,
     chunks_files_paths,
   ];
   _publish_cmdline(

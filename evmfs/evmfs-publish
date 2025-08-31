@@ -435,10 +435,23 @@ _chunks_get() {
 _chunks_check() {
   local \
     _chunks=() \
-    _check
+    _check \
+    _chunk_list \
+    _chunk \
+    _txt2bin_opts=()
   _chunks_get \
     "${_tmp_dir}"
   _check="${_tmp_dir}/${_sum}.check"
+  _chunks_list="${_tmp_dir}/${_sum}.list"
+  if [[ "${quiet}" == "n" ]]; then
+    _txt2bin_opts+=(
+      -v
+    )
+  fi
+  if [[ -e "${_check}" ]]; then
+    rm \
+      "${_check}"
+  fi
   if [[ "${#_chunks[@]}" == "0" ]]; then
     _flag_valid="false"
     _msg=(
@@ -454,14 +467,22 @@ _chunks_check() {
       "from a previous encoding."
       "Merging to check integrity."
     )
-    printf \
-      "%s\n" \
-      "${_chunks[@]}"
     _msg_info \
       "${_msg[*]}"
+    for _chunk in "${_chunks[@]}"; do
+      echo \
+        "${_chunk}" >> \
+        "${_chunks_list}"
+    done
+    _txt2bin_opts+=(
+      -t
+        "list"
+    )
     txt2bin \
+      "${_txt2bin_opts[@]}" \
       "${_check}" \
-      "${_chunks[@]}"
+      "${_chunks_list}"
+      # "${_chunks[@]}"
     _resource_validate \
       "${_check}" \
       "${_sum}" \
@@ -515,6 +536,11 @@ _file_encode() {
           "${_bin2txt_opts[@]}" \
           "${_file}" \
           "${_chunk_prefix}"
+        # for _chunk in "${_chunk_prefix}"*; do
+        #   _file_hash \
+        #     "${_chunk}" > \
+        #     "${_chunk}.sum"
+        # done
       fi
     elif [[ "${_encoding_skip}" == "y" ]]; then
       _msg=(
@@ -614,6 +640,42 @@ _verify_skip() {
   _verify_queue["${_index}"]="false"
 }
 
+_json_gen() {
+  local \
+    _path="${1}" \
+    _args=() \
+    _counter \
+    _counter_max
+  shift \
+    1
+  _args=(
+    "$@"
+  )
+  _counter_max="$(( \
+    "${#_args[@]}" - \
+    1))"
+  echo \
+    "[" > \
+    "${_path}"
+  for _counter \
+    in $(seq \
+           0 \
+           "$(( "${_counter_max}" - \
+                1))"); do
+    printf \
+     '  "%s",\n' \
+     "${_args[${_counter}]}" >> \
+     "${_path}"
+  done
+  printf \
+    '  "%s\n"' \
+    "${_args[${_counter_max}]}" >> \
+    "${_path}"
+  echo \
+    "]" >> \
+    "${_path}"
+}
+
 _chunks_publish_bulk() {
   local \
     _tasks_parallel="${1}" \
@@ -624,19 +686,28 @@ _chunks_publish_bulk() {
     _rpc_backend \
     _msg=() \
     _checkpoint_publish_file_path \
+    _chunks_files_type \
+    _publish_queue_json \
     _index_start \
     _index_end \
     _checkpoint \
     _chunks_total_run \
     _node_run_opts=() \
-    _run_once
+    _run_once \
+    _publish_queue_runtime=()
   _node_run_opts+=(
     -r
       "${_retries_max}"
   )
   _checkpoint_publish_file_path="${_tmp_dir}/checkpoint.publish"
+  _publish_queue_json="${_tmp_dir}/${_sum}.publish.json"
   _chunks_total_run="$(( \
     "${_index_end}" - "${_index_start}" + 1))"
+  if (( 1000 < "${_chunks_total_run}" )); then
+    _chunks_files_type="list"
+  else
+    _chunks_files_type="file"
+  fi
   _msg=(
     "Publishing '${_chunks_total_run}'"
     "chunks from '${_index_start}'"
@@ -668,6 +739,18 @@ _chunks_publish_bulk() {
     )
     _msg_info \
       "${_msg[*]}"
+    if [[ "${_chunks_files_type}" == "list" ]]; then
+      _json_gen \
+        "${_publish_queue_json}" \
+        "${_publish_queue[@]:${_checkpoint}:${_chunks_total_run}}"
+      _publish_queue_runtime=(
+        "${_publish_queue_json}"
+      )
+    elif [[ "${_chunks_files_type}" == "file" ]]; then
+      _publish_queue_runtime=(
+        "${_publish_queue[@]:${_checkpoint}:${_chunks_total_run}}"
+      )
+    fi
     _publish_args=(
       "${quiet}"
       "${_retries_max}"
@@ -684,7 +767,8 @@ _chunks_publish_bulk() {
       "${_checkpoint}"
       "${_index_end}"
       "${_checkpoint_publish_file_path}"
-      "${_publish_queue[@]:${_checkpoint}:${_chunks_total_run}}"
+      "${_chunks_files_type}"
+      "${_publish_queue_runtime[@]}"
     )
     _msg=(
       "Running node."
