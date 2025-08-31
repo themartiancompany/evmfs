@@ -238,12 +238,12 @@ function
     _index_end - _index_start + 1;
   if ( _total_files > _total_indexes ) {
     _msg_error(
-      "More files to save into than indexes to download.",
+      `More files to upload (${_total_files}) than indexes to upload (${_total_indexes}).`,
       1);
   }
   if ( _total_files < _total_indexes ) {
     _msg_error(
-      "More indexes downloads than files to save into.",
+      `More indexes' upload (${_total_indexes}) than files to upload (${_total_files}).`,
       1);
   }
   _msg_info(
@@ -384,7 +384,7 @@ async function
     _chunks_files_paths.length;
   if ( _chunks_total == 0 ) {
     _msg_error(
-      "file chunks list empty",
+      "File chunks list empty.",
       1);
   }
   _input_data_check(
@@ -856,7 +856,6 @@ if ( _cmdline_check(
     index_start,
     index_end,
     checkpoint_file_path,
-    chunks_files_type,
     chunks_files_paths,
   ];
   _publish_cmdline(
