@@ -469,6 +469,8 @@ _chunks_check() {
     )
     _msg_info \
       "${_msg[*]}"
+    rm \
+      "${_chunks_list}"
     for _chunk in "${_chunks[@]}"; do
       echo \
         "${_chunk}" >> \
