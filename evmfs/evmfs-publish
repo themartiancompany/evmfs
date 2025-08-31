@@ -55,6 +55,7 @@ _global_variables() {
   lock_only=""
   chunk_length=""
   tasks_parallel=""
+  encoding_type=""
   cache_dir=""
   target_files=()
   command_args=()
@@ -393,7 +394,7 @@ _contract_call_opts_setup() {
 _work_dir_setup() {
   local \
     _msg=()
-  _tmp_dir="${_cache_dir}/${_sum}/publish"
+  _tmp_dir="${_cache_dir}/${_sum}/publish/${_encoding_type}/${_chunk_length}"
   _msg=(
     "Setting up work directory"
     "'${_tmp_dir}'."
@@ -410,12 +411,12 @@ _chunks_get() {
     _dir="${1}" \
     _find_opts=()
   _find_opts+=(
-    -depth
+    -maxdepth
       1
     -type
       "f"
     -iname
-      "${_sum}.base64"
+      "${_sum}.base64*"
     -print0
   )
   mapfile \
@@ -435,7 +436,16 @@ _chunks_check() {
   _chunks_get \
     "${_tmp_dir}"
   _check="${_tmp_dir}/${_sum}.check"
-  if (( 0 < "${#_chunks[@]}" )); then
+  if [[ "${#_chunks[@]}" == "0" ]]; then
+    _flag_valid="false"
+    _msg=(
+      "Found no previous file encodings"
+      "in cache directory, encoding file"
+      "now."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  elif (( 0 < "${#_chunks[@]}" )); then
     _msg=(
       "Got '${#_chunks[@]}' chunks. Merging."
     )
@@ -445,15 +455,18 @@ _chunks_check() {
       "${_check}" \
       "${_chunks[@]}"
     _resource_validate \
+      "${_sum}" \
       "${_check}" \
       0
     if [[ "${_flag_valid}" == "true" ]]; then
       _msg=(
-        "Skipping encoding."
+        "Existing file encoding complete,"
+        "skipping encoding."
       )
-    elif [[ "${_flag_valid}" == "true" ]]; then
+    elif [[ "${_flag_valid}" == "false" ]]; then
       _msg=(
-        "Incomplete encoding, re-encoding."
+        "Incomplete encoding, file"
+        "should be re-encoded."
       )
     fi
     _msg_info \
@@ -468,7 +481,7 @@ _file_encode() {
     _flag_valid
   _length="${_chunk_length}"
   _chunk_prefix="${_tmp_dir}/${_sum}.base64"
-  # _chunks_check
+  _chunks_check
   _file_size_check \
     "${_file}"
   _bin2txt_opts+=(
@@ -487,12 +500,31 @@ _file_encode() {
   )
   _msg_info \
     "${_msg[*]}"
-  if [[ "${_lock_only}" == "" || \
-        "${_flag_valid}" == "true" ]]; then
-    bin2txt \
-      "${_bin2txt_opts[@]}" \
-      "${_file}" \
-      "${_chunk_prefix}"
+  if [[ "${_lock_only}" == "" ]]; then
+    if [[ "${_encoding_skip}" == "n" ]]; then
+      if [[ "${_flag_valid}" == "false" ]]; then
+        bin2txt \
+          "${_bin2txt_opts[@]}" \
+          "${_file}" \
+          "${_chunk_prefix}"
+      fi
+    elif [[ "${_encoding_skip}" == "y" ]]; then
+      _msg=(
+        "File encoding explicitly"
+        "disabled through switch."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      if [[ "${_flag_valid}" == "false" ]]; then
+        _msg=(
+          "Encoding skipped, still"
+          "cached encoded file is corrupted."
+          "This will result in a broken upload."
+        )
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
   fi
 }
 
@@ -509,9 +541,13 @@ _queue_setup() {
   if [[ "${_lock_only}" == "" ]]; then
     _chunks_total="$( \
       find \
-        "${_query}"* \
+        "$(dirname \
+             "${_query}")" \
         -type \
           "f" \
+        -iname \
+          "$(basename \
+               "${_query}")*" \
         -printf \
           '.' | \
         wc \
@@ -549,17 +585,18 @@ _queue_setup() {
   fi
   if [[ "${_publish_queue[*]}" == "" ]]; then
     _msg=(
+      "Empty publishing queue."
       "Error processing file for upload."
     )
     _msg_error \
       "${_msg[*]}" \
       1
   fi
-  _msg=(
-    "Upload queue: ${_publish_queue[*]}."
-  )
-  _msg_info \
-    "${_msg[*]}"
+  # _msg=(
+  #   "Upload queue: ${_publish_queue[*]}."
+  # )
+  # _msg_info \
+  #   "${_msg[*]}"
 }
 
 _verify_skip() {
@@ -1372,9 +1409,7 @@ _file_upload() {
     _file_hash \
       "${_file}")"
   _work_dir_setup
-  if [[ "${_encoding_skip}" == "n" ]]; then
-    _file_encode
-  fi
+  _file_encode
   _queue_setup
   _chunks_network_assignment 
   _target_ll_fs_address_get
@@ -1484,10 +1519,11 @@ _evmfs_publish() {
     _retries_max="${15}" \
     _call_timeout="${16}" \
     _encoding_skip="${17}" \
-    _lock_only="${18}" \
-    _chunk_length="${19}" \
-    _tasks_parallel="${20}" \
-    _cache_dir="${21}" \
+    _encoding_type="${18}" \
+    _lock_only="${19}" \
+    _chunk_length="${20}" \
+    _tasks_parallel="${21}" \
+    _cache_dir="${22}" \
     _target_file \
     _target_files=() \
     _target_networks=() \
@@ -1497,7 +1533,7 @@ _evmfs_publish() {
     _args=() \
     _namespace
   shift \
-    21
+    22
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1645,6 +1681,10 @@ _set_overrides() {
     "user" \
     "level" \
     "n"
+  _set_override \
+    "encoding" \
+    "type" \
+    "base64"
   _deployments_dir_auto_detect \
     "evmfs" \
     "${user_level}"
@@ -1792,6 +1832,9 @@ $(_display_networks \
                             Default: ${lock_only}
      -G                     Explicitly skip file encoding.
                             Default: ${encoding_skip}
+     -g <encoding_type>     File encoding type.
+                            It can be 'base64'.
+                            Default: ${encoding_type}
      -l <chunk_length>      Length of the encoded chunk.
                             On EVM networks one can write up to
                             around 24.000 characters
@@ -1877,6 +1920,7 @@ _show_config() {
   _msg_info "                   Call timeout:   ${call_timeout}"
   _msg_info "                      Lock only:   ${lock_only}"
   _msg_info "                  Skip encoding:   ${encoding_skip}"
+  _msg_info "                  Encoding type:   ${encoding_type}"
   _msg_info "                   Chunk length:   ${chunk_length}"
   _msg_info "             Contract options:"
   _msg_info "Cross-chain file system address:   ${ccfs_address}"
@@ -1924,7 +1968,7 @@ _requirements
 getopts_opts="$( \
   printf \
     "%s" \
-    "m:r:T:P:L:l:G" \
+    "m:r:T:P:L:l:Gg:" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
@@ -1948,6 +1992,8 @@ while \
       override_tasks_parallel="${OPTARG}" ;;
     G) \
       override_encoding_skip="y" ;;
+    g) \
+      override_encoding_type="${OPTARG}" ;;
     L) \
       override_lock_only="${OPTARG}" ;;
     l) \
@@ -2032,6 +2078,7 @@ app_opts=(
   "${retries_max}"
   "${call_timeout}"
   "${encoding_skip}"
+  "${encoding_type}"
   "${lock_only}"
   "${chunk_length}"
   "${tasks_parallel}"

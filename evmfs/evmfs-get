@@ -901,6 +901,7 @@ _resource_get() {
       "${_chunks[@]}"
     _resource_validate \
       "${_check}" \
+      "${_uri_hash}" \
       1
     mv \
       "${_check}" \

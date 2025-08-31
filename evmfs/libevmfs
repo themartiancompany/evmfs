@@ -95,7 +95,8 @@ _file_hash() {
 _resource_validate() {
   local \
     _check="${1}" \
-    _exit="${2}" \
+    _reference="${2}" \
+    _exit="${3}" \
     _sum \
     _msg=()
   _flag_valid=""
@@ -107,7 +108,7 @@ _resource_validate() {
   _sum="$( \
     _file_hash \
       "${_check}")"
-  if [[ "${_sum}" != "${_uri_hash}" ]]; then
+  if [[ "${_sum}" != "${_reference}" ]]; then
     _msg=(
       "Error downloading or file"
       "corrupted."
@@ -116,7 +117,7 @@ _resource_validate() {
       "${_msg[*]}" \
       "${_exit}"
     _flag_valid="false"
-  elif [[ "${_sum}" == "${_uri_hash}" ]]; then
+  elif [[ "${_sum}" == "${_reference}" ]]; then
     _msg=(
       "File correctly downloaded."
     )
