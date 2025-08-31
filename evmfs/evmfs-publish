@@ -668,7 +668,7 @@ _json_gen() {
      "${_path}"
   done
   printf \
-    '  "%s\n"' \
+    '  "%s"\n' \
     "${_args[${_counter_max}]}" >> \
     "${_path}"
   echo \
