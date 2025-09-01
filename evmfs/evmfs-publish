@@ -438,7 +438,9 @@ _chunks_check() {
     _check \
     _chunk_list \
     _chunk \
-    _txt2bin_opts=()
+    _txt2bin_opts=() \
+    _decoding_failed
+  _decoding_failed=""
   _chunks_get \
     "${_tmp_dir}"
   _check="${_tmp_dir}/${_sum}.check"
@@ -462,35 +464,46 @@ _chunks_check() {
     _msg_info \
       "${_msg[*]}"
   elif (( 0 < "${#_chunks[@]}" )); then
-    _msg=(
-      "Found '${#_chunks[@]}' chunks"
-      "from a previous encoding."
-      "Merging to check integrity."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    rm \
-      -f \
-      "${_chunks_list}" || \
-    true
-    for _chunk in "${_chunks[@]}"; do
-      echo \
-        "${_chunk}" >> \
-        "${_chunks_list}"
-    done
-    _txt2bin_opts+=(
-      -t
-        "list"
-    )
-    txt2bin \
-      "${_txt2bin_opts[@]}" \
-      "${_check}" \
-      "${_chunks_list}"
-      # "${_chunks[@]}"
-    _resource_validate \
-      "${_check}" \
-      "${_sum}" \
-      0
+    if [[ "${_encoding_skip}" == "n" ]]; then
+      _msg=(
+        "Found '${#_chunks[@]}' chunks"
+        "from a previous encoding."
+        "Merging to check integrity."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      rm \
+        -f \
+        "${_chunks_list}" || \
+      true
+      for _chunk in "${_chunks[@]}"; do
+        echo \
+          "${_chunk}" >> \
+          "${_chunks_list}"
+      done
+      _txt2bin_opts+=(
+        -t
+          "list"
+      )
+      txt2bin \
+        "${_txt2bin_opts[@]}" \
+        "${_check}" \
+        "${_chunks_list}" || \
+      _decoding_failed="true"
+        # "${_chunks[@]}"
+      if [[ "${_decoding_failed}" == "true" ]]; then
+        _flag_valid="false"
+      elif [[ "${_decoding_failed}" != "true" ]]; then
+        _resource_validate \
+          "${_check}" \
+          "${_sum}" \
+          0
+      fi
+    elif [[ "${_encoding_skip}" == "y" ]]; then
+      _msg_info \
+        "TODO"
+      _flag_valid="true"
+    fi
     if [[ "${_flag_valid}" == "true" ]]; then
       _msg=(
         "Existing file encoding complete,"
@@ -1448,6 +1461,10 @@ _target_ll_fs_address_get() {
     "${_msg[*]}"
 }
 
+_pointer_local_save() {
+  echo "ciao"  
+}
+
 _file_upload() {
   local \
     _ccfs_address="${1}" \
@@ -1588,6 +1605,7 @@ _file_upload() {
   _publishing_address="$( \
     _publishing_address_get \
       "${_file}")"
+  # _pointer_local_save
   _msg=(
     "File '${_file}' uploaded and"
     "available at URI"
