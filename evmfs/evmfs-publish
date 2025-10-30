@@ -232,7 +232,12 @@ _chunk_publish() {
     _index="${4}" \
     _chunk="${5}" \
     _payload \
-    _passed_flag
+    _passed_flag \
+    _read_opts=()
+  _read_opts+=(
+    -rd
+      ''
+  )
   _msg=(
     "Checking chunk '${_chunk}'"
     "$(( "${_index}" + 1 ))"
@@ -268,8 +273,7 @@ _chunk_publish() {
       "${_msg[*]}"
     IFS= \
     read \
-      -rd \
-        '' \
+      "${_read_opts[@]}" \
       _payload < \
       <( cat \
            "${_chunk}" ) || \
