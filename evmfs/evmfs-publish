@@ -418,7 +418,8 @@ _work_dir_setup() {
 _chunks_get() {
   local \
     _dir="${1}" \
-    _find_opts=()
+    _find_opts=() \
+    _sort_opts=()
   _find_opts+=(
     -maxdepth
       1
@@ -428,6 +429,10 @@ _chunks_get() {
       "${_sum}.base64*"
     -print0
   )
+  _sort_opts+=(
+    -z
+    -V
+  )
   mapfile \
     -d \
     $'\0' \
@@ -436,8 +441,7 @@ _chunks_get() {
         "${_dir}" \
         "${_find_opts[@]}" | \
         sort \
-          -z \
-          -V || \
+          "${_sort_opts[@]}" || \
       true)
 }
 
