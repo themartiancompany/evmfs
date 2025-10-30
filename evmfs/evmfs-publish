@@ -1143,7 +1143,14 @@ _chunks_lock_new() {
     _index \
     _chunk \
     _pendings=()
-    _msg=()
+    _msg=() \
+    _wait_jobs=()
+  _wait_opts+=(
+    -f
+    -p
+      "_job"
+    -n
+  )
   _index=0
   while \
     [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
@@ -1172,10 +1179,7 @@ _chunks_lock_new() {
     )
     if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
       wait \
-        -f \
-        -p \
-          _job \
-        -n \
+        "${_wait_opts[@]}" \
         "${_pendings[@]}"
       _pendings_new=()
       for _pending in "${_pendings[@]}"; do
