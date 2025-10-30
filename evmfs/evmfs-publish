@@ -989,7 +989,14 @@ _chunks_publish_new() {
     _pending \
     _pendings=() \
     _msg=() \
-    _job
+    _job \
+    _wait_opts=()
+  _wait_opts+=(
+    -f
+    -p
+      "_job"
+    -n
+  )
   _index=0
   while \
     [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
@@ -1017,10 +1024,7 @@ _chunks_publish_new() {
       _index + 1 ))"
     if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
       wait \
-	-f \
-	-p \
-	  _job \
-        -n \
+        "${_wait_opts[@]}" \
         "${_pendings[@]}"
       _pendings_new=()
       for _pending in "${_pendings[@]}"; do
