@@ -597,26 +597,37 @@ _queue_setup() {
   local \
     _chunk \
     _msg=() \
-    _query
+    _query \
+    _query_dir \
+    _bin2txt_opts=() \
+    _find_opts=() \
+    _wc_opts=()
   if [[ "${_chunks_many}" == "true" ]]; then
     _query="${_chunk_prefix}."
   elif [[ "${_chunks_many}" == "false" ]]; then
     _query="${_chunk_prefix}"
   fi
   if [[ "${_lock_only}" == "" ]]; then
+    _query_dir="$( \
+      basename \
+        "${_query}")"
+    _find_opts+=(
+      -type
+        "f"
+      -iname
+        "${_query_dir}*"
+      -printf
+        '.'
+    )
+    _wc_opts+=(
+      -c
+    )
     _chunks_total="$( \
       find \
-        "$(dirname \
-             "${_query}")" \
-        -type \
-          "f" \
-        -iname \
-          "$(basename \
-               "${_query}")*" \
-        -printf \
-          '.' | \
+        "${_query_dir}" \
+        "${_find_opts[@]}" | \
         wc \
-          -c)"
+          "${_wc_opts[@]}")"
     if [[ "${_chunks_total}" == "1" ]]; then
       _publish_queue+=(
         "${_chunk_prefix}"
@@ -637,12 +648,15 @@ _queue_setup() {
       done
     fi
   elif [[ "${_lock_only}" != "" ]]; then
+    _bin2txt_opts+=(
+      -L
+        "${_chunk_length}"
+      -s
+        "${_file}"
+    )
     _chunks_total="$( \
       bin2txt \
-        -L \
-          "${_chunk_length}" \
-        -s \
-          "${_file}")"
+        "${_bin2txt_opts[@]}")"
     _publish_queue+=(
       $(seq \
           "${_chunks_total}")
