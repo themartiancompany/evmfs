@@ -96,13 +96,18 @@ _file_size_check() {
   local \
     _file="${1}" \
     _size \
-    _msg=()
+    _msg=() \
+    _du_opts=()
+  _du_opts+=(
+    -b
+  )
   _chunks_many="false"
   _size="$( \
     du \
-      -b \
+      "${_du_opts[@]}" \
       "${_file}" | \
-      awk '{print $1}')"
+      awk \
+        '{print $1}')"
   _msg=(
     "File '${_file}' has size '${_size}' bytes."
   )
