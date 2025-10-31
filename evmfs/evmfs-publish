@@ -21,13 +21,12 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-_bin="$( \
+_bin="$(
   dirname \
-    "$( \
-      command \
-        -v \
-	  "env")")"
-_lib="$( \
+    "$(command \
+         -v \
+         "env")")"
+_lib="$(
   realpath \
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
@@ -102,7 +101,7 @@ _file_size_check() {
     -b
   )
   _chunks_many="false"
-  _size="$( \
+  _size="$(
     du \
       "${_du_opts[@]}" \
       "${_file}" | \
@@ -150,14 +149,14 @@ _chunk_verify() {
     "${_sum}" \
     "${_index}" > \
     "${_remote}"
-  _local_sum="$( \
+  _local_sum="$(
     _file_hash \
       "${_chunk}")"
-  _remote_sum="$( \
+  _remote_sum="$(
     _file_hash \
       "${_remote}")"
   if [[ "${_local_sum}" != "${_remote_sum}" ]]; then
-    _publishing_address=$( \
+    _publishing_address=$(
       _publishing_address_get \
         "${_file}")
     _msg=(
@@ -181,7 +180,7 @@ _chunk_lock() {
     _index="${4}" \
     _msg=() \
     _locked
-  _locked="$( \
+  _locked="$(
     evm-contract-call \
       "${_check_call_opts[@]}" \
       "${_fs_address}" \
@@ -608,7 +607,7 @@ _queue_setup() {
     _query="${_chunk_prefix}"
   fi
   if [[ "${_lock_only}" == "" ]]; then
-    _query_dir="$( \
+    _query_dir="$(
       basename \
         "${_query}")"
     _find_opts+=(
@@ -622,7 +621,7 @@ _queue_setup() {
     _wc_opts+=(
       -c
     )
-    _chunks_total="$( \
+    _chunks_total="$(
       find \
         "${_query_dir}" \
         "${_find_opts[@]}" | \
@@ -654,7 +653,7 @@ _queue_setup() {
       -s
         "${_file}"
     )
-    _chunks_total="$( \
+    _chunks_total="$(
       bin2txt \
         "${_bin2txt_opts[@]}")"
     _publish_queue+=(
@@ -761,7 +760,7 @@ _chunks_publish_bulk() {
     "${_msg[*]}"
   _rpc_backend_get \
     "${_target_network}"
-  _publish="$( \
+  _publish="$(
     _get_lib)/evmfs/publish"
   while true; do
     _checkpoint_get \
@@ -863,7 +862,7 @@ _chunks_verify_bulk() {
     "${_msg[*]}"
   _rpc_backend_get \
     "${_target_network}"
-  _verify="$( \
+  _verify="$(
     _get_lib)/evmfs/verify"
   while true; do
     _checkpoint_get \
@@ -935,7 +934,7 @@ _chunks_lock_bulk() {
     "${_msg[*]}"
   _rpc_backend_get \
     "${_target_network}"
-  _lock="$( \
+  _lock="$(
     _get_lib)/evmfs/lock"
   while true; do
     _checkpoint_get \
@@ -1259,7 +1258,7 @@ _chunks_length_lock() {
   )
   _msg_info \
     "${_msg[*]}"
-  _locked="$( \
+  _locked="$(
     evm-contract-call \
       "${_length_call_opts[@]}" \
       "${_ll_address}" \
@@ -1326,10 +1325,10 @@ _chunk_check() {
     "${_sum}" \
     "${_index}" > \
     "${_remote}"
-  _local_sum="$( \
+  _local_sum="$(
     _file_hash \
       "${_chunk}")"
-  _remote_sum="$( \
+  _remote_sum="$(
     _file_hash \
       "${_remote}")"
   if [[ "${_local_sum}" == "${_remote_sum}" ]]; then
@@ -1424,7 +1423,7 @@ _index_publish_bulk() {
     "${_msg[*]}"
   _rpc_backend_get \
     "${_target_networks[0]}"
-  _index="$( \
+  _index="$(
     _get_lib)/evmfs/index"
   while true; do
     _checkpoint_get \
@@ -1554,7 +1553,7 @@ _file_upload() {
   )
   _msg_info \
     "${_msg[*]}"
-  _sum="$( \
+  _sum="$(
     _file_hash \
       "${_file}")"
   _work_dir_setup
@@ -1637,7 +1636,7 @@ _file_upload() {
       "${_target_ll_fs_address}" \
       "${_chunks_total}"
   fi
-  _publishing_address="$( \
+  _publishing_address="$(
     _publishing_address_get \
       "${_file}")"
   # _pointer_local_save
@@ -1699,7 +1698,7 @@ _evmfs_publish() {
       _index_network="${_target_networks[0]}"
     fi
   fi
-  _namespace="$( \
+  _namespace="$(
     evm-wallet \
      get \
        "${_wallet_name}" \
@@ -1950,7 +1949,7 @@ _usage() {
     _networks \
     _usage_text
   _fs_deployment="${deployments_dir}/FileSystem"
-  _networks=( $( \
+  _networks=( $(
     evm-contract-deployment-networks \
       -A \
       "${_fs_deployment}")
@@ -2101,7 +2100,7 @@ _display_target_files() {
   )
   for _file \
     in "${_target_files[@]}"; do
-    _address="$( \
+    _address="$(
       _publishing_address_get \
         "${_file}")"
     _msg_info "                           File:   ${_file}"
@@ -2115,7 +2114,7 @@ _libevm_global_variables
 _libevm_app_global_variables
 _requirements
 # shellcheck disable=SC2034
-getopts_opts="$( \
+getopts_opts="$(
   printf \
     "%s" \
     "m:r:T:P:L:l:Gg:" \
