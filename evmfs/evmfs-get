@@ -84,7 +84,8 @@ _requirements() {
 
 _network_setup() {
   local \
-    _uri_network_id="${1}"
+    _uri_network_id="${1}" \
+    _msg=()
   if [[ "${_uri_network_id}" == "" ]]; then
     _msg=(
       "URI does not specify a network,"
@@ -248,20 +249,24 @@ _address_section_get() {
     _position="${2}" \
     _path \
     _reversed \
-    _hash_reversed
+    _hash_reversed \
+    _cut_opts=()
   _path="${_uri#evmfs://}"
   _reversed="$( \
     echo \
       "${_uri}" |
       rev)"
+  _cut_opts+=(
+    -d
+      "/"
+    -f
+      "${_position}"
+  )
   _section="$( \
     echo \
       "${_reversed}" | \
       cut \
-        -d \
-          "/" \
-        -f \
-          "${_position}")"
+        "${_cut_opts[@]}")"
   echo \
     "${_section}" | \
     rev
@@ -448,8 +453,11 @@ _chunks_ccget_bulk() {
         "${_checkpoint_get_file_path}"
       break
     fi
-    _msg_info \
+    _msg=(
       "Preparing node arguments."
+    )
+    _msg_info \
+      "${_msg[*]}"
     _ccget_args=(
       "${quiet}"
       "${_retries_max}"
@@ -469,8 +477,11 @@ _chunks_ccget_bulk() {
       "${_checkpoint_get_file_path}"
       "${_chunks[@]:${_checkpoint}:${_chunks_total_run}}"
     )
-    _msg_info \
+    _msg=(
       "Running node."
+    )
+    _msg_info \
+      "${_msg[*]}"
     node-run \
       "${_node_run_opts[@]}" \
       "${_ccget}" \
@@ -583,7 +594,14 @@ _chunks_get_async_bulk() {
     _bulk_index_amount \
     _bulk_payload \
     _msg=() \
-    _get_type
+    _get_type \
+    _wait_opts=()
+  _wait_opts+=(
+    -f
+    -p
+      "_job"
+    -n
+  )
   if [[ "${_uri_contract_type}" == "fs" ]]; then
     _get_type="get"
   elif [[ "${_uri_contract_type}" == "ccfs" ]]; then
@@ -653,10 +671,7 @@ _chunks_get_async_bulk() {
       _msg_info \
         "Waiting for a task to complete."
       wait \
-	-f \
-	-p \
-	  _job \
-        -n \
+        "${_wait_opts[@]}" \
         "${_pendings[@]}"
       _pendings_new=()
       for _pending in "${_pendings[@]}"; do
@@ -684,7 +699,14 @@ _chunks_get_async_standalone() {
     _piece \
     _index \
     _chunk_get_opts=() \
-    _pendings=()
+    _pendings=() \
+    _wait_opts=()
+  _wait_opts+=(
+    -f
+    -p
+      "_job"
+    -n
+  )
   _index=0
   while \
     [ "${_index}" -le "$(("${_length}" - 1))" ] && \
@@ -711,10 +733,7 @@ _chunks_get_async_standalone() {
       _index + 1 ))"
     if [[ "${#_pendings[@]}" == "${_tasks_parallel}" ]]; then 
       wait \
-	-f \
-	-p \
-	  _job \
-        -n \
+        "${_wait_opts[@]}" \
         "${_pendings[@]}"
       _pendings_new=()
       for _pending in "${_pendings[@]}"; do
