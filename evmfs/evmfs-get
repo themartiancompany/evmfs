@@ -21,13 +21,12 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-_bin="$( \
+_bin="$(
   dirname \
-    "$( \
-      command \
-        -v \
-	  "env")")"
-_lib="$( \
+    "$(command \
+         -v \
+         "env")")"
+_lib="$(
   realpath \
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
@@ -135,22 +134,22 @@ _contract_type_get() {
         "${_uri_network_id}"
     )
   fi
-  _fs_addresses+=( $( \
+  _fs_addresses+=( $(
     evm-contract-deployment-address \
       "${_evm_contract_deployment_address_opts[@]}" \
       "FileSystem")
   )
-  _ccfs_addresses+=( $( \
+  _ccfs_addresses+=( $(
     evm-contract-deployment-address \
       "${_evm_contract_deployment_address_opts[@]}" \
       "CrossChainFileSystem")
   )
-  _contract_address_lower="$( \
+  _contract_address_lower="$(
     _lower \
       "${_contract_address}")"
   for _address in \
     "${_fs_addresses[@]}"; do
-    _address_lower="$( \
+    _address_lower="$(
       _lower \
         "${_address}")"
     if [[ "${_contract_address_lower}" == \
@@ -162,7 +161,7 @@ _contract_type_get() {
   done
   for _address in \
     "${_ccfs_addresses[@]}"; do
-    _address_lower="$( \
+    _address_lower="$(
       _lower \
         "${_address}")"
     if [[ "${_contract_address_lower}" == \
@@ -221,7 +220,7 @@ _contract_setup() {
     #       a composition of
     #       'evm-contract-deployment-something's
     #       if a check isn't implemented.
-    _uri_contract_address="$( \
+    _uri_contract_address="$(
       evmfs-address \
         "${_evmfs_address_opts[@]}")"
   elif [[ "${_contract_address}" != "" ]]; then
@@ -235,7 +234,7 @@ _namespace_setup() {
   local \
     _namespace="${1}"
   if [[ "${_namespace}" == "" ]]; then
-    _uri_namespace="$( \
+    _uri_namespace="$(
       evm-wallet \
        get \
          "${_wallet_name}" \
@@ -252,7 +251,7 @@ _address_section_get() {
     _hash_reversed \
     _cut_opts=()
   _path="${_uri#evmfs://}"
-  _reversed="$( \
+  _reversed="$(
     echo \
       "${_uri}" |
       rev)"
@@ -262,7 +261,7 @@ _address_section_get() {
     -f
       "${_position}"
   )
-  _section="$( \
+  _section="$(
     echo \
       "${_reversed}" | \
       cut \
@@ -284,7 +283,7 @@ _namespace_get() {
   local \
     _uri="${1}" \
     _namespace
-  _namespace="$( \
+  _namespace="$(
     _address_section_get \
       "${_uri}" \
       "2")"
@@ -296,7 +295,7 @@ _contract_get() {
   local \
     _uri="${1}" \
     _address
-  _address="$( \
+  _address="$(
     _address_section_get \
       "${_uri}" \
       "3")"
@@ -353,7 +352,7 @@ _resource_length_get() {
     _length \
     _locked
   _length=""
-  _locked="$( \
+  _locked="$(
     evm-contract-call \
       "${_length_call_opts[@]}" \
       "${_ll_address}" \
@@ -362,7 +361,7 @@ _resource_length_get() {
       "${_uri_namespace}" \
       "${_uri_hash}")"
   if [[ "${_locked}" == "true" ]]; then
-    _length="$( \
+    _length="$(
       evm-contract-call \
         "${_length_call_opts[@]}" \
         "${_ll_address}" \
@@ -378,7 +377,7 @@ _resource_length_get() {
 _resource_length_mutable_get() {
   local \
     _length
-  _length="$( \
+  _length="$(
     evm-contract-call \
       "${_get_call_opts[@]}" \
       "${_uri_contract}" \
@@ -436,7 +435,7 @@ _chunks_ccget_bulk() {
     "${_msg[*]}"
   _rpc_backend_get \
     "${_uri_network_id}"
-  _ccget="$( \
+  _ccget="$(
     _get_lib)/evmfs/ccget"
   while true; do
     _checkpoint_get \
@@ -533,7 +532,7 @@ _chunks_get_bulk() {
     "${_msg[*]}"
   _rpc_backend_get \
     "${_uri_network_id}"
-  _get="$( \
+  _get="$(
     _get_lib)/evmfs/get"
   while true; do
     _checkpoint_get \
@@ -817,10 +816,10 @@ _chunks_total_get() {
     -r
       "${_retries_max}"
   )
-  _resource_length="$( \
+  _resource_length="$(
     _resource_length_get)"
   if [[ "${_resource_length}" == "" ]]; then
-    _resource_length="$( \
+    _resource_length="$(
       _resource_length_mutable_get)"
     _msg=(
       "The file length is not locked,"
@@ -856,7 +855,7 @@ _resource_get() {
   mkdir \
     -p \
     "${_cache_dir}/${_uri_hash}/get"
-  _tmp_dir="$( \
+  _tmp_dir="$(
     mktemp \
       -d \
       -p \
@@ -998,29 +997,29 @@ _evmfs_get() {
              "$((${_uris_amount} - 1))"); do
     _target_uri="${_target_uris["${_cursor}"]}"
     _output_file="${_output_files["${_cursor}"]}"
-    _uri_network_id="$( \
+    _uri_network_id="$(
       _network_id_get \
         "${_target_uri}")"
     _network_setup \
       "${_uri_network_id}"
-    _uri_contract="$( \
+    _uri_contract="$(
       _contract_get \
         "${_target_uri}")"
     _contract_setup \
       "${_uri_contract}"
-    _uri_namespace="$( \
+    _uri_namespace="$(
       _namespace_get \
         "${_target_uri}")"
     _namespace_setup \
       "${_uri_namespace}"
-    _uri_hash="$( \
+    _uri_hash="$(
       _hash_get \
         "${_target_uri}")"
     _hash_check \
       "${_uri_hash}"
     _download="true"
     if [[ -e "${_output_file}" ]]; then
-      _output_file_hash="$( \
+      _output_file_hash="$(
         _file_hash \
           "${_output_file}")"
       if [[ "${_output_file_hash}" == "${_uri_hash}" ]]; then
@@ -1088,7 +1087,7 @@ _output_files_check() {
         "${_msg[*]}"
       for _uri in "${target_uris[@]}"; do
         output_files+=(
-          "$(pwd)/$( \
+          "$(pwd)/$(
             _hash_get \
               "${_uri}")"
         )
@@ -1096,7 +1095,7 @@ _output_files_check() {
     fi
   elif [[ "${uris_amount}" == "${_output_files_amount}" ]]; then
     for _file in "${output_files[@]}"; do
-      _dir="$( \
+      _dir="$(
         dirname \
           "${_file}")"
       if [[ ! -d "${_dir}" ]]; then
@@ -1217,7 +1216,7 @@ _usage() {
     _networks=() \
     _usage_text
   _fs_deployment="${deployments_dir}/FileSystem"
-  _networks=( $( \
+  _networks=( $(
     evm-contract-deployment-networks \
       -A \
       "${_fs_deployment}")
@@ -1342,7 +1341,7 @@ _display_target_uris() {
     _uris=() \
     _target_uri \
     _output_file
-  _uris=( $( \
+  _uris=( $(
     seq 0 \
         "$(("${_uris_amount}" - 1))")
   )
