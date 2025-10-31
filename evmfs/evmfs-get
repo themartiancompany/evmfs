@@ -1360,7 +1360,7 @@ _requirements
 _config_user_init \
   "${app_name}"
 # shellcheck disable=SC2034
-getopts_opts="$( \
+getopts_opts="$(
   printf \
     "%s" \
     "o:m:r:P:T:" \
@@ -1381,42 +1381,43 @@ while \
       output_files+=(
         "${OPTARG}"
       ) ;;
-    m) \
+    m)
       override_call_method="${OPTARG}" ;;
-    r) \
+    r)
       override_retries_max="${OPTARG}" ;;
-    P) \
+    P)
       override_tasks_parallel="${OPTARG}" ;;
-    T) \
+    T)
       override_call_timeout="${OPTARG}" ;;
-    A) \
+    A)
       override_fs_address="${OPTARG}" ;;
-    B) \
+    B)
       override_ll_address="${OPTARG}" ;;
-    C) \
+    C)
       override_ccfs_address="${OPTARG}" ;;
-    V) \
+    V)
       override_fs_version="${OPTARG}" ;;
-    n) \
+    n)
       target_networks+=(
         "${OPTARG}"
       ) ;;
-    W) \
+    W)
       override_cache_dir="${OPTARG}" ;;
-    c) \
+    c)
       override_color="y" ;;
-    v) \
+    v)
       override_quiet="n" ;;
-    h) \
-      echo \
-        "Displaying usage." && \
-      _set_overrides && \
+    h)
+      _set_overrides
       _usage \
         0 ;;
-    *) \
+    *)
       if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
+        _msg=(
+          "Invalid argument '${arg}'."
+        )
         _msg_error \
-          "Invalid argument '${arg}'." \
+          "${_msg[*]}" \
           0
         _usage \
           1
@@ -1427,9 +1428,12 @@ shift \
   $(( \
     OPTIND - 1 \
   ))
-if (( $# < 1 )); then
+if (( "${#}" < 1 )); then
+  _msg=(
+    "No URI given."
+  )
   _msg_error \
-    "No URI given." \
+    "${_msg[*]}" \
     0
   _set_overrides
   _usage \
