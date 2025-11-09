@@ -418,7 +418,8 @@ _chunks_get() {
   local \
     _dir="${1}" \
     _find_opts=() \
-    _sort_opts=()
+    _sort_opts=() \
+    _msg=()
   _find_opts+=(
     -maxdepth
       1
@@ -432,6 +433,12 @@ _chunks_get() {
     -z
     -V
   )
+  _msg=(
+    "Running find on '${_dir}'"
+    "with options '${_find_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   mapfile \
     -d \
     $'\0' \
@@ -598,6 +605,7 @@ _queue_setup() {
     _msg=() \
     _query \
     _query_dir \
+    _query_name \
     _bin2txt_opts=() \
     _find_opts=() \
     _wc_opts=()
@@ -608,19 +616,28 @@ _queue_setup() {
   fi
   if [[ "${_lock_only}" == "" ]]; then
     _query_dir="$(
+      dirname \
+        "${_query}")"
+    _query_name="$(
       basename \
         "${_query}")"
     _find_opts+=(
       -type
         "f"
       -iname
-        "${_query_dir}*"
+        "${_query_name}*"
       -printf
         '.'
     )
     _wc_opts+=(
       -c
     )
+    _msg=(
+      "Running find on '${_query_dir}'"
+      "with '${_find_opts[*]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
     _chunks_total="$(
       find \
         "${_query_dir}" \
@@ -1945,9 +1962,16 @@ _set_overrides() {
 # $1: exit status number.
 _usage() {
   local \
+    _exit="${1}" \
     _fs_deployment \
     _networks \
-    _usage_text
+    _usage_text \
+    _read_opts=()
+  _read_opts+=(
+    -r
+    -d
+      ''
+  )
   _fs_deployment="${deployments_dir}/FileSystem"
   _networks=( $(
     evm-contract-deployment-networks \
@@ -1955,11 +1979,10 @@ _usage() {
       "${_fs_deployment}")
   )
   IFS='' \
-    read \
-      -r \
-      -d '' \
-      _usage_text << \
-        ENDUSAGETEXT || true
+  read \
+    "${_read_opts[@]}" \
+    _usage_text << \
+      ENDUSAGETEXT || true
 EVM network file system file publisher
 
 Usage:
@@ -2052,7 +2075,7 @@ ENDUSAGETEXT
     '%s\n' \
     "${_usage_text}"
   exit \
-    "${1}"
+    "${_exit}"
 }
 
 # Shows configuration options.
@@ -2131,50 +2154,53 @@ while \
   _libevm_app_getopts_case
   case \
     "${arg}" in
-    m) \
+    m)
       override_upload_method="${OPTARG}" ;;
-    r) \
+    r)
       override_retries_max="${OPTARG}" ;;
-    T) \
+    T)
       override_call_timeout="${OPTARG}" ;;
-    P) \
+    P)
       override_tasks_parallel="${OPTARG}" ;;
-    G) \
+    G)
       override_encoding_skip="y" ;;
-    g) \
+    g)
       override_encoding_type="${OPTARG}" ;;
-    L) \
+    L)
       override_lock_only="${OPTARG}" ;;
-    l) \
+    l)
       override_chunk_length="${OPTARG}" ;;
-    A) \
+    A)
       override_fs_address="${OPTARG}" ;;
-    B) \
+    B)
       override_ll_address="${OPTARG}" ;;
-    C) \
+    C)
       override_ccfs_address="${OPTARG}" ;;
-    V) \
+    V)
       override_fs_version="${OPTARG}" ;;
-    i) \
+    i)
       override_index_network="${OPTARG}" ;;
-    n) \
+    n)
       target_networks+=(
         "${OPTARG}"
       ) ;;
-    W) \
+    W)
       override_cache_dir="${OPTARG}" ;;
-    c) \
+    c)
       override_color="y" ;;
-    v) \
+    v)
       override_quiet="n" ;;
-    h) \
+    h)
       _set_overrides && \
       _usage \
         0 ;;
-    *) \
+    *)
       if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
+        _msg=(
+          "Invalid argument '${arg}'."
+        )
         _msg_error \
-          "Invalid argument '${arg}'." \
+          "${_msg[*]}" \
           0
         _usage \
           1
@@ -2186,8 +2212,11 @@ shift \
     OPTIND - 1 \
   ))
 if (( $# < 1 )); then
+  _msg=(
+    "No input file given."
+  )
   _msg_error \
-    "No input file given." \
+    "${_msg[*]}" \
     0
   _set_overrides
   _usage \
