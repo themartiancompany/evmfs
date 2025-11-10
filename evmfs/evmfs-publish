@@ -33,9 +33,9 @@ _crash_bash="${_lib}/libcrash-bash/crash-bash"
 _libevm="${_lib}/libevm/libevm"
 _libevmfs="${_lib}/evmfs/libevmfs"
 _sourced \
-  "${_crash_bash}" 2>/dev/null || \
-  source \
-    "${_crash_bash}"
+  "${_crash_bash}" 2>"/dev/null" || \
+source \
+  "${_crash_bash}"
 _sourced \
   "${_libevm}"
 _sourced \
