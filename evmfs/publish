@@ -562,75 +562,29 @@ function
     _chunks_files_paths,
     _line,
     _text;
-  _text = 
-    [];
-  _text.push(
-    "          Maximum retries: {retries_max}".replace(
-      "{retries_max}",
-      retries_max));
-  _text.push(
-    "            Call timeout: {call_timeout}".replace(
-      "{call_timeout}",
-      call_timeout));
-  _text.push(
-    "              Wallet seed: {wallet_seed_path}".replace(
-      "{wallet_seed_path}",
-      wallet_seed_path));
-  _text.push(
-    "                  API Key: {api_key_path}".replace(
-      "{api_key_path}",
-      api_key_path));
-  _text.push(
-    "           Target network: {target_network}".replace(
-      "{target_network}",
-      target_network));
-  _text.push(
-    "         Contract address: {contract_address}".replace(
-      "{contract_address}",
-      contract_address));
-  _text.push(
-    "             Contract ABI: {contract_abi_path}".replace(
-      "{contract_abi_path}",
-      contract_abi_path));
-  _text.push(
-    "        Contract bytecode: {contract_bytecode_path}".replace(
-      "{contract_bytecode_path}",
-      contract_bytecode_path));
-  _text.push(
-    " Contract compiler output: {contract_compiler_output_path}".replace(
-      "{contract_compiler_output_path}",
-      contract_compiler_output_path));
-
-  _text.push(
-    "                File hash: {file_hash}".replace(
-      "{file_hash}",
-      file_hash));
-  _text.push(
-    "    Publication namespace: {publication_namespace}".replace(
-      "{publication_namespace}",
-      publication_namespace));
-  _text.push(
-    "              Index start: {index_start}".replace(
-      "{index_start}",
-      index_start));
-  _text.push(
-    "                Index end: {index_end}".replace(
-      "{index_end}",
-      index_end));
-  _text.push(
-    "          Checkpoint file: {checkpoint_file_path}".replace(
-      "{checkpoint_file_path}",
-      checkpoint_file_path));
   _chunks_files_paths =
     chunks_files_paths.join(
     " ");
-  _text.push(
-    "              File chunks: {_chunks_files_paths}".replace(
-      "{_chunks_files_paths}",
-      _chunks_files_paths));
-  for ( _line in _text ) {
+  _text = [
+    `          Maximum retries: ${retries_max}`,
+    `             Call timeout: ${call_timeout}`,
+    `              Wallet seed: ${wallet_seed_path}`,
+    `                  API Key: ${api_key_path}`,
+    `           Target network: ${target_network}`,
+    `         Contract address: ${contract_address}`,
+    `             Contract ABI: ${contract_abi_path}`,
+    `        Contract bytecode: ${contract_bytecode_path}`,
+    ` Contract compiler output: ${contract_compiler_output_path}`
+    `                File hash: ${file_hash}`
+    `    Publication namespace: ${publication_namespace}`
+    `              Index start: ${index_start}`
+    `                Index end: ${index_end}`
+    `          Checkpoint file: ${checkpoint_file_path}`
+    `              File chunks: ${_chunks_files_paths}`
+  ];
+  for ( _line of _text ) {
     _msg_info(
-      _text[_line]);
+      _line);
   }
 }
 

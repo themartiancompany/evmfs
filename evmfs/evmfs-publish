@@ -599,6 +599,46 @@ _file_encode() {
   fi
 }
 
+_chunks_total_get() {
+  local \
+    _query="${1}" \
+    _query_dir \
+    _query_name \
+    _find_opts=() \
+    _wc_opts=()
+  _query_dir="$(
+    dirname \
+      "${_query}")"
+  _query_name="$(
+    basename \
+      "${_query}")"
+  _find_opts+=(
+    -type
+      "f"
+    -iname
+      "${_query_name}*"
+    -printf
+      '.'
+  )
+  _wc_opts+=(
+    -c
+  )
+  _msg=(
+    "Running find on '${_query_dir}'"
+    "with '${_find_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _chunks_total="$(
+    find \
+      "${_query_dir}" \
+      "${_find_opts[@]}" \
+      2>"/dev/null" |
+      wc \
+        "${_wc_opts[@]}" || \
+    true)"
+}
+
 _queue_setup() {
   local \
     _chunk \
@@ -614,36 +654,9 @@ _queue_setup() {
   elif [[ "${_chunks_many}" == "false" ]]; then
     _query="${_chunk_prefix}"
   fi
+  _chunks_total_get \
+    "${_query}"
   if [[ "${_lock_only}" == "" ]]; then
-    _query_dir="$(
-      dirname \
-        "${_query}")"
-    _query_name="$(
-      basename \
-        "${_query}")"
-    _find_opts+=(
-      -type
-        "f"
-      -iname
-        "${_query_name}*"
-      -printf
-        '.'
-    )
-    _wc_opts+=(
-      -c
-    )
-    _msg=(
-      "Running find on '${_query_dir}'"
-      "with '${_find_opts[*]}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _chunks_total="$(
-      find \
-        "${_query_dir}" \
-        "${_find_opts[@]}" | \
-        wc \
-          "${_wc_opts[@]}")"
     if [[ "${_chunks_total}" == "1" ]]; then
       _publish_queue+=(
         "${_chunk_prefix}"
@@ -664,15 +677,29 @@ _queue_setup() {
       done
     fi
   elif [[ "${_lock_only}" != "" ]]; then
-    _bin2txt_opts+=(
-      -L
-        "${_chunk_length}"
-      -s
-        "${_file}"
-    )
-    _chunks_total="$(
-      bin2txt \
-        "${_bin2txt_opts[@]}")"
+    if [[ "${_chunks_total}" == "0" ]]; then
+      _msg=(
+        "No previous encoding found."
+        "Determining total chunks' amount"
+        "without producing an encoding."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _bin2txt_opts+=(
+        -L
+          "${_chunk_length}"
+        -s
+          "${_file}"
+      )
+      _chunks_total="$(
+        bin2txt \
+          "${_bin2txt_opts[@]}")"
+    elif (( 0 < "${_chunks_total}" )); then
+      _msg=(
+        "Using pre-existing encoding made of"
+        "'${_chunks_total}' chunks."
+      )
+    fi
     _publish_queue+=(
       $(seq \
           "${_chunks_total}")
