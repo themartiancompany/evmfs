@@ -104,7 +104,7 @@ _file_size_check() {
   _size="$(
     du \
       "${_du_opts[@]}" \
-      "${_file}" | \
+      "${_file}" |
       awk \
         '{print $1}')"
   _msg=(
@@ -445,7 +445,7 @@ _chunks_get() {
     _chunks < \
     <(find \
         "${_dir}" \
-        "${_find_opts[@]}" | \
+        "${_find_opts[@]}" |
         sort \
           "${_sort_opts[@]}" || \
       true)
@@ -2022,48 +2022,48 @@ $(_display_networks \
      "${_networks[@]}")
 
   options:
-     -m <upload_method>     It can be 'standalone', 'simulate' or
+     -m <upload-method>     It can be 'standalone', 'simulate' or
                             'bulk'.
                             Default: ${upload_method}
-     -L <lock_only>         Skip check and publish and only the specified
+     -L <lock-only>         Skip check and publish and only the specified
                             file lock operation. It can be 'content' or
                             'length'.
                             Default: ${lock_only}
      -G                     Explicitly skip file encoding.
                             Default: ${encoding_skip}
-     -g <encoding_type>     File encoding type.
+     -g <encoding-type>     File encoding type.
                             It can be 'base64'.
                             Default: ${encoding_type}
-     -l <chunk_length>      Length of the encoded chunk.
+     -l <chunk-length>      Length of the encoded chunk.
                             On EVM networks one can write up to
                             around 24.000 characters
                             but on some network it seems it
                             is not possible to spend the amount
                             of gas needed to write that much.
                             Default: ${chunk_length} 
-     -i <index_network>     EVM Network for the CrossChainFileSystem and
+     -i <index-network>     EVM Network for the CrossChainFileSystem and
                             the LengthLock contracts.
                             Default: ${index_network}
-     -r <retries_max>       Maximum number of retries before
+     -r <retries-max>       Maximum number of retries before
                             failing.
                             Default: ${retries_max}
-     -T <call_timeout>      Maximum number of milliseconds before
+     -T <call-timeout>      Maximum number of milliseconds before
                             declaring the call failed.
                             Default: ${call_timeout}
-     -P <tasks_parallel>    Tasks to perform in parallel.
+     -P <tasks-parallel>    Tasks to perform in parallel.
                             Default: ${tasks_parallel}
 
   contract options:
-     -A <fs_address>        Address of the FileSystem contract
+     -A <fs-address>        Address of the FileSystem contract
                             on the network.
                             Default: ${fs_address}
-     -B <ll_address>        Address of the LengthLock contract
+     -B <ll-address>        Address of the LengthLock contract
                             on the network.
                             Default: ${ll_address}
-     -C <ccfs_address>      Address of the CrossChainFileSystem
+     -C <ccfs-address>      Address of the CrossChainFileSystem
                             contract on the network.
                             Default: ${ccfs_address}
-     -V <fs_version>        Version of the target EVM file
+     -V <fs-version>        Version of the target EVM file
                             system.
                             Default: ${fs_version}
 
@@ -2072,26 +2072,26 @@ $(_display_networks \
                             address from user directory or custom
                             deployment.
                             Default: ${user_level}
-     -d <deployments_dir>   Contracts deployments directory.
+     -d <deployments-dir>   Contracts deployments directory.
                             Default: ${deployments_dir}
      -n <network>           EVM network name (${_networks[*]}).
                             Default: ${target_network}
 
 
   credentials options:
-     -N <wallet_name>       Wallet name.
+     -N <wallet-name>       Wallet name.
                             Default: ${wallet_name}
-     -w <wallet_path>       Wallet path.
+     -w <wallet-path>       Wallet path.
                             Default: ${wallet_path}
-     -p <wallet_password>   Wallet password.
+     -p <wallet-password>   Wallet password.
                             Default: ${wallet_password}
-     -s <wallet_seed>       Wallet seed path.
+     -s <wallet-seed>       Wallet seed path.
                             Default: ${wallet_seed}
-     -k <api_key>           Etherscan-like service key.
+     -k <api-key>           Etherscan-like service key.
                             Default: ${api_key}
 
   application options:
-     -W <cache_dir>         Work directory.
+     -W <cache-dir>         Work directory.
                             Default: ${cache_dir}
 
      -h                     This message.
@@ -2218,7 +2218,7 @@ while \
     v)
       override_quiet="n" ;;
     h)
-      _set_overrides && \
+      _set_overrides
       _usage \
         0 ;;
     *)
@@ -2235,10 +2235,10 @@ while \
   esac
 done
 shift \
-  $(( \
+  $((
     OPTIND - 1 \
   ))
-if (( $# < 1 )); then
+if (( ${#} < 1 )); then
   _msg=(
     "No input file given."
   )
