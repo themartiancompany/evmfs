@@ -1,7 +1,7 @@
 [comment]: <> (SPDX-License-Identifier: AGPL-3.0)
 
 [comment]: <> (-------------------------------------------------------------)
-[comment]: <> (Copyright © 2024, 2025  Pellegrino Prevete)
+[comment]: <> (Copyright © 2024, 2025, 2026  Pellegrino Prevete)
 [comment]: <> (All rights reserved)
 [comment]: <> (-------------------------------------------------------------)
 

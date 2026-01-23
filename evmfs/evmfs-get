@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 #    ----------------------------------------------------------------------
-#    Copyright © 2024, 2025  Pellegrino Prevete
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
 #
 #    All rights reserved
 #    ----------------------------------------------------------------------
@@ -263,11 +263,11 @@ _address_section_get() {
   )
   _section="$(
     echo \
-      "${_reversed}" | \
+      "${_reversed}" |
       cut \
         "${_cut_opts[@]}")"
   echo \
-    "${_section}" | \
+    "${_section}" |
     rev
 }
 

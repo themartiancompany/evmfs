@@ -21,13 +21,12 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-_bin="$( \
+_bin="$(
   dirname \
-    "$( \
-      command \
-        -v \
-	  "env")")"
-_lib="$( \
+    "$(command \
+         -v \
+	 "env")")"
+_lib="$(
   realpath \
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
@@ -291,20 +290,20 @@ _address_section_get() {
     _reversed \
     _hash_reversed
   _path="${_uri#evmfs://}"
-  _reversed="$( \
+  _reversed="$(
     echo \
       "${_uri}" |
       rev)"
-  _section="$( \
+  _section="$(
     echo \
-      "${_reversed}" | \
+      "${_reversed}" |
       cut \
         -d \
           "/" \
         -f \
           "${_position}")"
   echo \
-    "${_section}" | \
+    "${_section}" |
     rev
 }
 
@@ -323,8 +322,8 @@ _output_file_auto_detect() {
   _output_file=""
   if [[ "${target_command}" == "get" ]]; then
     _target_uri="${target_key}"
-    _output_file="$( \
-      pwd)/$( \
+    _output_file="$(
+      pwd)/$(
         _hash_get \
           "${_target_uri}")"
   fi
@@ -452,7 +451,7 @@ _usage() {
     _networks \
     _usage_text
   _fs_deployment="${deployments_dir}/FileSystem"
-  _networks=( $( \
+  _networks=( $(
     evm-contract-deployment-networks \
       -A \
       "${_fs_deployment}")
@@ -612,7 +611,7 @@ _requirements
 _config_user_init \
   "${app_name}"
 # shellcheck disable=SC2034
-getopts_opts="$( \
+getopts_opts="$(
   printf \
     "%s" \
     "o:m:r:T:P:L:G:" \

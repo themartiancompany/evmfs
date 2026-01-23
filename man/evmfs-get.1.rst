@@ -2,7 +2,7 @@
    SPDX-License-Identifier: AGPL-3.0-or-later
 
    ----------------------------------------------------------------------
-   Copyright © 2024, 2025  Pellegrino Prevete
+   Copyright © 2024, 2025, 2026  Pellegrino Prevete
 
    All rights reserved
    ----------------------------------------------------------------------
@@ -31,16 +31,19 @@ Ethereum Virtual Machine File System download program
 :Version: evmfs-get |version|
 :Manual section: 1
 
+
 Synopsis
 ========
 
 evmfs-get *[options]* *-o* *output-file* *address*
+
 
 Description
 ===========
 
 Program used to retrieve files from the
 Ethereum Virtual Machine File System (EVMFS).
+
 
 Networks
 ========
@@ -60,6 +63,7 @@ evm-deployment-address *-a* *evmfs* *FileSystem*
 For further options, like for example
 how to configure user-defined private
 EVMFS deployments, refer to those programs' manuals.
+
 
 Options
 =======
@@ -84,6 +88,7 @@ Contract options
 -V fs_version           Version of the target EVM file
                         system.
 
+
 LibEVM options
 ================
 
@@ -93,6 +98,7 @@ LibEVM options
 -d deployments_dir      Contracts deployments directory.
 -n network              EVM network name (${_networks[*]}).
 
+
 Credentials options
 ====================
 
@@ -101,6 +107,7 @@ Credentials options
 -p wallet_password>     Wallet password.
 -s wallet_seed          Wallet seed path.
 -k api_key              Etherscan-like service key.
+
 
 Application options
 ====================
@@ -112,10 +119,12 @@ Application options
 -c                      Enable color output
 -v                      Enable verbose output
 
+
 Bugs
 ====
 
 https://github.com/themartiancompany/evmfs/-/issues
+
 
 Copyright
 =========
@@ -125,8 +134,8 @@ Copyright Pellegrino Prevete. AGPL-3.0.
 See also
 ========
 
-* evmfs-get -h
 * evmfs
 * evmfs-publish
+* evm-wallet
 
 .. include:: variables.rst

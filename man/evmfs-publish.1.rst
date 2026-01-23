@@ -2,7 +2,7 @@
    SPDX-License-Identifier: AGPL-3.0-or-later
 
    ----------------------------------------------------------------------
-   Copyright © 2024, 2025  Pellegrino Prevete
+   Copyright © 2024, 2025, 2026  Pellegrino Prevete
 
    All rights reserved
    ----------------------------------------------------------------------
@@ -31,16 +31,19 @@ Ethereum Virtual Machine File System publishing program
 :Version: evmfs-publish |version|
 :Manual section: 1
 
+
 Synopsis
 ========
 
 evmfs-publish *[options]* *[files]*
+
 
 Description
 ===========
 
 Program used to publish (upload) files on the
 Ethereum Virtual Machine File System (EVMFS).
+
 
 Networks
 ========
@@ -68,6 +71,7 @@ Options
                         of gas needed to write that much.
 -P  tasks_parallel      Tasks to perform in parallel.
 
+
 Contract options
 =================
 
@@ -80,6 +84,7 @@ Contract options
 -V fs_version           Version of the target EVM file
                         system.
 
+
 LibEVM options
 ===============
 
@@ -89,6 +94,7 @@ LibEVM options
 -d deployments_dir      Contracts deployments directory.
 -n network              EVM network chain ID or full name.
 
+
 Credentials options
 ====================
 
@@ -97,6 +103,7 @@ Credentials options
 -p wallet_password      Wallet password.
 -s wallet_seed          Wallet seed path.
 -k api_key              Etherscan-like service key.
+
 
 Application options
 ====================
@@ -113,10 +120,12 @@ Bugs
 
 https://github.com/themartiancompany/evmfs/-/issues
 
+
 Copyright
 =========
 
 Copyright Pellegrino Prevete. AGPL-3.0.
+
 
 See also
 ========
