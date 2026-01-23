@@ -1043,7 +1043,7 @@ _chunks_publish_new() {
   _index=0
   while \
     [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
-    [ "${#_pendings}" -le "${_tasks_parallel}" ]; do
+    [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
     _chunk="${_publish_queue["${_index}"]}"
     _chunk_publish_opts=(
       "${_fs_address}"
@@ -1065,7 +1065,7 @@ _chunks_publish_new() {
     )
     _index="$(( \
       _index + 1 ))"
-    if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
+    if [[ "${#_pendings[@]}" == "${_tasks_parallel}" ]]; then 
       wait \
         "${_wait_opts[@]}" \
         "${_pendings[@]}"
@@ -1185,7 +1185,7 @@ _chunks_lock_new() {
     _index_end="${3}" \
     _index \
     _chunk \
-    _pendings=()
+    _pendings=() \
     _msg=() \
     _wait_jobs=()
   _wait_opts+=(
@@ -1197,7 +1197,7 @@ _chunks_lock_new() {
   _index=0
   while \
     [ "${_index}" -le "$(("${_chunks_total}" - 1))" ] && \
-    [ "${#_pendings}" -le "${_tasks_parallel}" ]; do
+    [ "${#_pendings[@]}" -le "${_tasks_parallel}" ]; do
     _chunk="${_publish_queue["${_index}"]}"
     _msg=(
       "Locking chunk '${_chunk}'"
@@ -1220,7 +1220,7 @@ _chunks_lock_new() {
       "$(_get_pid \
            "lock_chunk_${_index}")"
     )
-    if [[ "${#_pendings}" == "${_tasks_parallel}" ]]; then 
+    if [[ "${#_pendings[@]}" == "${_tasks_parallel}" ]]; then 
       wait \
         "${_wait_opts[@]}" \
         "${_pendings[@]}"
