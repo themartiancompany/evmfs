@@ -225,7 +225,7 @@ function
     _msg =
       "Chunk file for " +
       `index '${_index}' and ` +
-      `cursor `${_cursor}` undefined.`;
+      `cursor '${_cursor}' undefined.`;
     _msg_error(
       _msg,
       1);
@@ -337,7 +337,7 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
-    "",
+    "auto",
     0,
     "ether",
     _target_network,
