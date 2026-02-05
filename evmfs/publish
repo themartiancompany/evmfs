@@ -111,22 +111,9 @@ function
     _progress,
     _total) {
   let
-    _msg,
-    _template;
-  _template =
-    "Publishing chunk '{_index}' ('{_progress}'of '{_total}').";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
+    `Publishing chunk '${_index}' ('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -137,22 +124,9 @@ function
     _progress,
     _total) {
   let
-    _msg,
-    _template;
-  _template =
-    "Chunk '{_index}' unpublished, publishing now ('{_progress}'of '{_total}').";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
+    `Chunk '${_index}' unpublished, publishing now ('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -163,22 +137,9 @@ function
     _progress,
     _total) {
   let
-    _msg,
-    _template;
-  _template =
-    "Chunk '{_index}' published already ('{_progress}'of '{_total}').";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
+    `Chunk '${_index}' published already ('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -190,22 +151,9 @@ function
     _progress,
     _total) {
   let
-    _msg,
-    _template;
-  _template =
-    "Published chunk '{_index}' ('{_progress}'of '{_total}').";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
+    `Published chunk '${_index}' ('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -238,21 +186,32 @@ function
     _index_end,
     _total_files) {
   let
+    _msg,
     _total_indexes;
   _total_indexes =
     _index_end - _index_start + 1;
   if ( _total_files > _total_indexes ) {
+    _msg =
+      `More files to upload ` +
+      `(${_total_files}) than indexes ` +
+      `to upload (${_total_indexes}).`;
     _msg_error(
-      `More files to upload (${_total_files}) than indexes to upload (${_total_indexes}).`,
+      _msg,
       1);
   }
   if ( _total_files < _total_indexes ) {
+    _msg =
+      `More indexes' upload ` +
+      `(${_total_indexes}) than ` +
+      `files to upload (${_total_files}).`;
     _msg_error(
-      `More indexes' upload (${_total_indexes}) than files to upload (${_total_files}).`,
+      _msg,
       1);
   }
+  _msg =
+    "Input data checked.";
   _msg_info(
-    "Input data checked.");
+    _msg);
 }
 
 function
@@ -260,14 +219,15 @@ function
     _path,
     _index,
     _cursor) {
+  let
+    _msg;
   if ( _path == undefined ) {
-    console.error(
-      "Chunk file for index",
-      _index,
-      "and cursor",
-      _cursor,
-      "undefined.");
-    process.exit(
+    _msg =
+      "Chunk file for " +
+      `index '${_index}' and ` +
+      `cursor `${_cursor}` undefined.`;
+    _msg_error(
+      _msg,
       1);
   }
 }
@@ -276,11 +236,14 @@ function
   _chunks_files_paths_prefix_get(
     _chunks_unverified) {
   let
-    _chunks_files_paths_prefix;
+    _chunks_files_paths_prefix,
+    _msg;
   if ( _chunks_unverified.length != 0 ) {
     if ( _chunks_unverified[0] == undefined ) {
+      _msg =
+        "Weird error.";
       _msg_error(
-        "Weird error.",
+        _msg,
         1);
     }
     else if ( _chunks_unverified[0].length != 0 ) {
@@ -292,8 +255,10 @@ function
     }
   }
   else if ( _chunks_unverified.length == 0 ) {
+    _msg =
+      "File already published.";
     _msg_info(
-      "File already published.");
+      _msg);
   }
   return _chunks_files_paths_prefix;
 }
@@ -372,6 +337,7 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
+    "",
     0,
     "ether",
     _target_network,
@@ -564,27 +530,40 @@ async function
 function
   _config_show() {
   let
+    _chars_max,
     _chunks_files_paths,
     _line,
     _text;
+  _chars_max =
+    300;
   _chunks_files_paths =
     chunks_files_paths.join(
     " ");
+  if ( _chars_max < _chunks_files_paths.length ) {
+    _chunks_files_paths =
+      _chunks_files_paths.substring(
+        0,
+	_chars_max);
+  }
   _text = [
+    `    Publication namespace: ${publication_namespace}`,
+    `                File hash: ${file_hash}`,
     `          Maximum retries: ${retries_max}`,
     `             Call timeout: ${call_timeout}`,
+    `   Credentials settings:`,
     `              Wallet seed: ${wallet_seed_path}`,
-    `                  API Key: ${api_key_path}`,
+    `       Network settings:`,
     `           Target network: ${target_network}`,
+    `                  API Key: ${api_key_path}`,
+    `      Contract settings:`,
     `         Contract address: ${contract_address}`,
     `             Contract ABI: ${contract_abi_path}`,
     `        Contract bytecode: ${contract_bytecode_path}`,
-    ` Contract compiler output: ${contract_compiler_output_path}`
-    `                File hash: ${file_hash}`
-    `    Publication namespace: ${publication_namespace}`
-    `              Index start: ${index_start}`
-    `                Index end: ${index_end}`
-    `          Checkpoint file: ${checkpoint_file_path}`
+    ` Contract compiler output: ${contract_compiler_output_path}`,
+    `       Session settings:`,
+    `              Index start: ${index_start}`,
+    `                Index end: ${index_end}`,
+    `          Checkpoint file: ${checkpoint_file_path}`,
     `              File chunks: ${_chunks_files_paths}`
   ];
   for ( _line of _text ) {
