@@ -299,7 +299,7 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
-    Number(48546 * 2), // fast
+    "simple", // Number(48546 * 2), // fast
     0,
     "ether",
     _target_network,
