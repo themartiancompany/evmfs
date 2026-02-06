@@ -299,9 +299,9 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
-    "simple", // Number(48546 * 2), // fast
+    "", // Number(48546 * 2), // fast
     0,
-    "ether",
+    "wei",
     _target_network,
     _contract_address,
     _contract_abi_path,
