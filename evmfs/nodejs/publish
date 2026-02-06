@@ -159,7 +159,7 @@ function
     _msg;
   _msg =
     `Published chunk '${_index}' ` +
-    '('${_progress}'of '${_total}').`;
+    `('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -344,7 +344,7 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
-    "fast",
+    "", // fast
     0,
     "wei",
     _target_network,
