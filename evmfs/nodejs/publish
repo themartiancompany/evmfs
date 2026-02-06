@@ -113,7 +113,8 @@ function
   let
     _msg;
   _msg =
-    `Publishing chunk '${_index}' ('${_progress}'of '${_total}').`;
+    `Publishing chunk '${_index}' ` +
+    `('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -126,7 +127,9 @@ function
   let
     _msg;
   _msg =
-    `Chunk '${_index}' unpublished, publishing now ('${_progress}'of '${_total}').`;
+    `Chunk '${_index}' unpublished, ` +
+    `publishing now ('${_progress}' of ` +
+    `'${_total}').`;
   _msg_info(
     _msg);
 }
@@ -139,7 +142,9 @@ function
   let
     _msg;
   _msg =
-    `Chunk '${_index}' published already ('${_progress}'of '${_total}').`;
+    `Chunk '${_index}' published ` +
+    `already ('${_progress}' of ` +
+    `'${_total}').`;
   _msg_info(
     _msg);
 }
@@ -153,7 +158,8 @@ function
   let
     _msg;
   _msg =
-    `Published chunk '${_index}' ('${_progress}'of '${_total}').`;
+    `Published chunk '${_index}' ` +
+    '('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -295,6 +301,7 @@ async function
     _indexes_unverified = [],
     _method_base_args,
     _method_object,
+    _msg,
     _progress,
     _publish_call_base_opts,
     _publish_call_opts,
@@ -337,9 +344,9 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
-    "auto",
+    "fast",
     0,
-    "ether",
+    "wei",
     _target_network,
     _contract_address,
     _contract_abi_path,
@@ -354,8 +361,10 @@ async function
   _chunks_total =
     _chunks_files_paths.length;
   if ( _chunks_total == 0 ) {
+    _msg =
+      "File chunks list empty.";
     _msg_error(
-      "File chunks list empty.",
+      _msg,
       1);
   }
   _input_data_check(
@@ -405,8 +414,10 @@ async function
       // or I need to re-init the array so just
       // in case we re-init whole array.
       if ( _check_call_base_opts[7] == "" ) {
+        _msg =
+          "Reusing contract method object.";
         _msg_info(
-          "Reusing contract method object.");
+          _msg);
         _check_call_base_opts = [
           "", // _wallet_seed_path,
           _retries_max,
@@ -500,8 +511,10 @@ async function
     }
   }
   if ( _indexes_unverified.length != 0 ) {
+    _msg =
+      "Some index are left to verify.";
     _msg_info(
-      "Some index are left to verify.");
+      _msg);
     // _verify(
     //   _retries_max,
     //   _api_key_path,
@@ -516,8 +529,10 @@ async function
     //   _indexes_unverified); 
   }
   else if ( _indexes_unverified.length == 0 ) {
+    _msg =
+      "All chunks already verified.";
     _msg_info(
-      "All chunks already verified.");
+      _msg);
     _checkpoint_index =
       _index_end.toString();
     _file_write(
@@ -582,54 +597,55 @@ function
     "Usage:",
     "  publish",
     "    <quiet>",
-    "    <retries_max>",
-    "    <call_timeout>",
-    "    <wallet_seed_path>",
-    "    <api_key_path>",
-    "    <target_network>",
-    "    <contract_address>",
-    "    <contract_abi_path>",
-    "    <contract_bytecode_path>",
-    "    <contract_compiler_output_path>",
-    "    <publication_namespace>",
-    "    <file_hash>",
-    "    <index_start>",
-    "    <index_end>",
-    "    <checkpoint_file_path>",
-    "    [chunk_file_path]",
+    "    <retries-max>",
+    "    <call-timeout>",
+    "    <wallet-seed-path>",
+    "    <api-key-path>",
+    "    <target-network>",
+    "    <contract-address>",
+    "    <contract-abi-path>",
+    "    <contract-bytecode-path>",
+    "    <contract-compiler-output-path>",
+    "    <publication-namespace>",
+    "    <file-hash>",
+    "    <index-start>",
+    "    <index-end>",
+    "    <checkpoint-file-path>",
+    "    [chunk-file-path]",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
     "                                   Default: y",
-    "  <retries_max>                    Maximum number of retries before",
+    "  <retries-max>                    Maximum number of retries before",
     "                                   failing (not implemented).",
-    "  <call_timeout>                   How many milliseconds to wait for a return",
-    "                                   before declaring the call failed.",
-    "  <wallet_seed_path>               Path of the file containing",
+    "  <call-timeout>                   How many milliseconds to wait",
+    "                                   for a return before declaring",
+    "                                   the call failed.",
+    "  <wallet-seed-path>               Path of the file containing",
     "                                   the seed phrase.",
-    "  <api_key_path>                   Path of the API key for the",
+    "  <api-key-path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
-    "  <target_network>                 Network on which the contract",
+    "  <target-network>                 Network on which the contract",
     "                                   resides.",
-    "  <contract_address>               Address of the contract.",
-    "  <contract_abi_path>              Contract ABI path.",
-    "  <contract_bytecode_path>         Path for the contract bytecode.",
-    "  <contract_compiler_output_path>  Path for the contract compiler",
+    "  <contract-address>               Address of the contract.",
+    "  <contract-abi-path>              Contract ABI path.",
+    "  <contract-bytecode-path>         Path for the contract bytecode.",
+    "  <contract-compiler-output-path>  Path for the contract compiler",
     "                                   output path (the hardhat artifact).",
-    "  <publication_namespace>          Namespace in which the file will be",
+    "  <publication-namespace>          Namespace in which the file will be",
     "                                   published.",
-    "  <file_hash>                      Hash of the file to publish.",
-    "  <index_start>                    Chunk index from where to start.",
-    "  <index_end>                      Final chunk index to download.",
-    "  <checkpoint_file_path>           Checkpoint file on which latest",
+    "  <file-hash>                      Hash of the file to publish.",
+    "  <index-start>                    Chunk index from where to start.",
+    "  <index-end>                      Final chunk index to download.",
+    "  <checkpoint-file-path>           Checkpoint file on which latest",
     "                                   downloaded chunk index is saved",
     "                                   in case node was to crash.",
-    "  <chunks_files_type>              Can be 'file' or 'list. If file",
+    "  <chunks-files-type>              Can be 'file' or 'list. If file",
     "                                   it will consider the next arguments",
     "                                   files, if 'list' it the next argument",
-    "                                   will be considered a JSON list containing",
-    "                                   the files paths.",
-    "  [chunks_files_paths]             File chunks to publish.",
+    "                                   will be considered a JSON list",
+    "                                   containing the files paths.",
+    "  [chunks-files-paths]             File chunks to publish.",
   ];
   for ( _line of _text ) {
     _msg_info(
