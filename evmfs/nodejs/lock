@@ -95,22 +95,10 @@ function
     _progress,
     _total) {
   let
-    _msg,
-    _template;
-  _template =
-    "Locking chunk '{_index}' ('{_progress}'of '{_total}').";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
+    `Locking chunk '${_index}' ` +
+    `('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -121,22 +109,10 @@ function
     _progress,
     _total) {
   let
-    _msg,
-    _template;
-  _template =
-    "Locked chunk '{_index}' ('{_progress}'of '{_total}').";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
+    `Locked chunk '${_index}' ` +
+    `('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -147,22 +123,10 @@ function
     _progress,
     _total) {
   let
-    _msg,
-    _template;
-  _template =
-    "Chunk '{_index}' already locked ('{_progress}'of '{_total}').";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_index}",
-      _index);
-  _msg =
-    _msg.replaceAll(
-      "{_progress}",
-      _progress);
-  _msg =
-    _msg.replaceAll(
-      "{_total}",
-      _total);
+    `Chunk '${_index}' already locked ` +
+    `('${_progress}'of '${_total}').`;
   _msg_info(
     _msg);
 }
@@ -190,13 +154,21 @@ function
 function
   _input_data_check(
     _chunks_total) {
+  let
+    _msg;
   if ( _chunks_total < 1 ) {
+    _msg =
+      "Upper chunk lower than lower chunk.";
     _msg_error(
-      "Upper chunk lower than lower chunk.",
+      _msg,
       1);
   }
+  _msg =
+    `Input data checked, ` +
+    `locking '${_chunks_total}' ` +
+    `chunks`;
   _msg_info(
-    `Input data checked, locking '${_chunks_total}' chunks`);
+    _msg);
 }
 
 async function
@@ -211,8 +183,10 @@ async function
         _contract_run_opts);
   } catch(
       _error) {
+    _msg =
+      "Error locking chunk.";
     _msg_error(
-      "Error locking chunk.",
+      _msg,
       0);
     throw _error;
   }
@@ -276,9 +250,17 @@ async function
     _progress,
     _tx,
     _wallet_password;
-  if ( _call_timeout == "" ) {
+  if ( typeof(
+         _retries_max) === "undefined" ||
+       _retries_max == "" ) {
+    _retries_max =
+      3;
+  }
+  if ( typeof(
+         _call_timeout) === "undefined" ||
+       _call_timeout == "" ) {
     _call_timeout =
-      300000;
+      60000;
   }
   _call_timeout =
     Number(
@@ -299,7 +281,9 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
-    "", // Number(48546 * 2), // fast
+    "",       // <---------  Price selection mode:
+	      //               it can be 'auto',
+	      //               'fast' or an integer directly.
     0,
     "wei",
     _target_network,
@@ -388,67 +372,26 @@ function
   let
     _line,
     _text;
-  _text =
-    [];
-  _text.push(
-    " Lock configuration:"
-  );
-  _text.push(
-    "          Maximum retries: {retries_max}".replace(
-      "{retries_max}",
-      retries_max));
-  _text.push(
-    "            Call timeout: {call_timeout}".replace(
-      "{call_timeout}",
-      call_timeout));
-  _text.push(
-    "              Wallet seed: {wallet_seed_path}".replace(
-      "{wallet_seed_path}",
-      wallet_seed_path));
-  _text.push(
-    "                  API Key: {api_key_path}".replace(
-      "{api_key_path}",
-      api_key_path));
-  _text.push(
-    "           Target network: {target_network}".replace(
-      "{target_network}",
-      target_network));
-  _text.push(
-    "         Contract address: {contract_address}".replace(
-      "{contract_address}",
-      contract_address));
-  _text.push(
-    "             Contract ABI: {contract_abi_path}".replace(
-      "{contract_abi_path}",
-      contract_abi_path));
-  _text.push(
-    "        Contract bytecode: {contract_bytecode_path}".replace(
-      "{contract_bytecode_path}",
-      contract_bytecode_path));
-  _text.push(
-    " Contract compiler output: {contract_compiler_output_path}".replace(
-      "{contract_compiler_output_path}",
-      contract_compiler_output_path));
-  _text.push(
-    "    Publication namespace: {publication_namespace}".replace(
-      "{publication_namespace}",
-      publication_namespace));
-  _text.push(
-    "                File hash: {file_hash}".replace(
-      "{file_hash}",
-      file_hash));
-  _text.push(
-    "              Index start: {index_start}".replace(
-      "{index_start}",
-      index_start));
-  _text.push(
-    "                Index end: {index_end}".replace(
-      "{index_end}",
-      index_end));
-  _text.push(
-    "     Checkpoint file path: {checkpoint_file_path}".replace(
-      "{checkpoint_file_path}",
-      checkpoint_file_path));
+  _text = [
+    " Lock configuration:",
+    `                File hash: ${file_hash}`,
+    `    Publication namespace: ${publication_namespace}`,
+    `              Index start: ${index_start}`,
+    `                Index end: ${index_end}`,
+    `     Checkpoint file path: ${checkpoint_file_path}`,
+    `    Credentials options:`,
+    `              Wallet seed: ${wallet_seed_path}`,
+    `        Network options:`,
+    `           Target network: ${target_network}`,
+    `                  API Key: ${api_key_path}`,
+    `             Call timeout: ${call_timeout}`,
+    `          Maximum retries: ${retries_max}`,
+    `       Contract options:`,
+    `         Contract address: ${contract_address}`,
+    `             Contract ABI: ${contract_abi_path}`,
+    `        Contract bytecode: ${contract_bytecode_path}`,
+    ` Contract compiler output: ${contract_compiler_output_path}`,
+  ];
   for ( _line in _text ) {
     _msg_info(
       _text[_line]);
@@ -467,43 +410,46 @@ function
     "Usage:",
     "  lock",
     "    <quiet>",
-    "    <retries_max>",
-    "    <call_timeout>",
-    "    <api_key_path>",
-    "    <target_network>",
-    "    <contract_address>",
-    "    <contract_abi_path>",
-    "    <contract_bytecode_path>",
-    "    <contract_compiler_output_path>",
-    "    <publication_namespace>",
-    "    <index_start>",
-    "    <file_hash>",
-    "    <index_start>",
-    "    <index_end>",
+    "    <retries-max>",
+    "    <call-timeout>",
+    "    <api-key-path>",
+    "    <target-network>",
+    "    <contract-address>",
+    "    <contract-abi-path>",
+    "    <contract-bytecode-path>",
+    "    <contract-compiler-output-path>",
+    "    <publication-namespace>",
+    "    <index-start>",
+    "    <file-hash>",
+    "    <index-start>",
+    "    <index-end>",
     "    <checkpoint_file_path>",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
     "                                   Default: y",
-    "  <retries_max>                    Maximum number of retries before",
+    "  <retries-max>                    Maximum number of retries before",
     "                                   failing.",
-    "  <call_timeout>                   How many milliseconds to wait for a return",
+    `                                   Default: ${retries_max}`,
+    "  <call-timeout>                   How many milliseconds to wait for",
+    "                                   a return",
     "                                   before declaring the call failed.",
-    "  <api_key_path>                   Path of the API key for the",
+    `                                   Default: ${call_timeout}`,
+    "  <api-key-path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
-    "  <target_network>                 Network on which the contract",
+    "  <target-network>                 Network on which the contract",
     "                                   resides.",
-    "  <contract_address>               Address of the contract.",
-    "  <contract_abi_path>              Contract ABI path.",
-    "  <contract_bytecode_path>         Path for the contract bytecode.",
-    "  <contract_compiler_output_path>  Path for the contract compiler",
+    "  <contract-address>               Address of the contract.",
+    "  <contract-abi_path>              Contract ABI path.",
+    "  <contract-bytecode-path>         Path for the contract bytecode.",
+    "  <contract-compiler-output-path>  Path for the contract compiler",
     "                                   output path (the hardhat artifact).",
-    "  <publication_namespace>          Namespace in which the file is being",
+    "  <publication-namespace>          Namespace in which the file is being",
     "                                   published.",
-    "  <file_hash>                      Hash of the file to publish.",
-    "  <index_start>                    Chunk index from where to start.",
-    "  <index_end>                      Final chunk index to lock.",
-    "  <checkpoint_file_path>           Checkpoint file on which latest",
+    "  <file-hash>                      Hash of the file to publish.",
+    "  <index-start>                    Chunk index from where to start.",
+    "  <index-end>                      Final chunk index to lock.",
+    "  <checkpoint-file-path>           Checkpoint file on which latest",
     "                                   downloaded chunk index is saved",
     "                                   in case node was to crash.",
   ];
@@ -518,6 +464,8 @@ function
 
 function
   _cmdline_parse() {
+  let
+    _msg;
   quiet =
     "y";
   process.argv.forEach(
@@ -593,10 +541,27 @@ function
           0);
       }
   });
-  if ( file_hash == "" ||
-       publication_namespace == "" ) {
+  if ( file_hash == "" ) {
+    _msg =
+      "Input hash is a required parameter.";
+    _msg_error(
+      _msg,
+      0);
     quiet =
       "n";
+    _overrides_set();
+    _usage(
+      1);
+  }
+  if ( publication_namespace == "" ) {
+    _msg =
+      "Publication namespace is a required parameter.";
+    _msg_error(
+      _msg,
+      0);
+    quiet =
+      "n";
+    _overrides_set();
     _usage(
       1);
   }
@@ -607,6 +572,10 @@ function
   if ( call_timeout == "" ) {
     call_timeout =
       300000;
+  }
+  if ( retries_max == "" ) {
+    retries_max =
+      3;
   }
 }
 

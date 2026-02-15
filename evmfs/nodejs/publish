@@ -344,7 +344,7 @@ async function
     _wallet_seed_path,
     _wallet_password,
     _api_key_path,
-    "fast", // fast
+    "fast", // nextblock
     0,
     "wei",
     _target_network,
