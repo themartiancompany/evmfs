@@ -79,7 +79,7 @@ contract BulkOps {
         _chunks.length;
       for ( uint256 _chunk = 0;
             _chunk < _length;
-            _chunks++) {
+            _chunk++) {
         uint256 _chunkIndex =
           _index + _chunk;
         _fileSystem.publish(
