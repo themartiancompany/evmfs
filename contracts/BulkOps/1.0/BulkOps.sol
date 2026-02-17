@@ -30,13 +30,13 @@ interface FileSystemInterface {
     string memory _hash,
     uint256 _index,
     string memory _chunk)
-    external
+    external;
 
   function lock(
     address _namespace,
     string memory _hash,
     uint256 _index)
-    external
+    external;
 }
 
 /**
