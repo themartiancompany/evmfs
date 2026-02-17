@@ -111,8 +111,6 @@ contract BulkOps {
       for ( uint256 _index = 0;
             _index < _length;
             _index++) {
-        uint256 _chunkIndex =
-          _index + _chunk;
         _fileSystem.lock(
           _namespace,
           _hash,
