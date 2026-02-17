@@ -97,6 +97,8 @@ function
     "";
   index_end =
     "";
+  buffer_length =
+    "";
   checkpoint_file_path =
     "";
   chunks_files_type =
@@ -620,25 +622,27 @@ function
 	_chars_max);
   }
   _text = [
-    `    Publication namespace: ${publication_namespace}`,
-    `                File hash: ${file_hash}`,
-    `          Maximum retries: ${retries_max}`,
-    `             Call timeout: ${call_timeout}`,
-    `   Credentials settings:`,
-    `              Wallet seed: ${wallet_seed_path}`,
-    `       Network settings:`,
-    `           Target network: ${target_network}`,
-    `                  API Key: ${api_key_path}`,
-    `      Contract settings:`,
-    `         Contract address: ${contract_address}`,
-    `             Contract ABI: ${contract_abi_path}`,
-    `        Contract bytecode: ${contract_bytecode_path}`,
-    ` Contract compiler output: ${contract_compiler_output_path}`,
-    `       Session settings:`,
-    `              Index start: ${index_start}`,
-    `                Index end: ${index_end}`,
-    `          Checkpoint file: ${checkpoint_file_path}`,
-    `              File chunks: ${_chunks_files_paths}`
+    `            Publication namespace: ${publication_namespace}`,
+    `                        File hash: ${file_hash}`,
+    `                  Maximum retries: ${retries_max}`,
+    `                     Call timeout: ${call_timeout}`,
+    `           Credentials settings:`,
+    `                      Wallet seed: ${wallet_seed_path}`,
+    `               Network settings:`,
+    `                   Target network: ${target_network}`,
+    `                          API Key: ${api_key_path}`,
+    `              Contract settings:`,
+    `              File system address: ${fs_address}`,
+    `        Bulk Ops contract address: ${contract_address}`,
+    `            Bulk Ops Contract ABI: ${contract_abi_path}`,
+    `       Bulk Ops Contract bytecode: ${contract_bytecode_path}`,
+    `Bulk Ops Contract compiler output: ${contract_compiler_output_path}`,
+    `               Session settings:`,
+    `                      Index start: ${index_start}`,
+    `                        Index end: ${index_end}`,
+    `                    Buffer length: ${buffer_length}`,
+    `                  Checkpoint file: ${checkpoint_file_path}`,
+    `                      File chunks: ${_chunks_files_paths}`
   ];
   for ( _line of _text ) {
     _msg_info(
@@ -665,10 +669,12 @@ function
     "    <contract-abi-path>",
     "    <contract-bytecode-path>",
     "    <contract-compiler-output-path>",
+    "    <fs-address>",
     "    <publication-namespace>",
     "    <file-hash>",
     "    <index-start>",
     "    <index-end>",
+    "    <buffer-length>",
     "    <checkpoint-file-path>",
     "    [chunk-file-path]",
     "",
@@ -686,6 +692,7 @@ function
     "                                   contract ABI provider service.",
     "  <target-network>                 Network on which the contract",
     "                                   resides.",
+    "  <fs-address>                     File system contract address.",
     "  <contract-address>               Address of the contract.",
     "  <contract-abi-path>              Contract ABI path.",
     "  <contract-bytecode-path>         Path for the contract bytecode.",
@@ -696,6 +703,7 @@ function
     "  <file-hash>                      Hash of the file to publish.",
     "  <index-start>                    Chunk index from where to start.",
     "  <index-end>                      Final chunk index to download.",
+    "  <buffer-length>                  Chunks upload buffer length.",
     "  <checkpoint-file-path>           Checkpoint file on which latest",
     "                                   downloaded chunk index is saved",
     "                                   in case node was to crash.",
@@ -764,31 +772,39 @@ function
           _value;
       }
       if ( _index == 12 ) {
-        publication_namespace =
+        fs_address =
           _value;
       }
       if ( _index == 13 ) {
-        file_hash =
+        publication_namespace =
           _value;
       }
       if ( _index == 14 ) {
-        index_start =
+        file_hash =
           _value;
       }
       if ( _index == 15 ) {
-        index_end =
+        index_start =
           _value;
       }
       if ( _index == 16 ) {
+        index_end =
+          _value;
+      }
+      if ( _index == 17 ) {
+        buffer_length =
+          _value;
+      }
+      if ( _index == 18 ) {
         checkpoint_file_path =
           _value;
       }
-      if ( _index == 17) {
+      if ( _index == 19 ) {
         chunks_files_type =
           _value;
       }
-      if ( 17 < _index ) {
-	chunks_files_paths.push(
+      if ( 19 < _index ) {
+        chunks_files_paths.push(
           _value);
       }
       if ( _value == "-h" ||
@@ -800,6 +816,7 @@ function
       }
   });
   if ( file_hash == "" ||
+       fs_address == "" ||
        publication_namespace  == "" ||
        chunks_files_paths == [] ) {
     quiet =
@@ -842,6 +859,10 @@ function
     chunks_files_type =
       "file";
   }
+  if ( buffer_length == "" ) {
+    buffer_length =
+      3;
+  }
   if ( chunks_files_type == "list" ) {
     chunks_files_paths =
       _json_read(
@@ -871,6 +892,7 @@ if ( _cmdline_check(
     file_hash,
     index_start,
     index_end,
+    buffer_length,
     checkpoint_file_path,
     chunks_files_paths,
   ];
