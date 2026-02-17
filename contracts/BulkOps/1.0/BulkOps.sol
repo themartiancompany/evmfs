@@ -71,7 +71,7 @@ contract BulkOps {
       address _namespace,
       string memory _hash,
       uint256 _index,
-      string[] memory _chunks) public {
+      string[] calldata _chunks) public {
       FileSystemInterface _fileSystem =
         FileSystemInterface(
           _fs);
@@ -100,7 +100,7 @@ contract BulkOps {
       address _fs,
       address _namespace,
       string memory _hash,
-      uint256[] _indexes)
+      uint256[] calldata _indexes)
     public
     {
       FileSystemInterface _fileSystem =
