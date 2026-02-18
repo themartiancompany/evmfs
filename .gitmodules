@@ -1,3 +1,6 @@
 [submodule "docs"]
 	path = docs
 	url = github:themartiancompany/evmfs-docs
+[submodule "evmfs/nodejs"]
+	path = evmfs/nodejs
+	url = https://github.com/themartiancompany/evmfs.js
