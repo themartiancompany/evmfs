@@ -53,6 +53,7 @@ _INSTALL_EXE=install -vDm755
 _INSTALL_CONTRACTS_DEPLOYMENT_FUN:=\
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)
 _BUILD_TARGETS:=\
+  build-npm \
   contracts
 _BUILD_TARGETS_ALL:=\
   all \
@@ -138,6 +139,18 @@ shellcheck:
 	      bash \
 	    "$(_PROJECT)/$${_file}"; \
 	done
+
+build-npm:
+
+	git \
+	  submodule \
+	  update \
+	    --init \
+	    "$(_PROJECT)/nodejs"
+	cd \
+	  "$(_PROJECT)/nodejs"
+	make \
+	  "build-npm"
 
 contracts:
 
