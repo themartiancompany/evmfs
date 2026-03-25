@@ -4,3 +4,6 @@
 [submodule "evmfs/nodejs"]
 	path = evmfs/nodejs
 	url = https://github.com/themartiancompany/evmfs.js
+[submodule "contracts"]
+	path = contracts
+	url = https://github.com/themartiancompany/evmfs-contracts
