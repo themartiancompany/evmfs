@@ -46,9 +46,15 @@ _NODE_FILES:=\
   publish \
   verify
 
-_INSTALL_FILE=install -vDm644
-_INSTALL_DIR=install -vdm755
-_INSTALL_EXE=install -vDm755
+_INSTALL_FILE=\
+  install \
+    -vDm644
+_INSTALL_DIR=\
+  install \
+    -vdm755
+_INSTALL_EXE=\
+  install \
+    -vDm755
 
 _INSTALL_CONTRACTS_DEPLOYMENT_FUN:=\
   install-contracts-deployments-$(SOLIDITY_COMPILER_BACKEND)
@@ -137,7 +143,7 @@ shellcheck:
 	  shellcheck \
 	    -s \
 	      bash \
-	    "$(_PROJECT)/$${_file}"; \
+	    "$(_PROJECT)/bash/$${_file}"; \
 	done
 
 build-npm:
@@ -248,20 +254,25 @@ install-bash-scripts:
 
 	for _file in $(_BASH_FILES); do \
 	  $(_INSTALL_EXE) \
-	  "$(_PROJECT)/$${_file}" \
+	  "$(_PROJECT)/bash/$${_file}" \
 	  "$(BIN_DIR)/$${_file}"; \
 	done
 	$(_INSTALL_FILE) \
-	  "$(_PROJECT)/lib$(_PROJECT)" \
+	  "$(_PROJECT)/bash/lib$(_PROJECT)" \
 	  "$(LIB_DIR)/lib$(_PROJECT)"
 
 install-node-scripts:
 
-	for _file in $(_NODE_FILES); do \
-	  $(_INSTALL_EXE) \
-	  "$(_PROJECT)/nodejs/$${_file}" \
-	  "$(LIB_DIR)/$${_file}"; \
-	done
+	git \
+	  submodule \
+	    update \
+	    --init \
+	    "$(_PROJECT)/nodejs" || \
+	true
+	cd \
+	  "$(_PROJECT)/nodejs"; \
+	make \
+	  build-npm
 
 install-man:
 
