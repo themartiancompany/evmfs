@@ -31,12 +31,15 @@ _lib="$(
     "${_bin}/../lib")"
 _crash_bash="${_lib}/libcrash-bash/crash-bash"
 _libevm="${_lib}/libevm/libevm"
+_libevmfs="${_lib}/evmfs/libevmfs"
 _sourced \
   "${_crash_bash}" 2>/dev/null || \
   source \
     "${_crash_bash}"
 _sourced \
   "${_libevm}"
+_sourced \
+  "${_libevmfs}"
 
 # shellcheck disable=SC2034
 _global_variables() {
@@ -51,6 +54,7 @@ _global_variables() {
   index_network=""
   tasks_parallel=""
   lock_only=""
+  chunk_length=""
   encoding_skip=""
   output_file=""
   cache_dir=""
@@ -111,20 +115,21 @@ _evmfs() {
     _retries_max="${14}" \
     _call_timeout="${15}" \
     _lock_only="${16}" \
-    _encoding_skip="${17}" \
-    _tasks_parallel="${18}" \
-    _cache_dir="${19}" \
-    _user_level="${20}" \
-    _output_file="${21}" \
-    _target_key="${22}" \
-    _target_value="${23}" \
+    _chunk_length="${17}" \
+    _encoding_skip="${18}" \
+    _tasks_parallel="${19}" \
+    _cache_dir="${20}" \
+    _user_level="${21}" \
+    _output_file="${22}" \
+    _target_key="${23}" \
+    _target_value="${24}" \
     _target_uri \
     _target_file \
     _command_args=() \
     _args=() \
     _msg=()
   shift \
-    23
+    24
   _command_args+=(
     "$@"
   )
@@ -249,6 +254,12 @@ _evmfs() {
       _args+=(
         -L
           "${_lock_only}"
+      )
+    fi
+    if [[ "${_chunk_length}" != "" ]]; then
+      _args+=(
+        -l
+          "${_chunk_length}"
       )
     fi
     if [[ "${_index_network}" != "" ]]; then
@@ -417,6 +428,7 @@ _set_overrides() {
     "encoding" \
     "skip" \
     "n"
+  _chunk_length_auto_detect
   _output_file_auto_detect
   _contract_version_auto_detect \
     "${deployments_dir}" \
@@ -506,6 +518,13 @@ $(_display_networks \
      -L                     Skip check and publish and only lock
                             the file.
                             Default: ${lock_only}
+     -l <chunk-length>      Length of the encoded chunk.
+                            On EVM networks one can write up to
+                            around 24.000 characters
+                            but on some network it seems it
+                            is not possible to spend the amount
+                            of gas needed to write that much.
+                            Default: ${chunk_length} 
 
   contract options:
      -A <fs_address>        Address of the EVM file system
@@ -583,6 +602,7 @@ _show_config() {
   _msg_info "    Publication configuration:"
   _msg_info "                      Lock only:   ${lock_only}"
   _msg_info "                  Skip encoding:   ${encoding_skip}"
+  _msg_info "                   Chunk length:   ${chunk_length}"
   _msg_info "       Download configuration:"
   _msg_info "                    Output file:   ${output_file}"
   _msg_info "       Contract configuration:"
@@ -628,41 +648,43 @@ while \
   _libevm_app_getopts_case
   case \
     "${arg}" in
-    o) \
+    o)
       override_output_file="${OPTARG}" ;;
-    i) \
+    i)
       override_index_network="${OPTARG}" ;;
-    m) \
+    m)
       override_call_method="${OPTARG}" ;;
-    r) \
+    r)
       override_retries_max="${OPTARG}" ;;
-    T) \
+    T)
       override_call_timeout="${OPTARG}" ;;
-    P) \
+    P)
       override_tasks_parallel="${OPTARG}" ;;
-    L) \
+    L)
       override_lock_only="${OPTARG}" ;;
-    G) \
+    l)
+      override_lock_only="${OPTARG}" ;;
+    G)
       override_encoding_skip="y" ;;
-    A) \
+    A)
       override_fs_address="${OPTARG}" ;;
-    C) \
+    C)
       override_ccfs_address="${OPTARG}" ;;
-    V) \
+    V)
       override_fs_version="${OPTARG}" ;;
-    n) \
+    n)
       override_target_network="${OPTARG}" ;;
-    W) \
+    W)
       override_cache_dir="${OPTARG}" ;;
-    c) \
+    c)
       override_color="y" ;;
-    v) \
+    v)
       override_quiet="n" ;;
-    h) \
-      _set_overrides && \
+    h)
+      _set_overrides
       _usage \
         0 ;;
-    *) \
+    *)
       if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
         _msg_error \
           "Invalid argument '${arg}'." \
@@ -673,20 +695,25 @@ while \
   esac
 done
 shift \
-  $(( \
-    OPTIND - 1 \
-  ))
+  $((
+    OPTIND - 1 ))
 if (( $# < 1 )); then
+  _msg=(
+    "No command given."
+  )
   _msg_error \
-    "No command given." \
+    "${_msg[*]}" \
     0
   _set_overrides
   _usage \
     1
 fi
 if (( $# < 2 )); then
+  _msg=(
+    "No command key given."
+  )
   _msg_error \
-    "No command key given." \
+    "${_msg[*]}" \
     0
   _set_overrides
   _usage \
@@ -735,6 +762,7 @@ app_opts=(
   "${retries_max}"
   "${call_timeout}"
   "${lock_only}"
+  "${chunk_length}"
   "${encoding_skip}"
   "${tasks_parallel}"
   "${cache_dir}"

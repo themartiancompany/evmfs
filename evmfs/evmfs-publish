@@ -53,6 +53,7 @@ _global_variables() {
   encoding_skip=""
   lock_only=""
   chunk_length=""
+  buffer_length=""
   tasks_parallel=""
   encoding_type=""
   cache_dir=""
@@ -1715,8 +1716,9 @@ _evmfs_publish() {
     _encoding_type="${18}" \
     _lock_only="${19}" \
     _chunk_length="${20}" \
-    _tasks_parallel="${21}" \
-    _cache_dir="${22}" \
+    _buffer_length="${21}" \
+    _tasks_parallel="${22}" \
+    _cache_dir="${23}" \
     _target_file \
     _target_files=() \
     _target_networks=() \
@@ -1726,7 +1728,7 @@ _evmfs_publish() {
     _args=() \
     _namespace
   shift \
-    22
+    23
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1769,83 +1771,6 @@ _evmfs_publish() {
         1
     fi
   done
-}
-
-_chunk_length_auto_detect() {
-  local \
-    _chunk_length \
-    _networks_short=() \
-    _networks_short_extra=() \
-    _network
-  _chunk_length="22000"
-  _networks_short=(
-    "16"
-    "114"
-    "212"
-    "296"
-    "1287"
-    "7672"
-    "9990"
-    "43113"
-    "50312"
-    "62831"
-    "175177"
-    "381932"
-    "555666"
-    "666888"
-  )
-  _networks_short_extra=(
-    "21"
-    "63"
-    "1230"
-    "1328"
-    "2484"
-    "73799"
-    "552981"
-  )
-  _networks_short_extreme=(
-    "234"
-    "7575"
-    "8131"
-    "10947"
-    "19515"
-    "96969696"
-  )
-  _networks_short_wow=(
-    "1"
-    "31"
-    "41"
-    "10143"
-    "10508"
-  )
-  for _network in "${_networks_short[@]}"; do
-    if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
-      _chunk_length="15000"
-      break
-    fi
-  done
-  for _network in "${_networks_short_extra[@]}"; do
-    if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
-      _chunk_length="10000"
-      break
-    fi
-  done
-  for _network in "${_networks_short_extreme[@]}"; do
-    if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
-      _chunk_length="4500"
-      break
-    fi
-  done
-  for _network in "${_networks_short_wow[@]}"; do
-    if [[ " ${target_networks[*]}  " == *" ${_network} "* ]]; then
-      _chunk_length="1000"
-      break
-    fi
-  done
-  _set_override \
-    "chunk" \
-    "length" \
-    "${_chunk_length}"
 }
 
 _set_overrides() {
@@ -2286,6 +2211,7 @@ app_opts=(
   "${encoding_type}"
   "${lock_only}"
   "${chunk_length}"
+  "${buffer_length}"
   "${tasks_parallel}"
   "${cache_dir}"
   "${target_networks[@]}"
