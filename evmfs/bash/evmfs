@@ -634,7 +634,7 @@ _config_user_init \
 getopts_opts="$(
   printf \
     "%s" \
-    "o:m:r:T:P:L:G:" \
+    "o:m:r:T:P:L:l:G:" \
     "A:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
     "i:n:" \
@@ -663,7 +663,7 @@ while \
     L)
       override_lock_only="${OPTARG}" ;;
     l)
-      override_lock_only="${OPTARG}" ;;
+      override_chunk_length="${OPTARG}" ;;
     G)
       override_encoding_skip="y" ;;
     A)
