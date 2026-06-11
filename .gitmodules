@@ -10,3 +10,6 @@
 [submodule "data"]
 	path = data
 	url = github:themartiancompany/evmfs-data
+[submodule "man"]
+	path = man
+	url = https://github.com/themartiancompany/evmfs-man
