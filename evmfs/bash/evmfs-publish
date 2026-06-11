@@ -1,25 +1,30 @@
 #!/usr/bin/env bash
 
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: AGPL-3.0
 
-#    ----------------------------------------------------------------------
+#    -----------------------------------------------------
 #    Copyright © 2024, 2025, 2026  Pellegrino Prevete
 #
 #    All rights reserved
-#    ----------------------------------------------------------------------
+#    -----------------------------------------------------
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    This program is free software: you can redistribute
+#    it and/or modify it under the terms of the
+#    GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of
+#    the License, or (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
+#    This program is distributed in the hope that it
+#    will be useful, but WITHOUT ANY WARRANTY;
+#    without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU Affero General Public License for
+#    more details.
 #
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    You should have received a copy of the
+#    GNU Affero General Public License
+#    along with this program.
+#    If not, see <https://www.gnu.org/licenses/>.
 
 _bin="$(
   dirname \
@@ -57,6 +62,7 @@ _global_variables() {
   tasks_parallel=""
   encoding_type=""
   cache_dir=""
+  price_gas=""
   target_files=()
   command_args=()
   color=""
@@ -1712,13 +1718,14 @@ _evmfs_publish() {
     _upload_method="${14}" \
     _retries_max="${15}" \
     _call_timeout="${16}" \
-    _encoding_skip="${17}" \
-    _encoding_type="${18}" \
-    _lock_only="${19}" \
-    _chunk_length="${20}" \
-    _buffer_length="${21}" \
-    _tasks_parallel="${22}" \
-    _cache_dir="${23}" \
+    _price_gas="${17}" \
+    _encoding_skip="${18}" \
+    _encoding_type="${19}" \
+    _lock_only="${20}" \
+    _chunk_length="${21}" \
+    _buffer_length="${22}" \
+    _tasks_parallel="${23}" \
+    _cache_dir="${24}" \
     _target_file \
     _target_files=() \
     _target_networks=() \
@@ -1728,7 +1735,7 @@ _evmfs_publish() {
     _args=() \
     _namespace
   shift \
-    23
+    24
   for _network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
@@ -1855,6 +1862,10 @@ _set_overrides() {
     "encoding" \
     "skip" \
     "n"
+  _set_override \
+    "price" \
+    "gas" \
+    "10000"
   _contract_version_auto_detect \
     "${deployments_dir}" \
     "FileSystem" \
@@ -2001,7 +2012,9 @@ $(_display_networks \
                             Default: ${deployments_dir}
      -n <network>           EVM network name (${_networks[*]}).
                             Default: ${target_network}
-
+     -f <fee>               Maximum fee to pay, measured in
+                            '${measure_unit}'.
+                            Default: ${price_gas}
 
   credentials options:
      -N <wallet-name>       Wallet name.
@@ -2055,6 +2068,7 @@ _show_config() {
   _msg_info "                     User level:   ${user_level}"
   _msg_info "          Deployments directory:   ${deployments_dir}"
   _msg_info "                Target networks:   ${target_networks[*]}"
+  _msg_info "                      Gas price:   ${price_gas}"
   _msg_info "          Credentials options:"
   _msg_info "                    Wallet name:   ${wallet_name}"
   _msg_info "                    Wallet path:   ${wallet_path}"
@@ -2095,7 +2109,7 @@ getopts_opts="$(
     "m:r:T:P:L:l:Gg:" \
     "A:B:C:V:" \
     "$(_libevm_app_getopts_params_get)" \
-    "i:n:" \
+    "i:n:f:" \
     "$(_wallet_getopts_params_get)" \
     "W:cvh")"
 while \
@@ -2136,6 +2150,8 @@ while \
       target_networks+=(
         "${OPTARG}"
       ) ;;
+    f)
+      override_price_gas="${OPTARG}" ;;
     W)
       override_cache_dir="${OPTARG}" ;;
     c)
@@ -2207,6 +2223,7 @@ app_opts=(
   "${upload_method}"
   "${retries_max}"
   "${call_timeout}"
+  "${price_gas}"
   "${encoding_skip}"
   "${encoding_type}"
   "${lock_only}"
