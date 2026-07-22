@@ -486,37 +486,37 @@ Usage:
   ${app_name}
     [options]
     <command>
-      (<command_args>)
+      (<command-args>)
 
   commands:
     get
-      <resource_uri>
+      <resource-uri>
     publish
-      <file_path>
+      <file-path>
 
   networks:
 $(_display_networks \
     "${_networks[@]}")
 
   options:
-     -m <call_method>       It can be 'standalone', 'bulk' or
+     -m <call-method>       It can be 'standalone', 'bulk' or
                             'simulate'
                             Default: ${call_method}
-     -i <index_network>     EVM Network for the CrossChainFileSystem and
+     -i <index-network>     EVM Network for the CrossChainFileSystem and
                             the LengthLock contracts.
                             Default: ${index_network}
-     -r <retries_max>       Maximum number of retries before
+     -r <retries-max>       Maximum number of retries before
                             failing.
                             Default: ${retries_max}
-     -T <call_timeout>      Maximum number of milliseconds before
+     -T <call-timeout>      Maximum number of milliseconds before
                             declaring the call failed.
                             Default: ${call_timeout}
-     -P <tasks_parallel>    How many calls tasks perform at any
+     -P <tasks-parallel>    How many calls tasks perform at any
                             given time
                             Default: ${tasks_parallel}
 
   get options:
-     -o <output_file>       Name of the file in which to save
+     -o <output-file>       Name of the file in which to save
                             the downloaded resource.
                             Default: ${output_file}
 
@@ -533,13 +533,13 @@ $(_display_networks \
                             Default: ${chunk_length} 
 
   contract options:
-     -A <fs_address>        Address of the EVM file system
+     -A <fs-address>        Address of the EVM file system
                             on the network.
                             Default: ${fs_address}
-     -C <ccfs_address>      Address of the CrossChainFileSystem
+     -C <ccfs-address>      Address of the CrossChainFileSystem
                             contract on the network.
                             Default: ${ccfs_address}
-     -V <fs_version>        Version of the target EVM file
+     -V <fs-version>        Version of the target EVM file
                             system.
                             Default: ${fs_version}
   libevm options
@@ -547,25 +547,25 @@ $(_display_networks \
                             address from user directory or custom
                             deployment.
                             Default: ${user_level}
-     -d <deployments_dir>   Contracts deployments directory.
+     -d <deployments-dir>   Contracts deployments directory.
                             Default: ${deployments_dir}
      -n <network>           EVM network name. Use either name
                             or ID.
                             Default: ${target_network}
   credentials options:
-     -N <wallet_name>       Wallet name.
+     -N <wallet-name>       Wallet name.
                             Default: ${wallet_name}
-     -w <wallet_path>       Wallet path.
+     -w <wallet-path>       Wallet path.
                             Default: ${wallet_path}
-     -p <wallet_password>   Wallet password.
+     -p <wallet-password>   Wallet password.
                             Default: ${wallet_password}
-     -s <wallet_seed>       Wallet seed path.
+     -s <wallet-seed>       Wallet seed path.
                             Default: ${wallet_seed}
-     -k <api_key>           Etherscan-like service key.
+     -k <api-key>           Etherscan-like service key.
                             Default: ${api_key}
 
   application options:
-     -W <cache_dir>         Work directory.
+     -W <cache-dir>         Work directory.
                             Default: ${cache_dir}
 
      -h                     This message.
