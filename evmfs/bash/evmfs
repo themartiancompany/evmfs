@@ -512,7 +512,7 @@ $(_display_networks \
                             declaring the call failed.
                             Default: ${call_timeout}
      -P <tasks-parallel>    How many calls tasks perform at any
-                            given time
+                            given time.
                             Default: ${tasks_parallel}
 
   get options:
@@ -542,6 +542,7 @@ $(_display_networks \
      -V <fs-version>        Version of the target EVM file
                             system.
                             Default: ${fs_version}
+
   libevm options
      -u                     Whether to retrieve file system
                             address from user directory or custom
@@ -552,6 +553,7 @@ $(_display_networks \
      -n <network>           EVM network name. Use either name
                             or ID.
                             Default: ${target_network}
+
   credentials options:
      -N <wallet-name>       Wallet name.
                             Default: ${wallet_name}
