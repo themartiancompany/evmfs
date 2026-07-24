@@ -550,8 +550,8 @@ $(_display_networks \
                             Default: ${user_level}
      -d <deployments-dir>   Contracts deployments directory.
                             Default: ${deployments_dir}
-     -n <network>           EVM network name. Use either name
-                            or ID.
+     -n <network>           EVM network name. Use either chain name
+                            or Chain ID.
                             Default: ${target_network}
 
   credentials options:
