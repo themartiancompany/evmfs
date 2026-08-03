@@ -40,7 +40,8 @@ DOC_FILES=\
 _BASH_FILES:=\
   $(_PROJECT) \
   $(_PROJECT)-get \
-  $(_PROJECT)-publish
+  $(_PROJECT)-publish \
+  $(_PROJECT)-status
 _NODE_FILES:=\
   ccget \
   check \

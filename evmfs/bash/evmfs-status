@@ -1,0 +1,672 @@
+#!/usr/bin/env bash
+
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+#    ----------------------------------------------------------------------
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
+#
+#    All rights reserved
+#    ----------------------------------------------------------------------
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+_bin="$(
+  dirname \
+    "$(command \
+         -v \
+         "env")")"
+_lib="$(
+  realpath \
+    "${_bin}/../lib")"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_libevm="${_lib}/libevm/libevm"
+_libevmfs="${_lib}/evmfs/libevmfs"
+_sourced \
+  "${_crash_bash}" 2>/dev/null || \
+  source \
+    "${_crash_bash}"
+_sourced \
+  "${_libevm}"
+_sourced \
+  "${_libevmfs}"
+
+# shellcheck disable=SC2034
+_global_variables() {
+  get_date=""
+  _libevm_global_variables
+  _libevm_app_global_variables
+  cache_dir=""
+  tasks_parallel=""
+  call_method=""
+  ccfs_address=""
+  fs_address=""
+  ll_address=""
+  fs_version=""
+  uris_amount=""
+  target_uris=()
+  output_files=()
+  command_args=()
+  color=""
+  quiet=""
+}
+
+_requirements() {
+  _check_cmd \
+    'libevm-requirements' \
+    'libevm'
+  libevm-requirements
+  _check_cmd \
+    'evm-contract-call' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-contract-deployment-networks' \
+    'evm-contracts-tools'
+  _check_cmd \
+    'evm-wallet'
+  _check_cmd \
+    'txt2bin' \
+    'encoding-tools'
+  _check_cmd \
+    'node-run'
+}
+
+_stats_display() {
+  local \
+    _hashes=() \
+    _msg=()
+  for _file in "${_cache_dir}/"*; do
+    _file_name="$(
+      basename \
+        "${_file}")"
+    _hashes+=(
+      "${_file_name}" 
+    ) 
+  done
+  _msg=(
+    "Cached files: '${#_hashes}'."
+  )
+  echo \
+    "${_msg[*]}"
+}
+
+_stats_file() {
+  local \
+    _file="${1}" \
+    _chunk \
+    _chunks=() \
+    _chunks_amount \
+    _chunks_published \
+    _chunks_locked \
+    _encoding_dir \
+    _encoding_length \
+    _encoding_lengths=() \
+    _hash \
+    _lock_checkpoint_file \
+    _msg=() \
+    _publish_checkpoint_file
+  _hash="$(
+    _file_hash \
+      "${_file}")"
+  printf \
+    "%s\n" \
+    "SHA256 checksum:" \
+    "  ${_hash}"
+  _encodings_dir="${_cache_dir}/${_hash}/publish/base64"
+  _encoding_lengths+=( $(
+    ls \
+      "${_encodings_dir}")
+  )
+  _msg=(
+    "Available encoded chunks lengths:"
+    "  ${_encoding_lengths[*]}"
+  )
+  printf \
+    "%s\n" \
+    "${_msg[@]}"
+  for _encoding_length in "${_encoding_lengths[@]}"; do
+    _encoding_dir="${_encodings_dir}/${_encoding_length}"
+    _publish_checkpoint_file="${_encoding_dir}/checkpoint.publish"
+    _lock_checkpoint_file="${_encoding_dir}/checkpoint.lock"
+    _chunks_prefix="${_encoding_dir}/${_hash}.base64"
+    for _chunk in "${_chunks_prefix}"*; do
+      _chunks+=(
+        "${_chunk}"
+      )
+    done
+    _chunks_amount="${#_chunks[@]}"
+    _chunks_published="$(
+      cat \
+        "${_publish_checkpoint_file}" || \
+        true)"
+    _chunks_locked="$(
+      cat \
+        "${_lock_checkpoint_file}" || \
+        true)"
+    _percentage_published="$((
+      ( "${_chunks_published}" * 100 ) /
+        "${_chunks_amount}" ))"
+    _percentage_locked="$((
+      ( "${_chunks_locked}" * 100 ) /
+        "${_chunks_amount}" ))"
+    _msg=(
+      "Chunk length:"
+      "  ${_encoding_length}"
+      "Total chunks:"
+      "  ${_chunks_amount}"
+      "Chunks published:"
+      "  ${_chunks_published} (${_percentage_published}%)"
+      "Chunks locked:"
+      "  ${_chunks_locked} (${_percentage_locked}%)"
+    )
+    printf \
+      "%s\n" \
+      "${_msg[@]}"
+  done
+}
+
+_evmfs_status() {
+  local \
+    _fs_address="${1}" \
+    _ll_address="${2}" \
+    _ccfs_address="${3}" \
+    _fs_version="${4}" \
+    _deployments_dir="${5}" \
+    _user_level="${6}" \
+    _wallet_name="${7}" \
+    _wallet_path="${8}" \
+    _wallet_password="${9}" \
+    _wallet_seed="${10}" \
+    _networks_amount="${11}" \
+    _api_key_path="${12}" \
+    _call_method="${13}" \
+    _retries_max="${14}" \
+    _tasks_parallel="${15}" \
+    _cache_dir="${16}" \
+    _uris_amount="${17}" \
+    _target_network \
+    _target_networks=() \
+    _cursor \
+    _download \
+    _target_uri \
+    _target_uris=() \
+    _output_file \
+    _output_file_hash \
+    _output_files=() \
+    _network_backend \
+    _uri_network \
+    _uri_network_id \
+    _uri_contract \
+    _uri_contract_type \
+    _uri_namespace \
+    _uri_hash \
+    _uri_type
+  shift \
+    17
+  for _target_network \
+    in $(seq "${_networks_amount}"); do
+    _target_networks+=(
+      "${1}"
+    )
+    shift
+  done
+  for _target_uri \
+    in $(seq "${_uris_amount}"); do
+    _target_uris+=(
+      "${1}"
+    )
+    shift
+  done
+  # for _output_file \
+  #   in $(seq "${_uris_amount}"); do
+  #   _output_files+=(
+  #     "${1}"
+  #   )
+  #   shift
+  # done
+  if (( "${_uris_amount}" < 1 )); then
+    _stats_display
+  fi
+  for _cursor \
+    in $(seq 0 \
+             "$((${_uris_amount} - 1))"); do
+    _target_uri="${_target_uris["${_cursor}"]}"
+    if [[ -e "${_target_uri}" ]]; then
+      _uri_type="file"
+      _stats_file \
+        "${_target_uri}"
+    fi
+    # _output_file="${_output_files["${_cursor}"]}"
+    # _uri_network_id="$(
+    #   _network_id_get \
+    #     "${_target_uri}")"
+    # _network_setup \
+    #   "${_uri_network_id}"
+    # _uri_contract="$(
+    #   _contract_get \
+    #     "${_target_uri}")"
+    # _contract_setup \
+    #   "${_uri_contract}"
+    # _uri_namespace="$(
+    #   _namespace_get \
+    #     "${_target_uri}")"
+    # _namespace_setup \
+    #   "${_uri_namespace}"
+    # _uri_hash="$(
+    #   _hash_get \
+    #     "${_target_uri}")"
+    # _hash_check \
+    #   "${_uri_hash}"
+    # _download="true"
+    # if [[ -e "${_output_file}" ]]; then
+    #   _output_file_hash="$(
+    #     _file_hash \
+    #       "${_output_file}")"
+    #   if [[ "${_output_file_hash}" == "${_uri_hash}" ]]; then
+    #     _msg=(
+    #       "File '${_target_uri}' already downloaded"
+    #       "at '${_output_file}'."
+    #     )
+    #     _msg_info \
+    #       "${_msg[*]}"
+    #     _download="false"
+    #   fi
+    # fi
+    # if [[ "${_download}" == "true" ]]; then
+    #   _resource_get \
+    #     "${_call_method}" \
+    #     "${_tasks_parallel}" \
+    #     "${_retries_max}"
+    # fi
+  done
+  return \
+    0
+}
+
+_tasks_parallel_auto_detect() {
+  local \
+    _call_method \
+    _tasks_parallel
+  _call_method="${call_method}"
+  if [[ "${_call_method}" == "standalone" ]]; then
+    _tasks_parallel=200
+  elif [[ "${_call_method}" == "bulk" ]]; then
+    _tasks_parallel=1
+  fi
+  _set_override \
+    "tasks" \
+    "parallel" \
+    "${_tasks_parallel}"
+}
+
+_set_overrides() {
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  _set_override \
+    "get" \
+    "date" \
+    "$(_get_date_human)"
+  networks_amount="${#target_networks[@]}"
+  uris_amount="${#target_uris[@]}"
+  _cache_dir_auto_detect \
+    1>"/dev/null"
+  _set_override \
+    "call" \
+    "method" \
+    "bulk"
+  _tasks_parallel_auto_detect
+  _set_override \
+    "retries" \
+    "max" \
+    "300"
+  _set_override \
+    "call" \
+    "timeout" \
+    "300000"
+  _set_override \
+    "user" \
+    "level" \
+    "n"
+  _set_override \
+    "call" \
+    "auth" \
+    "n"
+  _deployments_dir_auto_detect \
+    "evmfs" \
+    "${user_level}"
+  if (( "${networks_amount}" < 1 )); then
+    _network_auto_detect \
+      "FileSystem" \
+      "${deployments_dir}" \
+      "${user_level}"
+    target_networks+=(
+      "${target_network}"
+    )
+    target_network=""
+    networks_amount="${#target_networks[@]}"
+  fi
+  if [[ "${networks_amount}" == 1 ]]; then
+    _api_key_auto_detect \
+      "${target_networks[0]}"
+  fi 
+  _wallet_overrides_set \
+    "evm-wallet" \
+    "default" \
+    "n"
+  _contract_version_auto_detect \
+    "${deployments_dir}" \
+    "FileSystem" \
+    "fs" \
+    "${target_networks[0]}"
+  if [[ "${fs_version}" == 1.0 ]]; then
+    _contract_address_auto_detect \
+      "evmfs" \
+      "LengthLock" \
+      "ll" \
+      "${target_networks[0]}" \
+      "${fs_version}" \
+      "${user_level}" \
+      "${deployments_dir}"
+  fi
+  _contract_address_auto_detect \
+    "evmfs" \
+    "FileSystem" \
+    "fs" \
+    "${target_networks[0]}" \
+    "${fs_version}" \
+    "${user_level}" \
+    "${deployments_dir}"
+  _contract_address_auto_detect \
+    "evmfs" \
+    "CrossChainFileSystem" \
+    "ccfs" \
+    "${target_networks[0]}" \
+    "${fs_version}" \
+    "${user_level}" \
+    "${deployments_dir}"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _fs_deployment \
+    _networks=() \
+    _usage_text
+  _fs_deployment="${deployments_dir}/FileSystem"
+  _networks=( $(
+    evm-contract-deployment-networks \
+      -A \
+      "${_fs_deployment}")
+  )
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+Ethereum Virtual Machine file system file downloader
+
+Usage:
+  ${app_name}
+    [options]
+  ( [uri] )
+
+  networks:
+$(_display_networks \
+     "${_networks[@]}")
+
+  options:
+     -o <output-file>       Name of the file in which to save
+                            the downloaded resource.
+                            Default: ${output_files[*]}
+     -m <call-method>       Can be standalone or 'bulk'.
+                            Default: ${call_method}
+     -r <retries-max>       Maximum number of retries before
+                            failing.
+                            Default: ${retries_max}
+     -T <call-timeout>      Maximum number of milliseconds before
+                            declaring the call failed.
+                            Default: ${call_timeout}
+     -P <tasks-parallel>    Tasks to perform in parallel.
+                            Default: ${tasks_parallel}
+
+  contract options:
+     -A <fs-address>        Address of the EVM file system
+                            on the network.
+                            Default: ${fs_address}
+     -B <ll-address>        Address of the Length Lock contract
+                            on the network.
+                            Default: ${ll_address}
+     -C <ccfs-address>      Address of the CrossChainFileSystem
+                            contract on the network.
+                            Default: ${ccfs_address}
+     -V <fs-version>        Version of the target EVM file
+                            system.
+                            Default: ${fs_version}
+
+  libevm options:
+     -u                     Whether to retrieve file system
+                            address from user directory or custom
+                            deployment.
+                            Default: ${user_level}
+     -d <deployments-dir>   Contracts deployments directory.
+                            Default: ${deployments_dir}
+     -n <network>           EVM network name (${_networks[*]}).
+                            Default: ${target_network}
+
+  credentials options:
+     -N <wallet-name>       Wallet name.
+                            Default: ${wallet_name}
+     -w <wallet-path>       Wallet path.
+                            Default: ${wallet_path}
+     -p <wallet-password>   Wallet password.
+                            Default: ${wallet_password}
+     -s <wallet-seed>       Wallet seed path.
+                            Default: ${wallet_seed}
+     -k <api-key>           Etherscan-like service key.
+                            Default: ${api_key}
+
+  applications options:
+     -W <cache-dir>         Location where to temporary store
+                            the downloaded resource chunks.
+                            Default: ${cache_dir}
+
+     -h                     This message.
+     -c                     Enable color output
+     -v                     Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "                       Get date:   ${get_date}"
+  _msg_info "               Target resources:"
+  _display_target_uris                         "${uris_amount}"
+  _msg_info "                    Call method:   ${call_method}"
+  _msg_info "                Maximum retries:   ${retries_max}"
+  _msg_info "                 Parallel tasks:   ${tasks_parallel}"
+  _msg_info " (not implemented) Call timeout:   ${call_timeout}"
+  _msg_info "       Contract configuration:"
+  _msg_info "Cross-chain File System address:   ${ccfs_address}"
+  _msg_info "            File system address:   ${fs_address}"
+  _msg_info "            Length Lock address:   ${ll_address}"
+  _msg_info "            File system version:   ${fs_version}"
+  _msg_info "         LibEVM configuration:"
+  _msg_info "                     User level:   ${user_level}"
+  _msg_info "          Deployments directory:   ${deployments_dir}"
+  _msg_info "                Target networks:   ${target_networks[*]}"
+  _msg_info "     Credentials configuration:"
+  _msg_info "                    Wallet name:   ${wallet_name}"
+  _msg_info "                    Wallet path:   ${wallet_path}"
+  _msg_info "                Wallet password:   ${wallet_password}"
+  _msg_info "                    Wallet seed:   ${wallet_seed}"
+  _msg_info "                        API key:   ${api_key}"
+  _msg_info "    Application configuration:"
+  _msg_info "                Cache directory:   ${cache_dir}"
+}
+
+_display_target_uris() {
+  local \
+    _uris_amount="${1}" \
+    _cursor \
+    _uris=() \
+    _target_uri \
+    _output_file
+  _uris=( $(
+    seq 0 \
+        "$(("${_uris_amount}" - 1))")
+  )
+  for _cursor in "${_uris[@]}"; do
+    _target_uri="${target_uris["${_cursor}"]}"
+    # _output_file="${output_files["${_cursor}"]}"
+    _msg_info "                            URI:   ${_target_uri}"
+    # _msg_info "                    Output file:   ${_output_file}"
+  done
+}
+
+_globals
+_global_variables
+_requirements
+_config_user_init \
+  "${app_name}"
+# shellcheck disable=SC2034
+getopts_opts="$(
+  printf \
+    "%s" \
+    "o:m:r:P:T:" \
+    "A:B:C:V:" \
+    "$(_libevm_app_getopts_params_get)" \
+    "n:" \
+    "$(_wallet_getopts_params_get)" \
+    "W:cvh")"
+while \
+  getopts \
+    "${getopts_opts}" \
+    arg; do
+  _wallet_getopts_case
+  _libevm_app_getopts_case
+  case \
+    "${arg}" in
+    o) \
+      output_files+=(
+        "${OPTARG}"
+      ) ;;
+    m)
+      override_call_method="${OPTARG}" ;;
+    r)
+      override_retries_max="${OPTARG}" ;;
+    P)
+      override_tasks_parallel="${OPTARG}" ;;
+    T)
+      override_call_timeout="${OPTARG}" ;;
+    A)
+      override_fs_address="${OPTARG}" ;;
+    B)
+      override_ll_address="${OPTARG}" ;;
+    C)
+      override_ccfs_address="${OPTARG}" ;;
+    V)
+      override_fs_version="${OPTARG}" ;;
+    n)
+      target_networks+=(
+        "${OPTARG}"
+      ) ;;
+    W)
+      override_cache_dir="${OPTARG}" ;;
+    c)
+      override_color="y" ;;
+    v)
+      override_quiet="n" ;;
+    h)
+      _set_overrides
+      _usage \
+        0 ;;
+    *)
+      if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
+        _msg=(
+          "Invalid argument '${arg}'."
+        )
+        _msg_error \
+          "${_msg[*]}" \
+          0
+        _usage \
+          1
+      fi ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+if (( "${#}" < 1 )); then
+  _msg=(
+    "No URI given."
+  )
+  _msg_error \
+    "${_msg[*]}" \
+    0
+  _set_overrides
+  _usage \
+    1
+fi
+for _uri in "$@"; do
+  # TODO:
+  #   to write an unified function to parse
+  #   all resources types sanity 
+  target_uris+=(
+    "${_uri}"
+  )
+done
+_set_overrides
+_show_config
+app_opts=(
+  "${fs_address}"
+  "${ll_address}"
+  "${ccfs_address}"
+  "${fs_version}"
+  "${deployments_dir}"
+  "${user_level}"
+  "${wallet_name}"
+  "${wallet_path}"
+  "${wallet_password}"
+  "${wallet_seed}"
+  "${networks_amount}"
+  "${api_key}"
+  "${call_method}"
+  "${retries_max}"
+  "${tasks_parallel}"
+  "${cache_dir}"
+  "${uris_amount}"
+  "${target_networks[@]}"
+  "${target_uris[@]}"
+  "${output_files[@]}"
+)
+_evmfs_status \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
