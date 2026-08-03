@@ -106,9 +106,8 @@ _stats_display() {
     _hash="$(
       basename \
         "$(realpath \
-             "${_file}/../../..")")"
-    echo \
-      "${_hash}"
+             "$(dirname \
+                  "${_file}")/../../..")")"
     if [[ "${_file}" == *".publish" ]]; then
       _hashes_publishing+=(
         "${_hash}"
@@ -136,7 +135,7 @@ _stats_display() {
     "Files currently being published:"
     "  ${#_hashes_publishing[@]}"
     "Files currently being locked:"
-    "  ${#_hashes_locked[@]}"
+    "  ${#_hashes_locking[@]}"
   )
   printf \
     "%s\n" \
@@ -188,20 +187,6 @@ _stats_file() {
       )
     done
     _chunks_amount="${#_chunks[@]}"
-    _chunks_published="$(
-      cat \
-        "${_publish_checkpoint_file}" || \
-        true)"
-    _chunks_locked="$(
-      cat \
-        "${_lock_checkpoint_file}" || \
-        true)"
-    _percentage_published="$((
-      ( "${_chunks_published}" * 100 ) /
-        "${_chunks_amount}" ))"
-    _percentage_locked="$((
-      ( "${_chunks_locked}" * 100 ) /
-        "${_chunks_amount}" ))"
     _msg=(
       "Chunk length:"
       "  ${_encoding_length}"
@@ -212,6 +197,32 @@ _stats_file() {
       "Chunks locked:"
       "  ${_chunks_locked} (${_percentage_locked}%)"
     )
+    _chunks_published="$(
+      cat \
+        "${_publish_checkpoint_file}" || \
+        true)"
+    _chunks_locked="$(
+      cat \
+        "${_lock_checkpoint_file}" || \
+        true)"
+    if [[ "${_chunks_published}" != "" ]]; then
+      _percentage_published="$((
+        ( "${_chunks_published}" * 100 ) /
+          "${_chunks_amount}" ))"
+      _msg+=(
+        "Chunks published:"
+        "  ${_chunks_published} (${_percentage_published}%)"
+      )
+    fi
+    if [[ "${_chunks_locked}" != "" ]]; then
+      _percentage_locked="$((
+        ( "${_chunks_locked}" * 100 ) /
+          "${_chunks_amount}" ))"
+      _msg+=(
+        "Chunks locked:"
+        "  ${_chunks_locked} (${_percentage_locked}%)"
+      )
+    fi
     printf \
       "%s\n" \
       "${_msg[@]}"
