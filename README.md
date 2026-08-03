@@ -35,7 +35,7 @@
   />
 </div>
 
-Reference implementation of the Ethereum Virtual Machine File System (EVMFS).
+Reference implementations of the Ethereum Virtual Machine File System (EVMFS).
 
 ### Quick overview
 
@@ -46,7 +46,7 @@ permissionless file system running on Ethereum Virtual Machine-compatible networ
 Links pointing to the file system resources are structured in the following way:
 
 ```
-evmfs://<evm_network_id>/<evmfs_contract_address>/<user_namespace>/<file_hash>
+evmfs://<evm-network-id>/<evmfs-contract-address>/<user-namespace>/<file-hash>
 ```
 
 Files can be published by running
@@ -54,7 +54,7 @@ Files can be published by running
 ```bash
 evmfs \
   publish \
-    [target_files]
+    [files]
 ```
 
 and retrieved with
@@ -62,7 +62,7 @@ and retrieved with
 ```bash
 evmfs \
   get \
-    <evmfs_uri>
+    <uri>
 ```
 
 Public file system's contracts' deployment addresses on
@@ -89,11 +89,27 @@ repository.
 
 The EVMFS is a core component of the
 [Human Instrumentality Project](
-  http://www.humaninstrumentalityproject.org)
-and of the
+  http://www.humaninstrumentalityproject.org),
+of the
 [Ur](
   https://github.com/themartiancompany/ur)
-application store for Life and DogeOS.
+application store for Life and
+[DogeOS](
+  https://github.com/themartiancompany/dogeos)
+and it is a pre-requirement for the
+[*OpenPGP on Ethereum*](
+  https://github.com/themartiancompany/evm-gnupg)
+specification and the
+[*EVM Contracts Source Index*](
+  https://github.com/themartiancompany/evm-contracts-source-index),
+which allows Ethereum clients to perform
+contracts source verification on-chain natively
+without using a centralized explorer service.
+
+The EVMFS tree implementation is also known as the
+[*Git on Ethereum*](
+  https://github.com/themartiancompany/evm-git)
+specification.
 
 ### Installation
 
