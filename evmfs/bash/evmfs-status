@@ -192,10 +192,6 @@ _stats_file() {
       "  ${_encoding_length}"
       "Total chunks:"
       "  ${_chunks_amount}"
-      "Chunks published:"
-      "  ${_chunks_published} (${_percentage_published}%)"
-      "Chunks locked:"
-      "  ${_chunks_locked} (${_percentage_locked}%)"
     )
     _chunks_published="$(
       cat \
