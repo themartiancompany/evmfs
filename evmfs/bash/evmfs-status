@@ -83,21 +83,69 @@ _requirements() {
 
 _stats_display() {
   local \
+    _file \
+    _hash \
     _hashes=() \
+    _hashes_active=() \
+    _hashes_locking=() \
+    _hashes_publishing=() \
     _msg=()
+  declare \
+    -A \
+    _hash_found
+  _size_total=( $(
+    du \
+      -hs \
+      "${_cache_dir}")
+  )
   for _file in "${_cache_dir}/"*; do
-    _file_name="$(
+    _hash="$(
       basename \
         "${_file}")"
     _hashes+=(
-      "${_file_name}" 
+      "${_hash}" 
     ) 
+    _hash_found["${_hash}"]=""
+  done
+  for _file in "${_cache_dir}/"*"/publish/base64/"*"/checkpoint."*; do
+    _hash="$(
+      basename \
+        "$(realpath \
+             "${_file}/../../..")")"
+    echo \
+      "${_hash}"
+    if [[ "${_file}" == *".publish" ]]; then
+      _hashes_publishing+=(
+        "${_hash}"
+      )
+    fi
+    if [[ "${_file}" == *".lock" ]]; then
+      _hashes_locking+=(
+        "${_hash}"
+      )
+    fi
+    if [[ "${_hash_found["${_hash}"]}" != "true" ]]; then
+      _hashes_active+=(
+        "${_hash}" 
+      ) 
+    fi
+    _hash_found["${_hash}"]="true"
   done
   _msg=(
-    "Cached files: '${#_hashes}'."
+    "Total size:"
+    "  ${_size_total}"
+    "Cached files:"
+    "  ${#_hashes[@]}"
+    "Active files:"
+    "  ${#_hashes_active[@]}"
+    "Files currently being published:"
+    "  ${#_hashes_publishing[@]}"
+    "Files currently being locked:"
+    "  ${#_hashes_locked[@]}"
   )
-  echo \
-    "${_msg[*]}"
+  printf \
+    "%s\n" \
+    "${_msg[@]}"
 }
 
 _stats_file() {
@@ -623,17 +671,6 @@ shift \
   $(( \
     OPTIND - 1 \
   ))
-if (( "${#}" < 1 )); then
-  _msg=(
-    "No URI given."
-  )
-  _msg_error \
-    "${_msg[*]}" \
-    0
-  _set_overrides
-  _usage \
-    1
-fi
 for _uri in "$@"; do
   # TODO:
   #   to write an unified function to parse
