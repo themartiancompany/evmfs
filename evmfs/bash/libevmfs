@@ -41,9 +41,6 @@ _sourced \
 
 _requirements() {
   _check_cmd \
-    "awk" \
-    "gawk"
-  _check_cmd \
     "mkdir" \
     "coreutils"
   _check_cmd \
@@ -84,11 +81,14 @@ _cache_dir_auto_detect() {
 
 _file_hash() {
   local \
-    _file="${1}"
-  sha256sum \
-    "${_file}" |
-    awk \
-      '{print $1}'
+    _file="${1}" \
+    _hash=()
+  _hash+=( $(
+    sha256sum \
+      "${_file}")
+  )
+  echo \
+    "${_hash}"
 }
 
 _resource_validate() {
