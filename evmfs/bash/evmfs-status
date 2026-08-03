@@ -193,15 +193,10 @@ _stats_file() {
       "Total chunks:"
       "  ${_chunks_amount}"
     )
-    _chunks_published="$(
-      cat \
-        "${_publish_checkpoint_file}" || \
-        true)"
-    _chunks_locked="$(
-      cat \
-        "${_lock_checkpoint_file}" || \
-        true)"
-    if [[ "${_chunks_published}" != "" ]]; then
+    if [[ -e "${_publish_checkpoint_file}" ]]; then
+      _chunks_published="$(
+        cat \
+          "${_publish_checkpoint_file}")"
       _percentage_published="$((
         ( "${_chunks_published}" * 100 ) /
           "${_chunks_amount}" ))"
@@ -210,7 +205,10 @@ _stats_file() {
         "  ${_chunks_published} (${_percentage_published}%)"
       )
     fi
-    if [[ "${_chunks_locked}" != "" ]]; then
+    if [[ -e "${_lock_checkpoint_file}" ]]; then
+      _chunks_locked="$(
+        cat \
+          "${_lock_checkpoint_file}")"
       _percentage_locked="$((
         ( "${_chunks_locked}" * 100 ) /
           "${_chunks_amount}" ))"
