@@ -86,6 +86,7 @@ _speed_get() {
     _time \
     _chunks \
     _speed_dir \
+    _speed_dir_content \
     _msg=()
   _chunks=""
   _speed=""
@@ -103,11 +104,16 @@ _speed_get() {
       700 \
       "${_speed_dir}"
   fi
-  for _file in "${_speed_dir}/"*; do
-    _data_points+=(
-      "${_file}"
-    )
-  done
+  _speed_dir_content="$(
+    ls \
+      "${_speed_dir}")"
+  if [[ "${_speed_dir_content}" != "" ]]; then
+    for _file in "${_speed_dir}/"*; do
+      _data_points+=(
+        "${_file}"
+      )
+    done
+  fi
   _data_points_amount="${#_data_points[@]}"
   _split="$((
     "${_data_points_amount}" - 1 ))"
@@ -134,6 +140,25 @@ _speed_get() {
     )
     _msg_info \
       "${_msg[*]}"
+    for _file in "${_data_points[@]}"; do
+      _time="$(
+        basename \
+          "${_file}")"
+      _chunks="$(
+        cat \
+          "${_file}")"
+    done
+    if [[ "${_chunks}" != "" ]]; then
+      _speed="$((
+        ( ( "${_chunks_total}" - "${_chunks}" ) * 9 ) /
+          ( "${_epoch}" - "${_time}" ) ))"
+    elif [[ "${_chunks}" == "" ]]; then
+      _msg=(
+        "Speed not evaluated at this run."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    fi
   elif (( "${_data_points_amount}" < "${_split}" )); then
     _msg=(
       "No data points,"
@@ -145,22 +170,11 @@ _speed_get() {
     echo \
       "${_chunks_total}" > \
       "${_speed_dir}/${_epoch}"
-  fi
-  for _file in "${_data_points[@]}"; do
-    _time="$(
-      basename \
-        "${_file}")"
-    _chunks="$(
-      cat \
-        "${_file}")"
-  done
-  if [[ "${_chunks}" != "" ]]; then
-    _speed="$((
-      ( ( "${_chunks_total}" - "${_chunks}" ) * 9 ) /
-        ( "${_epoch}" - "${_time}" ) ))"
-  elif [[ "${_chunks}" == "" ]]; then
+  else
     _msg=(
-      "Speed not evaluated at this run."
+      "Data points amount '${_data_points_amount}',"
+      "split '${_split}',"
+      "location '${_speed_dir}/${_epoch}'."
     )
     _msg_info \
       "${_msg[*]}"
