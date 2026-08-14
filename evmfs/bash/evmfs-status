@@ -121,7 +121,7 @@ _speed_get() {
     date \
       "+%s")"
   if (( 1 < "${_data_points_amount}" )); then
-    for _file in "${_data_points[@]:0:${_split}}"; do
+    for _file in "${_data_points[@]:0:$((${_split} - 1 ))}"; do
       _msg=(
         "Removing excess data"
         "point file '${_file}'."
