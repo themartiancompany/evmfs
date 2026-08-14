@@ -239,21 +239,42 @@ _stats_display() {
     -A \
     _hash_found
   _chunks_total=0
-  _msg=(
-    "Evaluating cache directory size."
+  _cache_dir_content=( "$(
+    ls \
+      "${_cache_dir}" |
+      sha256sum)"
   )
-  _msg_info \
-    "${_msg[*]}"
-  _size_total=( $(
-    du \
-      -hs \
-      "${_cache_dir}")
-  )
+  _cache_dir_status="$(
+    cat \
+      "${_data_dir}/cache-status" || \
+    true)"
+  if [[ "${_cache_dir_content}" == "${_cache_dir_status}" ]]; then
+    _msg=(
+      "No changes detected,"
+      "re-using pre-determined value."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _size_total="$(
+      cat \
+        "${_data_dir}/cache-size")"
+  elif [[ "${_cache_dir_content}" != "${_cache_dir_status}" ]]; then
+    _msg=(
+      "Evaluating cache directory size."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _size_total="$(
+      du \
+        -hs \
+        "${_cache_dir}")"
+  fi
   _msg=(
     "Done."
   )
   _msg_info \
     "${_msg[*]}"
+
   _msg=(
     "Looking for cached files."
   )
