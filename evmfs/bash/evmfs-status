@@ -229,7 +229,7 @@ _speed_get() {
   if [[ "${_speed}" != "" ]]; then
     _msg=(
       "Written"
-      "$(( ${_chunks_total} - ${_chunks} * 9 )) KB"
+      "$(( ( ${_chunks_total} - ${_chunks} ) * 9 )) KB"
       "in '$(( ${_epoch} - ${_time} ))' seconds"
       "($(( ( ${_epoch} - ${_time} ) / 60 )) minutes)."
     )
