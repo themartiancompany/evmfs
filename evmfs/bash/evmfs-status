@@ -153,8 +153,8 @@ _speed_get() {
     if [[ "${_chunks}" != "" ]]; then
       _speed="$(
         echo \
-          "scale=2;( ( ${_chunks_total} - ${_chunks} ) * 9 ) /
-                       ( ${_epoch} - ${_time} )" |
+          "scale=2;( ( ${_chunks_total} - ${_chunks} ) * 9 ) /" \
+                      "( ${_epoch} - ${_time} )" |
           bc)"
     elif [[ "${_chunks}" == "" ]]; then
       _msg=(
@@ -202,8 +202,8 @@ _speed_get() {
     if [[ "${_chunks}" != "" ]]; then
       _speed="$(
         echo \
-          "scale=2;( ( ${_chunks_total} - ${_chunks} ) * 9 ) /
-                       ( ${_epoch} - ${_time} )" |
+          "scale=2;( ( ${_chunks_total} - ${_chunks} ) * 9 ) /" \
+                      "( ${_epoch} - ${_time} )" |
           bc)"
     elif [[ "${_chunks}" == "" ]]; then
       _msg=(
