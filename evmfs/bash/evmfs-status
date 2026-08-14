@@ -64,6 +64,8 @@ _global_variables() {
 
 _requirements() {
   _check_cmd \
+    "bc"
+  _check_cmd \
     "du" \
     "coreutils"
   _check_cmd \
@@ -149,9 +151,11 @@ _speed_get() {
           "${_file}")"
     done
     if [[ "${_chunks}" != "" ]]; then
-      _speed="$((
-        ( ( "${_chunks_total}" - "${_chunks}" ) * 9 ) /
-          ( "${_epoch}" - "${_time}" ) ))"
+      _speed="$(
+        echo \
+          "scale=2;( ( ${_chunks_total} - ${_chunks} ) * 9 ) /
+                       ( ${_epoch} - ${_time} )" |
+          bc)"
     elif [[ "${_chunks}" == "" ]]; then
       _msg=(
         "Speed not evaluated at this run."
@@ -196,9 +200,11 @@ _speed_get() {
           "${_file}")"
     done
     if [[ "${_chunks}" != "" ]]; then
-      _speed="$((
-        ( ( "${_chunks_total}" - "${_chunks}" ) * 9 ) /
-          ( "${_epoch}" - "${_time}" ) ))"
+      _speed="$(
+        echo \
+          "scale=2;( ( ${_chunks_total} - ${_chunks} ) * 9 ) /
+                       ( ${_epoch} - ${_time} )" |
+          bc)"
     elif [[ "${_chunks}" == "" ]]; then
       _msg=(
         "Speed not evaluated at this run."
@@ -230,7 +236,7 @@ _speed_get() {
     _msg=(
       "Written"
       "$(( ( ${_chunks_total} - ${_chunks} ) )) chunks,"
-      "( $(( ( ${_chunks_total}- ${_chunks} ) * 9 )) KB)"
+      "($(( ( ${_chunks_total}- ${_chunks} ) * 9 )) KB)"
       "in '$(( ${_epoch} - ${_time} ))' seconds"
       "($(( ( ${_epoch} - ${_time} ) / 60 )) minutes)."
     )
