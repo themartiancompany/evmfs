@@ -79,6 +79,54 @@ _requirements() {
     'evm-wallet'
 }
 
+_speed_display() {
+  local \
+    _msg=() \
+    _msg_time=() \
+    _chunks_delta \
+    _kb_delta \
+    _seconds \
+    _minutes \
+    _hours
+  _chunks_delta="$((
+    ( "${_chunks_total}" - "${_chunks}" )
+  ))"
+  _kb_delta="$((
+    "${_chunks_delta}" * 9 
+  ))"
+  _seconds="$((
+    "${_epoch}" - "${_time}"
+  ))"
+  _minutes="$((
+    "${_seconds}" / 60
+  ))"
+  _hours="$((
+    "${_minutes}" / 60
+  ))"
+  if (( 0 < "${_hours}" )); then
+    _minutes="$((
+      "${_minutes}" - "${_hours}" * 60
+    ))"
+    _msg_time=(
+      "${_hours} hours"
+      "and ${_minutes} minutes"
+    )
+  else
+    _msg_time=(
+      "${_minutes} minutes"
+    )
+  fi
+  _msg=(
+    "Written"
+    "${_chunks_delta} chunks,"
+    "(${_kb_delta} KB)"
+    "in '${_seconds}' seconds"
+    "(${_msg_time[*]})."
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
 _speed_get() {
   local \
     _chunks_total="${1}" \
@@ -233,15 +281,7 @@ _speed_get() {
       "${_msg[*]}"
   fi
   if [[ "${_speed}" != "" ]]; then
-    _msg=(
-      "Written"
-      "$(( ( ${_chunks_total} - ${_chunks} ) )) chunks,"
-      "($(( ( ${_chunks_total}- ${_chunks} ) * 9 )) KB)"
-      "in '$(( ${_epoch} - ${_time} ))' seconds"
-      "($(( ( ${_epoch} - ${_time} ) / 60 )) minutes)."
-    )
-    _msg_info \
-      "${_msg[*]}"
+    _speed_display
   fi
 }
 
