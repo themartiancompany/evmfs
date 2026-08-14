@@ -506,7 +506,7 @@ _evmfs_status() {
     _uri_hash \
     _uri_type
   shift \
-    17
+    18
   for _target_network \
     in $(seq "${_networks_amount}"); do
     _target_networks+=(
