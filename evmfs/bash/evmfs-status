@@ -47,6 +47,7 @@ _global_variables() {
   _libevm_global_variables
   _libevm_app_global_variables
   cache_dir=""
+  data_dir=""
   tasks_parallel=""
   call_method=""
   ccfs_address=""
@@ -76,6 +77,96 @@ _requirements() {
     'evm-wallet'
 }
 
+_speed_get() {
+  local \
+    _chunks_total="${1}" \
+    _split="${2}" \
+    _file \
+    _data_points=() \
+    _time \
+    _chunks \
+    _speed_dir \
+    _msg=()
+  _chunks=""
+  _speed=""
+  _speed_dir="${_data_dir}/stats/speed"
+  _msg=(
+    "Evaluating writing speed."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  if [[ ! -d "${_speed_dir}" ]]; then
+    mkdir \
+      -p \
+      "${_speed_dir}"
+    chmod \
+      700 \
+      "${_speed_dir}"
+  fi
+  for _file in "${_speed_dir}/"*; do
+    _data_points+=(
+      "${_file}"
+    )
+  done
+  _data_points_amount="${#_data_points[@]}"
+  _split="$((
+    "${_data_points_amount}" - 1 ))"
+  _epoch="$(
+    date \
+      "+%s")"
+  if (( 1 < "${_data_points_amount}" )); then
+    for _file in "${_data_points[@]:0:${_split}}"; do
+      _msg=(
+        "Removing excess data"
+        "point file '${_file}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      rm \
+        "${_file}"
+    done
+    _data_points=(
+      "${_data_points[@]:${_split}:${_data_points_amount}}"
+    )
+    _msg=(
+      "New data points"
+      "array: '${_data_points[@]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  elif (( "${_data_points_amount}" < "${_split}" )); then
+    _msg=(
+      "No data points,"
+      "saving '${_chunks_total}' at"
+      "location '${_speed_dir}/${_epoch}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    echo \
+      "${_chunks_total}" > \
+      "${_speed_dir}/${_epoch}"
+  fi
+  for _file in "${_data_points[@]}"; do
+    _time="$(
+      basename \
+        "${_file}")"
+    _chunks="$(
+      cat \
+        "${_file}")"
+  done
+  if [[ "${_chunks}" != "" ]]; then
+    _speed="$((
+      ( ( "${_chunks_total}" - "${_chunks}" ) * 9 ) /
+        ( "${_epoch}" - "${_time}" ) ))"
+  elif [[ "${_chunks}" == "" ]]; then
+    _msg=(
+      "Speed not evaluated at this run."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
+}
+
 _stats_display() {
   local \
     _file \
@@ -84,15 +175,33 @@ _stats_display() {
     _hashes_active=() \
     _hashes_locking=() \
     _hashes_publishing=() \
+    _chunks_total \
+    _speed \
     _msg=()
   declare \
     -A \
     _hash_found
+  _chunks_total=0
+  _msg=(
+    "Evaluating cache directory size."
+  )
+  _msg_info \
+    "${_msg[*]}"
   _size_total=( $(
     du \
       -hs \
       "${_cache_dir}")
   )
+  _msg=(
+    "Done."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _msg=(
+    "Looking for cached files."
+  )
+  _msg_info \
+    "${_msg[*]}"
   for _file in "${_cache_dir}/"*; do
     _hash="$(
       basename \
@@ -102,6 +211,16 @@ _stats_display() {
     ) 
     _hash_found["${_hash}"]=""
   done
+  _msg=(
+    "Done."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _msg=(
+    "Looking for checkpoint files."
+  )
+  _msg_info \
+    "${_msg[*]}"
   for _file in "${_cache_dir}/"*"/publish/base64/"*"/checkpoint."*; do
     _hash="$(
       basename \
@@ -112,6 +231,14 @@ _stats_display() {
       _hashes_publishing+=(
         "${_hash}"
       )
+      _chunks="$(
+        cat \
+          "${_file}" || \
+        true)"
+      if (( 0 < "${_chunks}" )) ; then
+        _chunks_total="$((
+          "${_chunks_total}" + "${_chunks}"))"
+      fi
     fi
     if [[ "${_file}" == *".lock" ]]; then
       _hashes_locking+=(
@@ -126,6 +253,14 @@ _stats_display() {
     _hash_found["${_hash}"]="true"
   done
   _msg=(
+    "Done."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _speed_get \
+    "${_chunks_total}" \
+    1
+  _msg=(
     "Total size:"
     "  ${_size_total}"
     "Cached files:"
@@ -136,6 +271,8 @@ _stats_display() {
     "  ${#_hashes_publishing[@]}"
     "Files currently being locked:"
     "  ${#_hashes_locking[@]}"
+    "Writing speed (KB/s):"
+    "  ${_speed}"
   )
   printf \
     "%s\n" \
@@ -241,7 +378,8 @@ _evmfs_status() {
     _retries_max="${14}" \
     _tasks_parallel="${15}" \
     _cache_dir="${16}" \
-    _uris_amount="${17}" \
+    _data_dir="${17}" \
+    _uris_amount="${18}" \
     _target_network \
     _target_networks=() \
     _cursor \
@@ -375,6 +513,8 @@ _set_overrides() {
   networks_amount="${#target_networks[@]}"
   uris_amount="${#target_uris[@]}"
   _cache_dir_auto_detect \
+    1>"/dev/null"
+  _data_dir_auto_detect \
     1>"/dev/null"
   _set_override \
     "call" \
@@ -576,6 +716,7 @@ _show_config() {
   _msg_info "                        API key:   ${api_key}"
   _msg_info "    Application configuration:"
   _msg_info "                Cache directory:   ${cache_dir}"
+  _msg_info "                 Data directory:   ${data_dir}"
 }
 
 _display_target_uris() {
@@ -611,7 +752,7 @@ getopts_opts="$(
     "$(_libevm_app_getopts_params_get)" \
     "n:" \
     "$(_wallet_getopts_params_get)" \
-    "W:cvh")"
+    "W:D:cvh")"
 while \
   getopts \
     "${getopts_opts}" \
@@ -646,6 +787,8 @@ while \
       ) ;;
     W)
       override_cache_dir="${OPTARG}" ;;
+    D)
+      override_data_dir="${OPTARG}" ;;
     c)
       override_color="y" ;;
     v)
@@ -698,6 +841,7 @@ app_opts=(
   "${retries_max}"
   "${tasks_parallel}"
   "${cache_dir}"
+  "${data_dir}"
   "${uris_amount}"
   "${target_networks[@]}"
   "${target_uris[@]}"

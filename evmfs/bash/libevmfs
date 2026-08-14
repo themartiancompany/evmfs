@@ -75,8 +75,24 @@ _cache_dir_auto_detect() {
     "cache" \
     "dir" \
     "${_cache_dir}"
-  echo \
-    "${_cache_dir}"
+}
+
+_data_dir_auto_detect() {
+  local \
+    _data_dir
+  _data_dir="${HOME}/.local/share/evmfs"
+  if [[ ! -e "${_data_dir}" ]]; then
+    mkdir \
+      -p \
+      "${_data_dir}"
+    chmod \
+      700 \
+      "${_data_dir}"
+  fi
+  _set_override \
+    "data" \
+    "dir" \
+    "${_data_dir}"
 }
 
 _file_hash() {
