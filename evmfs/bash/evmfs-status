@@ -104,6 +104,9 @@ _speed_get() {
       700 \
       "${_speed_dir}"
   fi
+  _epoch="$(
+    date \
+      "+%s")"
   _speed_dir_content="$(
     ls \
       "${_speed_dir}")"
@@ -116,12 +119,9 @@ _speed_get() {
   fi
   _data_points_amount="${#_data_points[@]}"
   _split="$((
-    "${_data_points_amount}" ))"
-  _epoch="$(
-    date \
-      "+%s")"
+    "${_data_points_amount}" -1 ))"
   if (( 1 < "${_data_points_amount}" )); then
-    for _file in "${_data_points[@]:0:$((${_split} - 1 ))}"; do
+    for _file in "${_data_points[@]:0:${_split}}"; do
       _msg=(
         "Removing excess data"
         "point file '${_file}'."
@@ -179,6 +179,10 @@ _speed_get() {
     )
     _msg_info \
       "${_msg[*]}"
+    echo \
+      "${_chunks_total}" > \
+      "${_speed_dir}/${_epoch}"
+  if (( "${_data_points_amount}" < 1 )); then
     echo \
       "${_chunks_total}" > \
       "${_speed_dir}/${_epoch}"
