@@ -268,6 +268,12 @@ _stats_display() {
       du \
         -hs \
         "${_cache_dir}")"
+    echo \
+      "${_size_total}" > \
+      "${_data_dir}/cache-size"
+    echo \
+      "${_cache_dir_content}" > \
+      "${_data_dir}/cache-status"
   fi
   _msg=(
     "Done."
