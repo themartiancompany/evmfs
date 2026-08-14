@@ -244,10 +244,13 @@ _stats_display() {
       "${_cache_dir}" |
       sha256sum)"
   )
-  _cache_dir_status="$(
-    cat \
-      "${_data_dir}/cache-status" || \
-    true)"
+  if [[ -e "${_data_dir}/cache-status" ]]; then
+    _cache_dir_status="$(
+      cat \
+        "${_data_dir}/cache-status")"
+  else
+    _cache_dir_status=""
+  fi
   if [[ "${_cache_dir_content}" == "${_cache_dir_status}" ]]; then
     _msg=(
       "No changes detected,"
