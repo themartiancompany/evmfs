@@ -182,7 +182,7 @@ _speed_get() {
     echo \
       "${_chunks_total}" > \
       "${_speed_dir}/${_epoch}"
-  if (( "${_data_points_amount}" < 1 )); then
+  elif (( "${_data_points_amount}" < 1 )); then
     echo \
       "${_chunks_total}" > \
       "${_speed_dir}/${_epoch}"
