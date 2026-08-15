@@ -1833,10 +1833,7 @@ _set_overrides() {
     "evm-wallet" \
     "${wallet_name}" \
     "y"
-  _set_override \
-    "cache" \
-    "dir" \
-    "$(_cache_dir_auto_detect)"
+  _cache_dir_auto_detect
   _set_override \
     "upload" \
     "method" \
