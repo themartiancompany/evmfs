@@ -465,6 +465,7 @@ _set_overrides() {
 # $1: exit status number.
 _usage() {
   local \
+    _exit_code="${1}" \
     _fs_deployment \
     _networks \
     _usage_text
@@ -571,14 +572,15 @@ $(_display_networks \
                             Default: ${cache_dir}
 
      -h                     This message.
-     -c                     Enable color output
-     -v                     Enable verbose output
+     -c                     Enable color output.
+     -v                     Enable verbose output.
+
 ENDUSAGETEXT
   _printf \
     '%s\n' \
     "${_usage_text}"
   exit \
-    "${1}"
+    "${_exit_code}"
 }
 
 _display_flags() {
@@ -694,8 +696,11 @@ while \
         0 ;;
     *)
       if [[ " ${getopts_opts} " != *"${arg}"* ]]; then
+        _msg=(
+          "Invalid argument '${arg}'."
+        )
         _msg_error \
-          "Invalid argument '${arg}'." \
+          "${_msg[*]}" \
           0
         _usage \
           1
@@ -728,22 +733,13 @@ if (( $# < 2 )); then
     1
 fi
 if (( 0 < $# )); then
-  _set \
-    "target" \
-    "command" \
-    "${1}"
+  target_command="${1}"
 fi
 if (( 1 < $# )); then
-  _set \
-    "target" \
-    "key" \
-    "${2}"
+  target_key="${1}"
 fi
 if (( 2 < $# )); then
-  _set \
-    "target" \
-    "value" \
-    "${3}"
+  target_value="${1}"
 fi
 shift \
   3 || \
