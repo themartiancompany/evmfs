@@ -67,6 +67,9 @@ _requirements() {
     'libevm'
   libevm-requirements
   _check_cmd \
+    "cut" \
+    "coreutils"
+  _check_cmd \
     'evm-contract-call' \
     'evm-contracts-tools'
   _check_cmd \
