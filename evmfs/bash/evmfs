@@ -128,8 +128,9 @@ _evmfs() {
     _cache_dir="${20}" \
     _user_level="${21}" \
     _output_files_amount="${22}" \
-    _target_key="${23}" \
-    _target_value="${24}" \
+    _target_key \
+    _target_value \
+    _output_files=() \
     _file \
     _target_uri \
     _target_file \
@@ -137,7 +138,19 @@ _evmfs() {
     _args=() \
     _msg=()
   shift \
-    24
+    22
+  for _file \
+    in $(seq \
+           "${_output_files_amount}"); do
+    _output_files+=(
+      "${1}"
+    )
+    shift
+  done
+  _target_key="${1}"
+  _target_value="${2}"
+  shift \
+    2
   _command_args+=(
     "$@"
   )
@@ -297,10 +310,16 @@ _evmfs() {
           "${_index_network}"
       )
     fi
-    _target_file="${_target_key}"
-    _args+=(
-      "${_target_file}"
-    )
+    for _file \
+      in "${_target_key}" \
+         "${_target_value}" \
+         "${_command_args[@]}"; do
+      if [[ "${_file}" != "" ]]; then
+        _args+=(
+          "${_file}"
+        )
+      fi
+    done
   else
     _msg=(
       "Command '${_target_command}' not known."
@@ -518,9 +537,9 @@ Usage:
 
   commands:
     get
-      <resource-uri>
+      [resource-uri]
     publish
-      <file-path>
+      [file-path]
 
   networks:
 $(_display_networks \
@@ -544,8 +563,8 @@ $(_display_networks \
                             Default: ${tasks_parallel}
 
   get options:
-     -o <output-file>       Name of the file in which to save
-                            the downloaded resource.
+     -o <output-file>       Path(s) of the file(s) in which to save
+                            the downloaded resource(s).
                             Default: ${output_file}
 
   publish options:
@@ -801,6 +820,7 @@ app_opts=(
   "${cache_dir}"
   "${user_level}"
   "${output_files_amount}"
+  "${output_files[@]}"
   "${target_key}"
   "${target_value}"
   "${command_args[@]}"
