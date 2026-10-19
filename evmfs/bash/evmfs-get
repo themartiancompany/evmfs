@@ -320,7 +320,7 @@ _hash_check() {
     _msg=()
   if [[ "${_hash}" == "" ]]; then
     _msg=(
-      "Invalid URI (empty)."
+      "Invalid URI hash (empty)."
     )
     _msg_error \
       "${_msg[*]}" \

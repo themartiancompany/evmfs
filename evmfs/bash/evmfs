@@ -62,7 +62,8 @@ _global_variables() {
   lock_only=""
   chunk_length=""
   encoding_skip=""
-  output_file=""
+  output_files=()
+  output_files_amount=""
   cache_dir=""
   command_args=()
   color=""
@@ -126,9 +127,10 @@ _evmfs() {
     _tasks_parallel="${19}" \
     _cache_dir="${20}" \
     _user_level="${21}" \
-    _output_file="${22}" \
+    _output_files_amount="${22}" \
     _target_key="${23}" \
     _target_value="${24}" \
+    _file \
     _target_uri \
     _target_file \
     _command_args=() \
@@ -240,16 +242,37 @@ _evmfs() {
     )
   fi
   if [[ "${_target_command}" == "get" ]]; then
-    if [[ "${_output_file}" != "" ]]; then
-      _args+=(
-        -o
-          "${_output_file}"
-      )
+    if (( 0 < "${_output_files_amount}" )); then
+      if [[ "${_target_key}" != "" ]]; then
+        _target_uri="${_target_key}"
+        _args+=(
+          "${_target_uri}"
+        )
+      else
+        _msg=(
+          "Target command key should"
+          "be non-empty when the target"
+          "command is 'get'."
+        )
+        _msg_error \
+          "${_msg}" \
+          1
+      fi
+      if [[ "${_target_value}" != "" ]]; then
+        _args+=(
+          "${_target_uri}"
+        )
+      fi
+      if [[ "${_command_args[*]}" != "" ]]; then
+        for _file in "${_command_args[@]}"; do
+          if [[ "${_file}" != "" ]]; then
+            _args+=(
+              "${_target_uri}"
+            )
+          fi
+        done
+      fi
     fi
-    _target_uri="${_target_key}"
-    _args+=(
-      "${_target_uri}"
-    )
   elif [[ "${_target_command}" == "publish" ]]; then
     if [[ "${_encoding_skip}" == "y" ]]; then
       _args+=(
@@ -332,22 +355,29 @@ _hash_get() {
     "1"
 }
 
-_output_file_auto_detect() {
+_output_files_auto_detect() {
   local \
-    _output_file \
-    _target_uri
-  _output_file=""
-  if [[ "${target_command}" == "get" ]]; then
-    _target_uri="${target_key}"
-    _output_file="$(
-      pwd)/$(
-        _hash_get \
-          "${_target_uri}")"
+    _target_uris=() \
+    _uri
+  if [[ "${output_files[*]}" == "" ]]; then
+    if [[ "${target_command}" == "get" ]]; then
+      _target_uris+=(
+        "${target_key}"
+        "${target_value}"
+        "${command_args[@]}"
+      )
+      for _uri in "${_target_uris[@]}"; do
+        if [[ "${_target_uri}" != "" ]]; then
+          output_files+=(
+            "${PWD}/$(
+              _hash_get \
+                "${_uri}")"
+          )
+        fi
+      done
+    fi
   fi
-  _set_override \
-    "output" \
-    "file" \
-    "${_output_file}"
+  output_files_amount="${#output_files[@]}"
 }
 
 _tasks_parallel_auto_detect() {
@@ -367,9 +397,6 @@ _tasks_parallel_auto_detect() {
 }
 
 _set_overrides() {
-  local \
-    _output_file \
-    _target_uri
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
@@ -435,7 +462,7 @@ _set_overrides() {
     "skip" \
     "n"
   _chunk_length_auto_detect
-  _output_file_auto_detect
+  _output_files_auto_detect
   _contract_version_auto_detect \
     "${deployments_dir}" \
     "FileSystem" \
@@ -604,6 +631,7 @@ _show_config() {
   _msg_info "                 Target command:   ${target_command}"
   _msg_info "                     Target key:   ${target_key}"
   _msg_info "                   Target value:   ${target_value}"
+  _msg_info "              Command arguments:   ${command_args[*]}"
   _msg_info "                  Index network:   ${target_network}"
   _msg_info "                    Call method:   ${call_method}"
   _msg_info "                Maximum retries:   ${retries_max}"
@@ -614,7 +642,7 @@ _show_config() {
   _msg_info "                  Skip encoding:   ${encoding_skip}"
   _msg_info "                   Chunk length:   ${chunk_length}"
   _msg_info "       Download configuration:"
-  _msg_info "                    Output file:   ${output_file}"
+  _msg_info "                 Output file(s):   ${output_files[*]}"
   _msg_info "       Contract configuration:"
   _msg_info "            File system address:   ${fs_address}"
   _msg_info "Cross-chain file system address:   ${ccfs_address}"
@@ -659,7 +687,8 @@ while \
   case \
     "${arg}" in
     o)
-      override_output_file="${OPTARG}" ;;
+      output_files+=(
+        "${OPTARG}") ;;
     i)
       override_index_network="${OPTARG}" ;;
     m)
@@ -771,9 +800,10 @@ app_opts=(
   "${tasks_parallel}"
   "${cache_dir}"
   "${user_level}"
-  "${output_file}"
+  "${output_files_amount}"
   "${target_key}"
   "${target_value}"
+  "${command_args[@]}"
 )
 _evmfs \
   "${app_opts[@]}"
