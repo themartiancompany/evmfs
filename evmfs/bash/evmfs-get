@@ -204,7 +204,7 @@ _contract_type_get() {
 _contract_setup() {
   local \
     _contract_address="${1}" \
-    _evmfs_address_opts=() \
+    _evm_contract_deployment_address_opts=() \
     _contract_type \
     _msg=()
   if [[ "${_contract_address}" == "" ]]; then
@@ -214,18 +214,15 @@ _contract_setup() {
     )
     _msg_warning \
       "${_msg[*]}"
-    _evmfs_address_opts+=(
+    _evm_contract_deployment_address_opts+=(
+      -a
+        "evmfs"
       -n
         "${_uri_network_id}"
     )
-    # TODO: not implemented,
-    #       but really this would just be
-    #       a composition of
-    #       'evm-contract-deployment-something's
-    #       if a check isn't implemented.
     _uri_contract_address="$(
-      evmfs-address \
-        "${_evmfs_address_opts[@]}")"
+      evm-contract-deployment-address \
+        "${_evm_contract_deployment_address_opts[@]}")"
   elif [[ "${_contract_address}" != "" ]]; then
     _contract_type_get \
       "${_contract_address}"
