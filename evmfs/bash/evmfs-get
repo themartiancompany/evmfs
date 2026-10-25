@@ -222,7 +222,8 @@ _contract_setup() {
     )
     _uri_contract_address="$(
       evm-contract-deployment-address \
-        "${_evm_contract_deployment_address_opts[@]}")"
+        "${_evm_contract_deployment_address_opts[@]}" \
+        "FileSystem")"
   elif [[ "${_contract_address}" != "" ]]; then
     _contract_type_get \
       "${_contract_address}"
