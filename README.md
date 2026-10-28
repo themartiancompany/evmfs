@@ -37,6 +37,10 @@
 
 Reference implementations of the Ethereum Virtual Machine File System (EVMFS).
 
+As an internet protocol EVMFS superseedes to
+[HTTP](
+  https://en.wikipedia.org/wiki/HTTP).
+
 ### Quick overview
 
 The Ethereum Virtual Machine File System is a multi-level distributed,

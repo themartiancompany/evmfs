@@ -1,25 +1,30 @@
 #!/usr/bin/env bash
 
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: AGPL-3.0
 
-#    ----------------------------------------------------------------------
+#    -----------------------------------------------------
 #    Copyright © 2024, 2025, 2026  Pellegrino Prevete
 #
 #    All rights reserved
-#    ----------------------------------------------------------------------
+#    -----------------------------------------------------
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    This program is free software: you can redistribute
+#    it and/or modify it under the terms of the
+#    GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of
+#    the License, or (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
+#    This program is distributed in the hope that it
+#    will be useful, but WITHOUT ANY WARRANTY;
+#    without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU Affero General Public License for
+#    more details.
 #
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    You should have received a copy of the
+#    GNU Affero General Public License
+#    along with this program.
+#    If not, see <https://www.gnu.org/licenses/>.
 
 _bin="$(
   dirname \
@@ -827,7 +832,8 @@ _chunks_total_get() {
       "the uploader could break"
       "the file at a later time, lock"
       "the length in your namespace to"
-      "avoid it."
+      "avoid making harder for yourself "
+      "accessing the file."
     )
     _msg_warning \
       "${_msg[*]}"
@@ -861,6 +867,7 @@ _resource_get() {
       -d \
       -p \
         "${_cache_dir}/${_uri_hash}")"
+  _check="${_tmp_dir}/${_uri_hash}.check"
   _evm_contract_call_opts+=(
     -n
       "${_uri_network_id}"
@@ -909,7 +916,6 @@ _resource_get() {
         "${_msg[*]}" \
         1
     fi
-    _check="${_tmp_dir}/${_uri_hash}.check"
     _msg=(
       "Got '${#_chunks[@]}' chunks. Merging."
     )
@@ -1088,7 +1094,7 @@ _output_files_check() {
         "${_msg[*]}"
       for _uri in "${target_uris[@]}"; do
         output_files+=(
-          "$(pwd)/$(
+          "${PWD}/$(
             _hash_get \
               "${_uri}")"
         )
