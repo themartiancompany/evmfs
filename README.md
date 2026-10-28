@@ -37,6 +37,7 @@
 
 Reference implementations of the Ethereum Virtual Machine File System (EVMFS).
 
+The EVMFS is the internet protocol of the undeletable internet.
 As an internet protocol EVMFS superseedes to
 [HTTP](
   https://en.wikipedia.org/wiki/HTTP).
