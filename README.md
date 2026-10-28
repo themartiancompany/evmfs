@@ -43,10 +43,8 @@ of the undeletable internet.
 As an internet protocol EVMFS superseedes to
 [HTTP](
   https://en.wikipedia.org/wiki/HTTP)
-and is at
-[layer 7](
-  https://en.wikipedia.org/wiki/Layer_7)
-of the
+and is at its same layer of 
+in the
 [OSI model](
   https://en.wikipedia.org/wiki/OSI_Model).
 
